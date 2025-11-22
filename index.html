@@ -1239,25 +1239,31 @@
             }
         }
 
-        // 2. Функція оновлення вигляду
         function updateDonateUI(amount, goal) {
-            // Якщо ціль 0 або не вказана, ставимо якусь умовну (напр. 50 000), щоб шкала працювала
-            const target = goal > 0 ? goal : 50000;
+            // Якщо ціль не вказана в банці (0), ставимо суму + 1000 (щоб шкала була повною), або 5000
+            const target = goal > 0 ? goal : (amount > 0 ? amount * 1.2 : 5000);
 
-            // Рахуємо відсоток
             let pct = (amount / target) * 100;
             if (pct > 100) pct = 100;
-            if (pct < 5) pct = 5; // Щоб трошки було видно завжди
 
-            // Оновлюємо шкалу
-            document.getElementById('donateProgress').style.width = `${pct}%`;
+            // Малюємо шкалу
+            const progress = document.getElementById('donateProgress');
+            if (progress) progress.style.width = `${pct}%`;
 
-            // Форматуємо суму (наприклад: 12 500)
-            const fmtAmount = amount.toLocaleString('uk-UA');
-            const fmtGoal = target.toLocaleString('uk-UA');
+            // Форматуємо текст
+            const fmtAmount = amount.toLocaleString('uk-UA', {maximumFractionDigits: 0});
+            const fmtGoal = target.toLocaleString('uk-UA', {maximumFractionDigits: 0});
 
-            // Оновлюємо текст
-            document.getElementById('donateAmount').innerText = `Зібрано: ${fmtAmount} / ${fmtGoal} грн`;
+            const amountEl = document.getElementById('donateAmount');
+            if (amountEl) {
+                // Якщо ціль реальна - показуємо "X / Y"
+                // Якщо цілі немає (безлімітна банка) - показуємо просто "Зібрано: X"
+                if (goal > 0) {
+                    amountEl.innerText = `${fmtAmount} / ${fmtGoal} ₴`;
+                } else {
+                    amountEl.innerText = `${fmtAmount} ₴`;
+                }
+            }
         }
 
         function closeInfo() {
