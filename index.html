@@ -81,24 +81,24 @@
         .timeline-section { width: 100%; }
         .timeline-box { position: relative; padding: 0 10px; }
         
-        /* --- TRACK --- */
+        /* --- TRACK (СТИЛЬ, ЯКИЙ ВАМ СПОДОБАВСЯ) --- */
         .timeline-track {
             position: relative; width: 100%; height: 50px;
-            border-radius: 25px; 
+            border-radius: 25px; /* Загальна капсула */
             overflow: hidden; background: #2c2c35;
             display: flex;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
-            padding: 0; gap: 0;
+            /* ПОВЕРНУТО: відступи і проміжки */
+            padding: 4px; 
+            gap: 2px;
         }
         
         .segment {
             position: relative; height: 100%;
             display: flex; align-items: center; justify-content: center;
-            border-radius: 0; 
+            /* ПОВЕРНУТО: заокруглення окремих блоків */
+            border-radius: 16px; 
         }
-        .segment:not(:last-child) { border-right: 1px solid rgba(0,0,0,0.15); }
-        .segment:first-child { border-top-left-radius: 25px; border-bottom-left-radius: 25px; }
-        .segment:last-child { border-top-right-radius: 25px; border-bottom-right-radius: 25px; border-right: none; }
 
         .on { background: var(--accent-green); }
         .off { background: var(--accent-red); }
@@ -110,13 +110,14 @@
         }
 
         .cursor-line {
-            position: absolute; top: 0; bottom: 0; width: 3px;
-            background: white; z-index: 10; 
+            position: absolute; top: -2px; bottom: -2px; width: 3px;
+            background: white; z-index: 10; border-radius: 3px;
             box-shadow: 0 0 10px rgba(255,255,255,0.8); pointer-events: none;
         }
 
-        /* --- LABELS --- */
-        .time-labels { position: relative; width: 100%; height: 25px; margin-top: 8px; }
+        /* --- CLEAN LABELS --- */
+        .time-labels { position: relative; width: 100%; height: 24px; margin-top: 8px; }
+        
         .t-label {
             position: absolute; top: 0;
             font-size: 11px; font-weight: 600; color: var(--text-muted);
@@ -124,6 +125,7 @@
         }
         .t-label.start { transform: translateX(0%); } 
         .t-label.end { transform: translateX(-100%); }
+        
         .t-tick { 
             position: absolute; top: -6px; left: 50%; 
             width: 1px; height: 4px; background: #444; 
@@ -221,11 +223,6 @@
 
         #loading { margin-top: 100px; color: var(--text-muted); text-align: center; font-size: 14px; }
         .hidden { display: none !important; }
-        .offline-badge {
-            position: fixed; top: 10px; right: 10px; background: rgba(255, 69, 58, 0.8);
-            color: white; padding: 4px 10px; border-radius: 8px; font-size: 12px; z-index: 100;
-            font-weight: bold; backdrop-filter: blur(4px);
-        }
 
     </style>
 </head>
@@ -241,6 +238,7 @@
     <div id="loading">Отримання даних...</div>
 
     <div id="app-content" class="hidden">
+        
         <div id="batterySection" class="battery-container">
             <div class="battery-wrapper">
                 <div class="battery-shell">
@@ -262,7 +260,7 @@
             <div class="timeline-box">
                 <div class="timeline-track" id="timelineTrack">
                     <div id="cursor" class="cursor-line" style="left:0%"></div>
-                </div>
+                    </div>
                 <div class="time-labels" id="timeLabelsBox"></div>
             </div>
         </div>
@@ -294,99 +292,46 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // --- НАЛАШТУВАННЯ ---
         const SHEET_ID = "1LZWXZ6w5R4Lq5afipAa1YHjLyO8lVizPvRCPdOvdmbc";
         const GOOGLE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+        const PROXY_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(GOOGLE_URL)}`;
         
-        // !!! КЛЮЧОВЕ: Список проксі. Якщо один впав, пробуємо наступний.
-        const PROXIES = [
-            (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-            (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-            (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
-        ];
-
         let allData = [];
         let currentQueue = "1.1"; 
         let currentTab = 1;
         let countdownInterval;
 
-        // Авто-оновлення (кожні 2 хв)
-        setInterval(() => init(true), 120000);
-
-        async function fetchWithRetry(originalUrl) {
-            // Додаємо timestamp щоб уникнути кешу
-            const ts = "&t=" + Date.now();
-            
-            for (const makeProxy of PROXIES) {
-                try {
-                    const finalUrl = makeProxy(originalUrl) + ts;
-                    const response = await fetch(finalUrl);
-                    if (response.ok) return await response.text();
-                } catch (e) {
-                    console.warn("Proxy failed:", e);
-                }
-            }
-            throw new Error("Усі проксі недоступні");
-        }
+        setInterval(() => init(true), 600000);
 
         async function init(isSilent = false) {
             try {
                 if (!isSilent) document.getElementById('loading').innerText = "Оновлення даних...";
                 
-                const csvText = await fetchWithRetry(GOOGLE_URL);
+                const response = await fetch(PROXY_URL + "&t=" + Date.now());
+                if (!response.ok) throw new Error("Помилка мережі");
+                
+                const csvText = await response.text();
                 allData = parseCSV(csvText);
                 
-                if (!allData.length) throw new Error("Empty Data");
+                if (!allData.length) throw new Error("Таблиця пуста");
 
-                // УСПІХ -> Зберігаємо в кеш
-                localStorage.setItem('cachedData', JSON.stringify(allData));
-                removeOfflineBadge();
+                if (!isSilent) {
+                    const p = new URLSearchParams(window.location.search);
+                    const q = p.get('q');
+                    if (q && allData.find(r => r.group_id == q)) currentQueue = q;
+                    else currentQueue = allData[0].group_id;
+                }
 
-                setupApp(isSilent);
+                if (!isSilent) {
+                    buildMenu();
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('app-content').classList.remove('hidden');
+                }
+                render(currentTab);
 
             } catch (e) {
-                console.error("Online fetch failed:", e);
-                // Спроба завантажити з кешу
-                const cached = localStorage.getItem('cachedData');
-                if (cached) {
-                    allData = JSON.parse(cached);
-                    showOfflineBadge();
-                    setupApp(isSilent);
-                } else {
-                    if (!isSilent) document.getElementById('loading').innerText = "Помилка з'єднання. Спробуйте пізніше.";
-                }
+                if (!isSilent) document.getElementById('loading').innerText = "Помилка: " + e.message;
             }
-        }
-
-        function setupApp(isSilent) {
-            const p = new URLSearchParams(window.location.search);
-            let q = p.get('q');
-            if (!q) q = localStorage.getItem('savedQueue');
-
-            if (q && allData.find(r => r.group_id == q)) currentQueue = q;
-            else currentQueue = allData[0].group_id;
-
-            localStorage.setItem('savedQueue', currentQueue);
-
-            if (!isSilent) {
-                buildMenu();
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('app-content').classList.remove('hidden');
-            }
-            render(currentTab);
-        }
-
-        function showOfflineBadge() {
-            if (!document.getElementById('offBadge')) {
-                const b = document.createElement('div');
-                b.id = 'offBadge'; b.className = 'offline-badge';
-                b.innerText = 'Offline Mode';
-                document.body.appendChild(b);
-            }
-        }
-        function removeOfflineBadge() {
-            const b = document.getElementById('offBadge');
-            if (b) b.remove();
         }
 
         function parseCSV(text) {
@@ -474,14 +419,7 @@
             document.getElementById('modal').classList.toggle('show'); 
             document.querySelector('.queue-select-btn').classList.toggle('open');
         }
-        function selectQueue(q) { 
-            currentQueue = q; 
-            localStorage.setItem('savedQueue', q);
-            try { tg.HapticFeedback.selectionChanged(); } catch(e){}
-            toggleModal(); 
-            buildMenu(); 
-            render(currentTab); 
-        }
+        function selectQueue(q) { currentQueue = q; toggleModal(); buildMenu(); render(currentTab); }
         
         function buildMenu() {
             const list = document.getElementById('queueList');
@@ -500,7 +438,6 @@
 
         function switchTab(idx) {
             currentTab = idx;
-            try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
             document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
             document.getElementById('tab' + idx).classList.add('active');
             render(idx);
@@ -561,6 +498,7 @@
             const now = new Date();
             const curFloat = now.getHours() + now.getMinutes()/60 + now.getSeconds()/3600;
             let foundState = false;
+            let lastEndH = 0;
 
             addLabel(lBox, 0, "00:00", "start");
 
@@ -571,11 +509,17 @@
 
                 let seg = document.createElement('div');
                 seg.className = `segment ${type}`;
+                
                 seg.style.flexGrow = dur; 
+                
                 if (dur >= 1.5) seg.innerHTML = `<div class="segment-icon">${type === 'on' ? '💡' : '🔌'}</div>`;
                 track.appendChild(seg);
 
-                if (endH < 23.9) addLabel(lBox, endH, formatHM(endH), "mid");
+                // --- CLEAN LABELS ---
+                if (endH > 2 && endH < 22 && (endH - lastEndH) > 2.5) {
+                    addLabel(lBox, endH, formatHM(endH), "mid");
+                    lastEndH = endH;
+                }
                 
                 let card = createCard(curH, endH, dur, type);
                 if (isToday && curFloat >= curH && curFloat < endH) {
@@ -603,16 +547,10 @@
         function addLabel(box, h, txt, align) {
             let el = document.createElement('div'); 
             el.className = `t-label ${align}`;
-            el.innerText = txt; 
-            el.style.left = (h/24*100) + "%";
-            if (align === 'mid') { 
-                let t = document.createElement('div'); 
-                t.className = 't-tick'; 
-                el.appendChild(t); 
-            }
+            el.innerText = txt; el.style.left = (h/24*100) + "%";
+            if (align === 'mid') { let t=document.createElement('div'); t.className='t-tick'; el.appendChild(t); }
             box.appendChild(el);
         }
-
         function updateCursor() {
             if (currentTab !== 1) return;
             const d = new Date(); const m = d.getHours()*60 + d.getMinutes();
@@ -625,14 +563,13 @@
             const tH = Math.floor(targetH); const tM = Math.round((targetH-tH)*60);
             const tD = new Date(); tD.setHours(tH, tM, 0, 0);
             if (tD < n) tD.setDate(tD.getDate() + 1);
-            
             function tick() {
                 const now = new Date();
                 const rem = Math.floor((tD - now) / 1000);
                 updateCursor();
                 if (rem <= 0) { 
                     clearInterval(countdownInterval);
-                    setTimeout(() => render(currentTab), 1000);
+                    setTimeout(() => render(currentTab), 1000); 
                     return; 
                 }
                 document.getElementById('batteryTimer').innerText=fmtTimer(rem); setBat(rem/totalSec, isOn);
