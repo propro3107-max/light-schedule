@@ -705,25 +705,30 @@
             }
         }
 
-        async function init(isSilent = false) {
-            loadTheme();
-            try {
-                if (!isSilent) {
-                    const sk = document.getElementById('skeletonLoader');
-                    if (sk) sk.classList.remove('hidden');
-                    document.getElementById('app-content').classList.add('hidden');
-                }
+            async function init(isSilent = false) {
+                loadTheme();
 
-                const csvText = await getCSV();
-                allData = parseCSV(csvText);
+                // 🔥 ОСЬ ЦЕЙ РЯДОК ОБОВ'ЯЗКОВО ТРЕБА ДОДАТИ!
+                // Це запускає оновлення кнопки донату паралельно з графіком
+                fetchDonation();
 
-                window.LAST_UPDATED = null;
-                for (const row of allData) {
-                    if (row.updated_at && row.updated_at.trim() !== "") {
-                        window.LAST_UPDATED = row.updated_at.trim();
-                        break;
+                try {
+                    if (!isSilent) {
+                        const sk = document.getElementById('skeletonLoader');
+                        if (sk) sk.classList.remove('hidden');
+                        document.getElementById('app-content').classList.add('hidden');
                     }
-                }
+
+                    const csvText = await getCSV();
+                    allData = parseCSV(csvText);
+
+                    window.LAST_UPDATED = null;
+                    for (const row of allData) {
+                        if (row.updated_at && row.updated_at.trim() !== "") {
+                            window.LAST_UPDATED = row.updated_at.trim();
+                            break;
+                        }
+                    }
 
                 updateTopUpdated();
 
