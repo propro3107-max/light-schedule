@@ -416,11 +416,10 @@
 
     <div class="top-bar">
         <span class="updated" id="topUpdated">Оновлено…</span>
-
-        <span style="flex:1;"></span>
-
+        <span style="flex: 1;"></span>
         <span class="users" id="topUsers">👥 …</span>
     </div>
+
 
 
     <div class="header">
@@ -490,15 +489,35 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
+            function getUrlParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+    }
+
+
         // ==== ЧИТАННЯ ДАНИХ З startapp (payload від бота) ====
             (function applyStartAppData() {
-                const param = tg.initDataUnsafe?.start_param;
-                if (!param) return;
+                let param = null;
+
+                // 1) Спершу читаємо URL параметр ?startapp=
+                const fromUrl = getUrlParam("startapp");
+                if (fromUrl) {
+                    param = fromUrl;
+                }
+
+                // 2) Якщо його нема — беремо start_param від Telegram
+                if (!param) {
+                    param = tg.initDataUnsafe?.start_param;
+                }
+
+                if (!param) return; // нічого немає — пропускаємо
 
                 try {
                     const json = JSON.parse(
                         atob(param.replace(/-/g, '+').replace(/_/g, '/'))
                     );
+
+                    console.log("Start PARAM JSON:", json);
 
                     if (json.updated) {
                         document.getElementById("topUpdated").innerText =
@@ -519,8 +538,6 @@
                     console.error("Помилка читання start_param:", err);
                 }
             })();
-
-
 
 
         // 🔗 URL твого Cloudflare Worker
