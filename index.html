@@ -532,6 +532,40 @@
             }
         }
 
+        // 🔥 НОВА ФУНКЦІЯ: Шукає час першого відключення завтра
+        function getNextDayOutageStart(row, todayDate) {
+            if (!row) return null;
+
+            // Створюємо дату "завтра"
+            const tomorrow = new Date(todayDate);
+            tomorrow.setDate(todayDate.getDate() + 1);
+
+            const daysMap = ["Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "Пʼятниця", "Субота"];
+            const dayName = daysMap[tomorrow.getDay()];
+
+            const fullText = row.schedule_text;
+            if (!fullText) return null;
+
+            const lines = fullText.replace(/\r\n/g, '\n').split('\n');
+            const dayLine = lines.find(line => line.trim().startsWith(dayName));
+
+            // Якщо на завтра немає даних або "-", значить відключень немає (повертаємо null)
+            if (!dayLine || dayLine.includes(":-") || dayLine.includes(": -") || dayLine.trim().endsWith("-")) return null;
+
+            let timesPart = dayLine.includes(':') ? dayLine.substring(dayLine.indexOf(':') + 1).trim() : "";
+            timesPart = timesPart.replace(/\+/g, "");
+
+            // Беремо перший діапазон (наприклад "00:30 - 04:00")
+            const firstRange = timesPart.split(',')[0];
+            if (!firstRange) return null;
+
+            const parts = firstRange.split('-').map(s => s.trim());
+            if (parts.length < 2) return null;
+
+            // Повертаємо час початку першого відключення (наприклад 0.5 для 00:30)
+            return timeToH(parts[0]);
+        }
+
         async function init(isSilent = false) {
             try {
                 if (!isSilent) {
@@ -823,7 +857,9 @@
             const targetDate = new Date();
             if (dayIdx === 2) targetDate.setDate(targetDate.getDate() + 1);
 
+            // Отримуємо розклад на сьогодні
             const scheduleStr = getSchedule(row.schedule_text, targetDate);
+
             const d = String(targetDate.getDate()).padStart(2, '0');
             const m = String(targetDate.getMonth() + 1).padStart(2, '0');
             const daysMap = ["НЕДІЛЯ", "ПОНЕДІЛОК", "ВІВТОРОК", "СЕРЕДА", "ЧЕТВЕР", "ПʼЯТНИЦЯ", "СУБОТА"];
@@ -838,7 +874,7 @@
             const batSec = document.getElementById('batterySection');
             const detailBox = document.getElementById('detailCardContainer');
 
-            // 🔥 ОЧИЩЕННЯ
+            // Очищення
             track.innerHTML = '';
             while (lBox.firstChild) lBox.removeChild(lBox.firstChild);
             iBox.innerHTML = '';
@@ -888,15 +924,50 @@
             let foundState = false;
             let lastEndH = 0;
 
+            // Змінна для тексту останньої мітки (за замовчуванням 24:00)
+            let finalEndLabel = "24:00";
+
             addLabel(lBox, 0, "00:00", "start");
 
-            scheduleStr.split(',').forEach(part => {
+            const parts = scheduleStr.split(',');
+
+            parts.forEach((part, index) => {
                 let type = part.includes('off') ? 'off' : 'on';
                 let dur = parseFloat(part.replace('on', '').replace('off', ''));
                 if (isNaN(dur) || dur <= 0) return;
 
                 let segStart = curH;
                 let endH = curH + dur;
+
+                let realTimerTarget = endH;
+                let displayEndH = endH;
+
+                // 🔥 УНІВЕРСАЛЬНА ЛОГІКА ПЕРЕХОДУ ДОБИ
+                // Перевіряємо, чи це останній блок і чи він закінчується о 24:00
+                if (index === parts.length - 1 && Math.abs(endH - 24) < 0.1) {
+
+                    // Отримуємо розклад на ЗАВТРА
+                    const tomorrowDate = new Date(targetDate);
+                    tomorrowDate.setDate(targetDate.getDate() + 1);
+                    const tomorrowSchedule = getSchedule(row.schedule_text, tomorrowDate);
+
+                    if (tomorrowSchedule) {
+                        // Беремо перший блок завтрашнього дня (наприклад, "0.5off" або "2on")
+                        const firstPart = tomorrowSchedule.split(',')[0];
+                        const nextType = firstPart.includes('off') ? 'off' : 'on';
+                        const nextDur = parseFloat(firstPart.replace('on', '').replace('off', ''));
+
+                        // Якщо типи співпадають (сьогодні закінчилось OFF і завтра починається OFF)
+                        if (nextType === type) {
+                            // Продовжуємо час
+                            realTimerTarget = 24 + nextDur;
+                            displayEndH = nextDur;
+
+                            // Оновлюємо напис на шкалі
+                            finalEndLabel = formatHM(displayEndH);
+                        }
+                    }
+                }
 
                 let seg = document.createElement('div');
                 seg.className = `segment ${type}`;
@@ -915,21 +986,39 @@
                     lastEndH = endH;
                 }
 
-                let card = createCard(segStart, endH, dur, type);
+                let cardEndText = (displayEndH !== endH) ? displayEndH : endH;
+
+                // Рахуємо тривалість для картки (якщо перейшли через добу, додаємо час)
+                let cardDur = dur;
+                if (realTimerTarget > 24) {
+                    cardDur += (realTimerTarget - 24);
+                }
+
+                let card = createCard(segStart, cardEndText, cardDur, type);
                 if (isToday && curFloat >= segStart && curFloat < endH) {
                     card.classList.add('active-now');
                 }
                 iBox.appendChild(card);
 
                 if (type === 'off') totOff += dur;
+
+                // Логіка таймера
                 if (isToday && !foundState && curFloat < endH) {
                     foundState = true;
-                    startTimer(endH, dur * 3600, type === 'on');
+
+                    // Рахуємо "повний час" для коректного відображення прогрес-бару батарейки
+                    let totalSecForBat = dur * 3600;
+                    if (realTimerTarget > 24) {
+                        totalSecForBat = cardDur * 3600;
+                    }
+
+                    startTimer(realTimerTarget, totalSecForBat, type === 'on');
                 }
                 curH = endH;
             });
 
-            addLabel(lBox, 24, "24:00", "end");
+            // Ставимо фінальну мітку (або 24:00, або 00:30)
+            addLabel(lBox, 24, finalEndLabel, "end");
 
             if (isToday && !foundState) {
                 document.getElementById('batteryTimer').innerText = "--:--";
