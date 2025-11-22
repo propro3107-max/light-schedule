@@ -489,55 +489,59 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-            function getUrlParam(name) {
-        const url = new URL(window.location.href);
-        return url.searchParams.get(name);
-    }
-
+        function getUrlParam(name) {
+            const url = new URL(window.location.href);
+            return url.searchParams.get(name);
+        }
 
         // ==== ЧИТАННЯ ДАНИХ З startapp (payload від бота) ====
-            (function applyStartAppData() {
-                let param = null;
+        (function applyStartAppData() {
+            let param = null;
 
-                // 1) Спершу читаємо URL параметр ?startapp=
-                const fromUrl = getUrlParam("startapp");
-                if (fromUrl) {
-                    param = fromUrl;
+            // 1) Спершу читаємо URL параметр ?startapp=
+            const fromUrl = getUrlParam("startapp");
+            if (fromUrl) {
+                param = fromUrl;
+            }
+
+            // 2) Якщо його нема — беремо start_param від Telegram
+            if (!param) {
+                param = tg.initDataUnsafe?.start_param;
+            }
+
+            if (!param) return; // нічого немає — пропускаємо
+
+            try {
+                const json = JSON.parse(
+                    atob(param.replace(/-/g, '+').replace(/_/g, '/'))
+                );
+
+                console.log("Start PARAM JSON:", json);
+
+                // --- ОНОВЛЕННЯ ДАТИ ---
+                if (json.updated) {
+                    document.getElementById("topUpdated").innerText =
+                        "Оновлено: " + json.updated;
                 }
 
-                // 2) Якщо його нема — беремо start_param від Telegram
-                if (!param) {
-                    param = tg.initDataUnsafe?.start_param;
+                // --- ОНОВЛЕННЯ К-СТІ КОРИСТУВАЧІВ ---
+                if (json.users) {
+                    document.getElementById("topUsers").innerText =
+                        "👥 " + json.users;
+                    // дублюємо у window, щоб інші функції не затирали
+                    window.STARTAPP_USERS = json.users;
                 }
 
-                if (!param) return; // нічого немає — пропускаємо
-
-                try {
-                    const json = JSON.parse(
-                        atob(param.replace(/-/g, '+').replace(/_/g, '/'))
-                    );
-
-                    console.log("Start PARAM JSON:", json);
-
-                    if (json.updated) {
-                        document.getElementById("topUpdated").innerText =
-                            "Оновлено: " + json.updated;
-                    }
-
-                    if (json.users) {
-                        document.getElementById("topUsers").innerText =
-                            "👥 " + json.users;
-                    }
-
-                    if (json.queue) {
-                        currentQueue = json.queue;
-                        localStorage.setItem('savedQueue', json.queue);
-                    }
-
-                } catch (err) {
-                    console.error("Помилка читання start_param:", err);
+                // --- ОНОВЛЕННЯ ЧЕРГИ ---
+                if (json.queue) {
+                    currentQueue = json.queue;
+                    localStorage.setItem('savedQueue', json.queue);
                 }
-            })();
+
+            } catch (err) {
+                console.error("Помилка читання start_param:", err);
+            }
+        })();
 
 
         // 🔗 URL твого Cloudflare Worker
@@ -596,7 +600,6 @@
 
                 updateTopUpdated();
 
-
                 if (!allData.length) throw new Error("Empty Data");
 
                 localStorage.setItem('cachedData', JSON.stringify(allData));
@@ -607,6 +610,11 @@
 
                 setupApp(isSilent);
 
+                // 🔥 ПОКАЗУЄМО КОРИСТУВАЧІВ (ONLINE)
+                if (window.STARTAPP_USERS) {
+                    updateTopUsers(window.STARTAPP_USERS);
+                }
+
             } catch (e) {
                 console.error("Online fetch error:", e);
 
@@ -616,22 +624,26 @@
                     allData = JSON.parse(cached);
                     showOfflineBadge();
 
-                window.LAST_UPDATED = null;
-                for (const row of allData) {
-                    if (row.updated_at && row.updated_at.trim() !== "") {
-                        window.LAST_UPDATED = row.updated_at.trim();
-                        break;
+                    window.LAST_UPDATED = null;
+                    for (const row of allData) {
+                        if (row.updated_at && row.updated_at.trim() !== "") {
+                            window.LAST_UPDATED = row.updated_at.trim();
+                            break;
+                        }
                     }
-                }
 
-                // тут теж додай
-                updateTopUpdated();
-
+                    updateTopUpdated();
 
                     document.getElementById('loader').classList.add('hidden');
                     document.getElementById('loading').classList.add('hidden');
 
                     setupApp(isSilent);
+
+                    // 🔥 ПОКАЗУЄМО КОРИСТУВАЧІВ (OFFLINE)
+                    if (window.STARTAPP_USERS) {
+                        updateTopUsers(window.STARTAPP_USERS);
+                    }
+
                 } else {
                     if (!isSilent) {
                         document.getElementById('loader').classList.add('hidden');
@@ -641,6 +653,8 @@
                 }
             }
         }
+
+
 
         function setupApp(isSilent) {
             const p = new URLSearchParams(window.location.search);
@@ -1023,6 +1037,12 @@
             }
             box.appendChild(el);
         }
+
+        function updateTopUsers(val) {
+            const el = document.getElementById("topUsers");
+            if (el) el.innerText = "👥 " + val;
+        }
+
 
         function updateCursor() {
             if (currentTab !== 1 || !cursor) return;
