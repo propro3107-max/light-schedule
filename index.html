@@ -64,15 +64,12 @@
 
         .battery-text {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%); /* 🔥 Встановлюємо на ідеальне центрування -50% */
-            font-size: 22px;
-            font-weight: 700;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 22px; font-weight: 700;
             text-shadow: 0 1px 3px rgba(0,0,0,0.5);
             font-variant-numeric: tabular-nums;
-            width: 100%; 
-            text-align: center;
+            width: 100%; text-align: center;
         }
         .battery-status { margin-top: 8px; font-size: 13px; color: var(--text-muted); font-weight: 500; }
 
@@ -89,7 +86,8 @@
             height: 44px;
             display: flex;
             align-items: stretch;
-            gap: 10px;
+            /* 🔥 ПРИБРАЛИ GAP: Тепер відступи робимо через рамки */
+            gap: 0;
             background: transparent;
             padding: 0;
             box-shadow: none;
@@ -102,7 +100,7 @@
             flex-basis: 0;
             height: 100%;
             min-width: 32px;
-            border-radius: 22px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -111,7 +109,16 @@
             cursor: pointer;
             transition: transform 0.15s ease, box-shadow 0.15s ease, outline 0.15s ease;
             z-index: 20;
+
+            /* 🔥 НОВЕ: Створення відступу за допомогою рамок кольору фону */
+            border-left: 2px solid var(--bg-color);
+            border-right: 2px solid var(--bg-color);
+            background-clip: padding-box; /* Щоб фон не залазив під рамку */
         }
+
+        /* Прибираємо зовнішні відступи для першого і останнього елемента */
+        .segment:first-child { border-left: none; }
+        .segment:last-child { border-right: none; }
 
         .segment-selected {
             transform: translateY(-2px);
@@ -119,8 +126,8 @@
             box-shadow: 0 0 16px rgba(255,255,255,0.4);
         }
 
-        .on  { background: var(--accent-green); }
-        .off { background: var(--accent-red); }
+        .on  { background-color: var(--accent-green); }
+        .off { background-color: var(--accent-red); }
 
         .segment-icon {
             font-size: 18px; color: white; z-index: 2;
@@ -130,186 +137,121 @@
 
         .cursor-line {
             position: absolute;
-            top: -6px;
-            bottom: -6px;
-            width: 2px;
-            background: #ffffff;
-            z-index: 30;
-            border-radius: 999px;
+            top: -6px; bottom: -6px;
+            width: 2px; background: #ffffff;
+            z-index: 30; border-radius: 999px;
             box-shadow: 0 0 12px rgba(255,255,255,0.9);
             pointer-events: none;
         }
 
-        .time-labels { position: relative; width: 100%; height: 24px; margin-top: 8px; }
+        /* 🔥 ОНОВЛЕНІ МІТКИ ЧАСУ */
+        .time-labels {
+            position: relative;
+            width: 100%;
+            height: 24px;
+            margin-top: 8px;
+            /* Більше не потрібен padding, бо ми не використовуємо gap */
+            padding: 0;
+        }
+
+        /* 🔥 Анімація закриття */
+        @keyframes popOutSpring {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+        }
+
+        /* Клас, який ми будемо додавати через JS для запуску закриття */
+        .detail-card.closing {
+            animation: popOutSpring 0.3s ease-in forwards;
+        }
 
         .t-label {
             position: absolute; top: 0;
             font-size: 11px; font-weight: 600; color: var(--text-muted);
-            transform: translateX(-50%); white-space: nowrap; letter-spacing: 0.3px;
+            transform: translateX(-50%); /* Чисте центрування */
+            white-space: nowrap; letter-spacing: 0.3px;
         }
+
+        /* Спеціальне вирівнювання для країв */
         .t-label.start { transform: translateX(0%); }
         .t-label.end { transform: translateX(-100%); }
-        .t-label.mid { transform: translateX(0%); }
 
         .t-tick {
             position: absolute; top: -6px; left: 50%;
             width: 1px; height: 4px; background: #444;
         }
 
+        /* Вирівнювання рисочок для крайніх міток */
+        .t-label.start .t-tick { left: 0; }
+        .t-label.end .t-tick { left: 100%; }
+
+        /* --- ІНШІ СТИЛІ --- */
+        .top-bar {
+            width: 100%; display: flex; justify-content: space-between;
+            align-items: center; padding: 0 10px; margin-top: 10px; gap: 10px;
+        }
+        .top-bar .users {
+            display: flex; align-items: center; gap: 4px; color: var(--text-muted);
+        }
+        .top-bar .updated { color: var(--text-muted); }
+        .top-bar .users #topUsers { position: relative; top: 2px; }
+
         .detail-card-container { margin-top: 12px; }
 
+        /* 🔥 1. Анімація */
+        /* 🔥 1. Нова анімація "Пружина" */
+        @keyframes popInSpring {
+            0% {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95); /* Починаємо трохи вище і меншим розміром */
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1); /* Стаємо на місце у повний розмір */
+            }
+        }
+
+        /* 🔥 2. Оновлений клас картки */
         .detail-card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 16px 18px 14px;
-            border: 2px solid transparent;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.45);
-            position: relative;
-            overflow: hidden;
+            background: var(--card-bg); border-radius: var(--radius);
+            padding: 16px 18px 14px; border: 2px solid transparent;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.45); position: relative; overflow: hidden;
+
+            /* 0.5s = повільніше. cubic-bezier(...) = ефект пружини в кінці */
+            animation: popInSpring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .top-bar {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center; /* Переконайтесь, що цей рядок є */
-            padding: 0 10px;
-            margin-top: 10px;
-            gap: 10px;
-        }
-
-/* У секції <style> */
-
-        .top-bar .users {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            color: var(--text-muted); /* 🔥 ДОДАНО: Це застосує приглушений колір до всього вмісту `.users` (іконки та числа) */
-        }
-
-        .top-bar .updated {
-            color: var(--text-muted); /* Це вже правильно */
-        }
-
-        .top-bar .users #topUsers {
-            position: relative;
-            top: 2px; /* Залишаємо вирівнювання */
-        }
-
-
-        .queue-selector {
-            background: rgba(255,255,255,0.08);
-            padding: 6px 12px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 14px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .detail-card.on {
-            border-color: var(--accent-green);
-            box-shadow: 0 0 18px rgba(46, 204, 113, 0.35);
-        }
-
-        .detail-card.off {
-            border-color: var(--accent-red);
-            box-shadow: 0 0 18px rgba(231, 76, 60, 0.35);
-        }
-
-        .detail-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        .detail-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .detail-icon {
-            font-size: 22px;
-            width: 26px;
-            text-align: center;
-        }
-
-        .detail-main {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-        }
-
-        .detail-status {
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .detail-status-on  { color: var(--accent-green); }
+        /* Далі йдуть інші стилі без змін */
+        .detail-card.on { border-color: var(--accent-green); box-shadow: 0 0 18px rgba(46, 204, 113, 0.35); }
+        .detail-card.off { border-color: var(--accent-red); box-shadow: 0 0 18px rgba(231, 76, 60, 0.35); }
+        .detail-header, .detail-left { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+        .detail-main { display: flex; flex-direction: column; gap: 3px; }
+        .detail-status { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .detail-status-on { color: var(--accent-green); }
         .detail-status-off { color: var(--accent-red); }
-
         .detail-time { font-size: 16px; font-weight: 700; }
-
-        .detail-duration {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-muted);
-            white-space: nowrap;
-        }
-
-        .detail-divider {
-            margin: 10px 0 8px 0;
-            height: 1px;
-            background: rgba(255,255,255,0.06);
-        }
-
-        .detail-body {
-            font-size: 14px;
-            line-height: 1.45;
-            color: #d5d5d7;
-        }
-
+        .detail-duration { font-size: 14px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+        .detail-divider { margin: 10px 0 8px 0; height: 1px; background: rgba(255,255,255,0.06); }
+        .detail-body { font-size: 14px; line-height: 1.45; color: #d5d5d7; }
         .detail-body p { margin: 0 0 4px 0; }
-
-        .detail-note {
-            margin-top: 6px;
-            font-size: 12px;
-            font-style: italic;
-            color: var(--text-muted);
-        }
+        .detail-note { margin-top: 6px; font-size: 12px; font-style: italic; color: var(--text-muted); }
 
         .card-list { display: flex; flex-direction: column; gap: 12px; }
-
         .card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
+            background: var(--card-bg); border-radius: var(--radius); padding: 16px;
+            display: flex; flex-direction: column; position: relative; overflow: hidden;
+            border: 2px solid transparent; transition: all 0.3s ease;
         }
-        .card::before {
-            content: '';
-            position: absolute;
-            left: 0; top: 0; bottom: 0;
-            width: 4px;
-        }
+        .card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
         .card.c-on::before { background: var(--accent-green); }
         .card.c-off::before { background: var(--accent-red); }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-        }
-
+        .card-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
         .card.active-now {
             background: rgba(255,255,255,0.08); border-color: white;
             box-shadow: 0 0 15px rgba(255,255,255,0.15); transform: scale(1.02); z-index: 10;
@@ -317,88 +259,72 @@
         .card.active-now.c-on { border-color: var(--accent-green); box-shadow: 0 0 15px rgba(46, 204, 113, 0.3); }
         .card.active-now.c-off { border-color: var(--accent-red); box-shadow: 0 0 15px rgba(231, 76, 60, 0.3); }
         .card.active-now::before { display: none; }
-
         .card-info { display: flex; align-items: center; gap: 14px; }
         .c-icon { font-size: 20px; width: 24px; text-align: center; }
         .c-times { display: flex; flex-direction: column; gap: 2px; }
-
         .status-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         .c-on .status-label { color: var(--accent-green); }
         .c-off .status-label { color: var(--accent-red); }
-
         .c-time { font-size: 16px; font-weight: 700; color: white; }
         .c-dur { font-size: 14px; font-weight: 500; color: var(--text-muted); }
-
         .card-details {
-            padding: 0 2px 0 2px;
-            font-size: 13px;
-            color: #aaa;
-            line-height: 1.5;
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-            transition: all 0.25s ease;
+            padding: 0 2px 0 2px; font-size: 13px; color: #aaa; line-height: 1.5;
+            max-height: 0; opacity: 0; overflow: hidden; transition: all 0.25s ease;
+        }
+        .card.expanded .card-details { max-height: 200px; opacity: 1; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; }
+
+        .total-block { text-align: center; padding: 12px 20px; color: var(--text-muted); font-size: 14px; font-weight: 500; }
+        .total-block b { color: white; }
+        .no-data-msg {
+            text-align: center; color: #666; padding: 30px 20px;
+            background: rgba(255,255,255,0.03); border-radius: 16px; font-size: 15px; margin-top: 10px;
         }
 
-        .card.expanded .card-details {
-            max-height: 200px;
-            opacity: 1;
-            margin-top: 10px;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            padding-top: 10px;
-        }
-
-        .total-block {
-            text-align: center;
-            padding: 12px 20px; /* Зменшено зверху/знизу */
-            color: var(--text-muted);
-            font-size: 14px;
-            font-weight: 500;
-        }
-        /* ... */
-        .donate-wrapper {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-            margin-top: 4px; /* Зменшено */
-            margin-bottom: 12px; /* Зменшено */
-        }
-
+        .donate-wrapper { display: flex; justify-content: center; width: 100%; margin-top: 4px; margin-bottom: 12px; }
         .donate-btn {
             background: linear-gradient(90deg, #FFC107, #FF9800);
             color: #000;
             text-decoration: none;
             font-weight: 800;
             font-size: 16px;
-            padding: 14px 35px;
+
+            /* Розміри та відступи */
+            padding: 14px 30px; /* Трохи зменшив бокові відступи для балансу */
             border-radius: 50px;
             box-shadow: 0 5px 20px rgba(255, 152, 0, 0.3);
+
+            /* Анімація */
             transition: transform 0.2s;
 
+            /* 🔥 FLEXBOX ЦЕНТРУВАННЯ */
             display: flex;
-            align-items: center;
-            justify-content: center; /* 🔥 ДОДАНО: Центрує вміст по горизонталі */
+            align-items: center;     /* Вертикально по центру */
+            justify-content: center; /* Горизонтально по центру */
 
-            gap: 10px;
-            line-height: 1;
+            gap: 8px; /* Відстань між іконкою і текстом */
 
-            /* ДОДАТКОВО: Для візуального балансу (через іконку) */
-            margin-left: -20px; /* 🔥 Зміщує ВЕСЬ блок (іконку + текст) трохи вліво */
+            /* ВАЖЛИВО: Прибираємо margin-left, який зсував кнопку */
+            margin-left: 0;
+        }
+        /* Ефект натискання */
+        .donate-btn:active {
+            transform: scale(0.96);
         }
 
-        /* 🔥 ДОДАЙТЕ НОВЕ ПРАВИЛО ДЛЯ ВИРІВНЮВАННЯ ІКОНКИ */
+        /* 2. Виправляємо іконку всередині */
         .donate-icon {
-            font-size: 18px;
+            font-size: 20px; /* Трохи більше, щоб відповідала жирному тексту */
 
-            /* Скидаємо базові стилі, щоб position працював точніше */
-            display: inline-block;
-            line-height: 1;
+            /* Щоб іконка не впливала на висоту рядка */
+            display: flex;
+            align-items: center;
+            height: 100%;
 
-            /* Ручне вирівнювання: Підіймаємо іконку вгору */
+            /* Мікро-корекція вертикалі (лише трошки вгору) */
             position: relative;
-            top: -4px; /* 👈 Спробуйте -3px. Якщо не допоможе, збільште до -4px */
+            top: -1px;
 
-            filter: drop-shadow(0 0 1px rgba(0,0,0,0.5));
+            filter: drop-shadow(0 0 1px rgba(0,0,0,0.3));
         }
 
         .tab-bar {
@@ -441,42 +367,21 @@
             color: white; padding: 4px 10px; border-radius: 8px; font-size: 11px; z-index: 100;
             font-weight: bold; backdrop-filter: blur(4px);
         }
-
-        .loader {
-            margin-top: 120px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .loader .dot {
-            width: 12px;
-            height: 12px;
-            background: #ffffff;
-            border-radius: 50%;
-            animation: pulseDot 0.85s infinite ease-in-out;
-            opacity: 0.6;
-        }
-        @keyframes pulseDot {
-            0%   { transform: scale(0.55); opacity: 0.35; }
-            50%  { transform: scale(1);    opacity: 1; }
-            100% { transform: scale(0.55); opacity: 0.35; }
-        }
+        .loader { margin-top: 120px; display: flex; justify-content: center; align-items: center; }
+        .loader .dot { width: 12px; height: 12px; background: #ffffff; border-radius: 50%; animation: pulseDot 0.85s infinite ease-in-out; opacity: 0.6; }
+        @keyframes pulseDot { 0% { transform: scale(0.55); opacity: 0.35; } 50% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.55); opacity: 0.35; } }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
         <span class="updated" id="topUpdated">Оновлено…</span>
-
         <span style="flex: 1;"></span>
-
         <span class="users">
             <span class="icon">👥</span>
             <span id="topUsers">…</span>
         </span>
     </div>
-
-
 
     <div class="header">
         <div class="queue-select-btn" onclick="toggleModal()">
@@ -485,14 +390,10 @@
         </div>
     </div>
 
-    <div id="loader" class="loader">
-        <div class="dot"></div>
-    </div>
-
+    <div id="loader" class="loader"><div class="dot"></div></div>
     <div id="loading">Отримання даних...</div>
 
     <div id="app-content" class="hidden">
-
         <div id="batterySection" class="battery-container">
             <div class="battery-wrapper">
                 <div class="battery-shell">
@@ -518,9 +419,7 @@
             <div id="detailCardContainer" class="detail-card-container hidden"></div>
         </div>
 
-        <div id="noDataMessage" class="no-data-msg hidden">
-            💤 Графік на цей день ще не сформовано
-        </div>
+        <div id="noDataMessage" class="no-data-msg hidden">💤 Графік на цей день ще не сформовано</div>
 
         <div class="card-list" id="infoBox"></div>
         <div class="total-block" id="totalBox"></div>
@@ -550,61 +449,29 @@
             return url.searchParams.get(name);
         }
 
-        // ==== ЧИТАННЯ ДАНИХ З startapp (payload від бота) ====
         (function applyStartAppData() {
             let param = null;
-
-            // 1) Спершу читаємо URL параметр ?startapp=
             const fromUrl = getUrlParam("startapp");
-            if (fromUrl) {
-                param = fromUrl;
-            }
-
-            // 2) Якщо його нема — беремо start_param від Telegram
-            if (!param) {
-                param = tg.initDataUnsafe?.start_param;
-            }
-
-            if (!param) return; // нічого немає — пропускаємо
-
+            if (fromUrl) param = fromUrl;
+            if (!param) param = tg.initDataUnsafe?.start_param;
+            if (!param) return;
             try {
-                const json = JSON.parse(
-                    atob(param.replace(/-/g, '+').replace(/_/g, '/'))
-                );
-
-                console.log("Start PARAM JSON:", json);
-
-                // --- ОНОВЛЕННЯ ДАТИ ---
-                if (json.updated) {
-                    document.getElementById("topUpdated").innerText =
-                        "Оновлено: " + json.updated;
-                }
-
-                // --- ОНОВЛЕННЯ К-СТІ КОРИСТУВАЧІВ ---
+                const json = JSON.parse(atob(param.replace(/-/g, '+').replace(/_/g, '/')));
+                if (json.updated) document.getElementById("topUpdated").innerText = "Оновлено: " + json.updated;
                 if (json.users_total || json.users) {
                     const raw = json.users_total || json.users;
                     const clean = formatUsersNumber(raw);
-                    document.getElementById("topUsers").innerText = "👥 " + clean;
+                    document.getElementById("topUsers").innerText = clean;
                     window.STARTAPP_USERS = clean;
                 }
-
-
-
-                // --- ОНОВЛЕННЯ ЧЕРГИ ---
                 if (json.queue) {
                     currentQueue = json.queue;
                     localStorage.setItem('savedQueue', json.queue);
                 }
-
-            } catch (err) {
-                console.error("Помилка читання start_param:", err);
-            }
+            } catch (err) { console.error(err); }
         })();
 
-
-        // 🔗 URL твого Cloudflare Worker
         const CSV_PROXY_URL = "https://shy-fog-bb74svitlo-proxy.propro3107.workers.dev";
-
         let allData = [];
         let currentQueue = "1.1";
         let currentTab = 1;
@@ -627,12 +494,10 @@
             const url = `${CSV_PROXY_URL}?t=${Date.now()}`;
             try {
                 const r = await fetch(url, { cache: "no-cache" });
-                if (!r.ok) throw new Error("Bad status " + r.status);
+                if (!r.ok) throw new Error(r.status);
                 return await r.text();
             } catch (e) {
-                if (retries > 0) {
-                    return getCSV(retries - 1);
-                }
+                if (retries > 0) return getCSV(retries - 1);
                 throw e;
             }
         }
@@ -644,10 +509,8 @@
                     document.getElementById('loading').classList.remove('hidden');
                     document.getElementById('loading').innerText = "Оновлення даних...";
                 }
-
                 const csvText = await getCSV();
                 allData = parseCSV(csvText);
-
                 window.LAST_UPDATED = null;
                 for (const row of allData) {
                     if (row.updated_at && row.updated_at.trim() !== "") {
@@ -655,55 +518,30 @@
                         break;
                     }
                 }
-
                 updateTopUpdated();
-
                 if (!allData.length) throw new Error("Empty Data");
-
                 localStorage.setItem('cachedData', JSON.stringify(allData));
                 removeOfflineBadge();
-
                 document.getElementById('loader').classList.add('hidden');
                 document.getElementById('loading').classList.add('hidden');
-
                 setupApp(isSilent);
-
                 const row = allData.find(r => r.group_id == currentQueue);
-                if (!row) return;
-
-                // --- НОРМАЛІЗУЄМО ВСІ КЛЮЧІ ---
-                const cleanRow = normalizeHeaders(row);
-
-                // --- ЧИТАЄМО users ---
-                let u = cleanRow.users_total || cleanRow.users;
-
-                // Якщо порожньо — fallback (перший рядок таблиці)
-                if (!u && allData.length > 0) {
-                    const primary = normalizeHeaders(allData[0]);
-                    u = primary.users_total || primary.users;
+                if (row) {
+                    const cleanRow = normalizeHeaders(row);
+                    let u = cleanRow.users_total || cleanRow.users;
+                    if (!u && allData.length > 0) {
+                        const primary = normalizeHeaders(allData[0]);
+                        u = primary.users_total || primary.users;
+                    }
+                    if (u) updateTopUsers(formatUsersNumber(u));
                 }
-
-                if (u) {
-                    updateTopUsers(formatUsersNumber(u));
-                }
-
-                // Якщо є STARTAPP — він головний
-                if (window.STARTAPP_USERS) {
-                    updateTopUsers(window.STARTAPP_USERS);
-                }
-
-
+                if (window.STARTAPP_USERS) updateTopUsers(window.STARTAPP_USERS);
             } catch (e) {
-
-
                 console.error("Online fetch error:", e);
-
                 const cached = localStorage.getItem('cachedData');
-
                 if (cached) {
                     allData = JSON.parse(cached);
                     showOfflineBadge();
-
                     window.LAST_UPDATED = null;
                     for (const row of allData) {
                         if (row.updated_at && row.updated_at.trim() !== "") {
@@ -711,19 +549,11 @@
                             break;
                         }
                     }
-
                     updateTopUpdated();
-
                     document.getElementById('loader').classList.add('hidden');
                     document.getElementById('loading').classList.add('hidden');
-
                     setupApp(isSilent);
-
-                    // 🔥 ПОКАЗУЄМО КОРИСТУВАЧІВ (OFFLINE)
-                    if (window.STARTAPP_USERS) {
-                        updateTopUsers(window.STARTAPP_USERS);
-                    }
-
+                    if (window.STARTAPP_USERS) updateTopUsers(window.STARTAPP_USERS);
                 } else {
                     if (!isSilent) {
                         document.getElementById('loader').classList.add('hidden');
@@ -734,59 +564,23 @@
             }
         }
 
-
-
-            function setupApp(isSilent) {
-
-                const p = new URLSearchParams(window.location.search);
-                let q = p.get('q');
-
-                // Визначаємо чергу
-                if (q) {
-                    currentQueue = q;
-                    localStorage.setItem("savedQueue", q);
-                } else {
-                    const saved = localStorage.getItem("savedQueue");
-                    if (saved) currentQueue = saved;
-                }
-
-                // Створюємо меню + оновлюємо UI
-                if (!isSilent) {
-                    buildMenu();
-                    document.getElementById('loading').classList.add('hidden');
-                    document.getElementById('app-content').classList.remove('hidden');
-                }
-
-                // ==============================
-                //    ОНОВЛЕННЯ КІЛЬКОСТІ КОРИСТУВАЧІВ
-                // ==============================
-                const row = allData.find(r => r.group_id == currentQueue);
-
-                let u = null;
-
-                if (row) {
-                    for (const key in row) {
-                        const clean = key
-                            .replace(/\uFEFF/g, "")
-                            .replace(/\u00A0/g, " ")
-                            .replace(/[\u200B-\u200F]/g, "")
-                            .trim()
-                            .toLowerCase();
-
-                        if (clean === "users_total" || clean === "users") {
-                            u = row[key];
-                        }
-                    }
-                }
-
-                if (u) updateTopUsers(formatUsersNumber(u));
-
-                // Рендер
-                render(currentTab);
+        function setupApp(isSilent) {
+            const p = new URLSearchParams(window.location.search);
+            let q = p.get('q');
+            if (q) {
+                currentQueue = q;
+                localStorage.setItem("savedQueue", q);
+            } else {
+                const saved = localStorage.getItem("savedQueue");
+                if (saved) currentQueue = saved;
             }
-
-
-
+            if (!isSilent) {
+                buildMenu();
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('app-content').classList.remove('hidden');
+            }
+            render(currentTab);
+        }
 
         function showOfflineBadge() {
             if (!document.getElementById('offBadge')) {
@@ -796,64 +590,29 @@
                 document.body.appendChild(b);
             }
         }
-        function removeOfflineBadge() {
-            const b = document.getElementById('offBadge');
-            if (b) b.remove();
-        }
-
-        function formatUsersNumber(v) {
-            v = String(v).replace(/\s+/g, "");   // "17 553" → "17553"
-            return v.replace(/\B(?=(\d{3})+(?!\d))/g, " ");  // "17553" → "17 553"
-        }
-
+        function removeOfflineBadge() { const b = document.getElementById('offBadge'); if (b) b.remove(); }
+        function formatUsersNumber(v) { v = String(v).replace(/\s+/g, ""); return v.replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
 
         function parseCSV(text) {
-            const rows = [];
-            let currentRow = [];
-            let currentVal = '';
-            let insideQuotes = false;
-
+            const rows = []; let currentRow = []; let currentVal = ''; let insideQuotes = false;
             for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                const nextChar = text[i + 1];
-
+                const char = text[i]; const nextChar = text[i + 1];
                 if (char === '"') {
-                    if (insideQuotes && nextChar === '"') {
-                        i++;
-                        currentVal += '"';
-                    } else {
-                        insideQuotes = !insideQuotes;
-                    }
+                    if (insideQuotes && nextChar === '"') { i++; currentVal += '"'; } else { insideQuotes = !insideQuotes; }
                 } else if (char === ',' && !insideQuotes) {
-                    currentRow.push(currentVal);
-                    currentVal = '';
+                    currentRow.push(currentVal); currentVal = '';
                 } else if ((char === '\r' || char === '\n') && !insideQuotes) {
                     if (char === '\r' && nextChar === '\n') i++;
                     if (currentVal || currentRow.length) currentRow.push(currentVal);
                     if (currentRow.length) rows.push(currentRow);
-                    currentRow = [];
-                    currentVal = '';
-                } else {
-                    currentVal += char;
-                }
+                    currentRow = []; currentVal = '';
+                } else { currentVal += char; }
             }
-
             if (currentVal || currentRow.length) currentRow.push(currentVal);
             if (currentRow.length) rows.push(currentRow);
-
             if (rows.length < 2) return [];
-
-            // 🧹 Чистимо заголовки
-            const rawHeaders = rows[0].map(h =>
-                h.replace(/\uFEFF/g, '')
-                 .replace(/\u00A0/g, ' ')
-                 .replace(/[\u200B-\u200F]/g, '')
-                 .trim()
-                 .toLowerCase()
-            );
-
-            // 🧹 Мапимо дані
-            const data = rows.slice(1).map(row => {
+            const rawHeaders = rows[0].map(h => h.replace(/\uFEFF/g, '').replace(/\u00A0/g, ' ').replace(/[\u200B-\u200F]/g, '').trim().toLowerCase());
+            return rows.slice(1).map(row => {
                 const obj = {};
                 rawHeaders.forEach((h, i) => {
                     let val = row[i] ?? "";
@@ -862,28 +621,16 @@
                 });
                 return obj;
             });
-
-            return data;
         }
 
-
-
-
-            // Фіксуємо криві назви колонок
-            function normalizeHeaders(obj) {
-                const fixed = {};
-                for (let key in obj) {
-                    const clean = key.replace(/\uFEFF/g, "")
-                                     .replace(/\u00A0/g, " ")
-                                     .replace(/[\u200B-\u200F]/g, "")
-                                     .trim()
-                                     .toLowerCase();
-                    fixed[clean] = obj[key];
-                }
-                return fixed;
+        function normalizeHeaders(obj) {
+            const fixed = {};
+            for (let key in obj) {
+                const clean = key.replace(/\uFEFF/g, "").replace(/\u00A0/g, " ").replace(/[\u200B-\u200F]/g, "").trim().toLowerCase();
+                fixed[clean] = obj[key];
             }
-
-
+            return fixed;
+        }
 
         function getSchedule(fullText, targetDate) {
             if (!fullText) return null;
@@ -921,18 +668,14 @@
         }
 
         function selectQueue(q) {
-            currentQueue = q;
-            localStorage.setItem('savedQueue', q);
+            currentQueue = q; localStorage.setItem('savedQueue', q);
             try { tg.HapticFeedback.selectionChanged(); } catch (e) { }
-            toggleModal();
-            buildMenu();
-            render(currentTab);
+            toggleModal(); buildMenu(); render(currentTab);
         }
 
         function buildMenu() {
             const list = document.getElementById('queueList');
             list.innerHTML = '<div style="text-align:center;margin-bottom:15px;color:#666;font-size:12px">ОБЕРІТЬ ЧЕРГУ</div>';
-
             const queues = [...new Set(allData.map(i => i.group_id))].sort();
             queues.forEach(q => {
                 if (!q) return;
@@ -942,41 +685,22 @@
                 d.onclick = () => selectQueue(q);
                 list.appendChild(d);
             });
-
             document.getElementById('queueTitle').innerText = `ЧЕРГА ${currentQueue}`;
-
-            const upd = window.LAST_UPDATED;
         }
 
         function formatUpdateTime(raw) {
             if (!raw) return "";
-
-            const months = [
-                "січня","лютого","березня","квітня","травня","червня",
-                "липня","серпня","вересня","жовтня","листопада","грудня"
-            ];
-
+            const months = ["січня","лютого","березня","квітня","травня","червня","липня","серпня","вересня","жовтня","листопада","грудня"];
             const [datePart, timePart] = raw.split(" ");
             const [Y, M, D] = datePart.split("-").map(Number);
             const [h, m] = timePart.split(":").map(Number);
-
             const dt = new Date(Y, M - 1, D, h, m);
             const now = new Date();
-
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const yesterday = new Date(today);
-            yesterday.setDate(yesterday.getDate() - 1);
-
+            const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
             const dayOnly = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
-
-            if (dayOnly.getTime() === today.getTime()) {
-                return `Оновлено: сьогодні о ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-            }
-
-            if (dayOnly.getTime() === yesterday.getTime()) {
-                return `Оновлено: вчора о ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-            }
-
+            if (dayOnly.getTime() === today.getTime()) return `Оновлено: сьогодні о ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+            if (dayOnly.getTime() === yesterday.getTime()) return `Оновлено: вчора о ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
             return `Оновлено: ${D} ${months[M-1]} о ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
         }
 
@@ -991,12 +715,9 @@
         function render(dayIdx) {
             const row = allData.find(r => r.group_id == currentQueue);
             if (!row) return;
-
             ensureCursor();
-
             const targetDate = new Date();
             if (dayIdx === 2) targetDate.setDate(targetDate.getDate() + 1);
-
             const scheduleStr = getSchedule(row.schedule_text, targetDate);
             const d = String(targetDate.getDate()).padStart(2, '0');
             const m = String(targetDate.getMonth() + 1).padStart(2, '0');
@@ -1012,46 +733,23 @@
             const batSec = document.getElementById('batterySection');
             const detailBox = document.getElementById('detailCardContainer');
 
-            track.innerHTML = '';
-            lBox.innerHTML = '';
-            iBox.innerHTML = '';
-            detailBox.innerHTML = '';
-            detailBox.classList.add('hidden');
-            activeSegmentElement = null;
-            activeListCard = null;
-            clearInterval(countdownInterval);
-
+            track.innerHTML = ''; lBox.innerHTML = ''; iBox.innerHTML = ''; detailBox.innerHTML = ''; detailBox.classList.add('hidden');
+            activeSegmentElement = null; activeListCard = null; clearInterval(countdownInterval);
             track.appendChild(cursor);
 
             if (scheduleStr === null) {
-                tlSec.classList.add('hidden');
-                totBox.classList.add('hidden');
-                noData.classList.remove('hidden');
+                tlSec.classList.add('hidden'); totBox.classList.add('hidden'); noData.classList.remove('hidden');
                 if (dayIdx === 1) {
-                    batSec.classList.remove('hidden');
-                    document.getElementById('batteryTimer').innerText = "—";
+                    batSec.classList.remove('hidden'); document.getElementById('batteryTimer').innerText = "—";
                     document.getElementById('batteryLabel').innerText = "Невідомо";
-                    document.getElementById('batteryFill').className = 'battery-fill fill-gray';
-                    document.getElementById('batteryFill').style.width = '100%';
-                } else {
-                    batSec.classList.add('hidden');
-                }
+                    document.getElementById('batteryFill').className = 'battery-fill fill-gray'; document.getElementById('batteryFill').style.width = '100%';
+                } else { batSec.classList.add('hidden'); }
                 return;
             }
 
-            tlSec.classList.remove('hidden');
-            totBox.classList.remove('hidden');
-            noData.classList.add('hidden');
+            tlSec.classList.remove('hidden'); totBox.classList.remove('hidden'); noData.classList.add('hidden');
             const isToday = (dayIdx === 1);
-
-            if (isToday) {
-                batSec.classList.remove('hidden');
-                cursor.style.display = 'block';
-                updateCursor();
-            } else {
-                batSec.classList.add('hidden');
-                cursor.style.display = 'none';
-            }
+            if (isToday) { batSec.classList.remove('hidden'); cursor.style.display = 'block'; updateCursor(); } else { batSec.classList.add('hidden'); cursor.style.display = 'none'; }
 
             let curH = 0; let totOff = 0;
             const now = new Date();
@@ -1059,6 +757,7 @@
             let foundState = false;
             let lastEndH = 0;
 
+            // 🔥 ЗАВЖДИ додаємо 00:00
             addLabel(lBox, 0, "00:00", "start");
 
             scheduleStr.split(',').forEach(part => {
@@ -1066,60 +765,60 @@
                 let dur = parseFloat(part.replace('on', '').replace('off', ''));
                 if (isNaN(dur) || dur <= 0) return;
 
-                let segStart = curH;
-                let endH = curH + dur;
-
+                let segStart = curH; let endH = curH + dur;
                 let seg = document.createElement('div');
                 seg.className = `segment ${type}`;
-                seg.style.flexGrow = dur;
-                seg.style.flexBasis = '0';
+                seg.style.flexGrow = dur; seg.style.flexBasis = '0';
 
-                if (dur >= 1.5) {
-                    seg.innerHTML = `<div class="segment-icon">${type === 'on' ? '💡' : '🔌'}</div>`;
-                }
+                if (dur >= 1.5) { seg.innerHTML = `<div class="segment-icon">${type === 'on' ? '💡' : '🔌'}</div>`; }
                 track.appendChild(seg);
-
                 seg.addEventListener('click', () => handleSegmentClick(seg, type, segStart, endH, dur));
 
                 if (endH < 23.9 && (endH - lastEndH) > 2.5 && (24 - endH) > 1.5) {
                     addLabel(lBox, endH, formatHM(endH), "mid");
                     lastEndH = endH;
                 }
-
                 let card = createCard(segStart, endH, dur, type);
-                if (isToday && curFloat >= segStart && curFloat < endH) {
-                    card.classList.add('active-now');
-                }
+                if (isToday && curFloat >= segStart && curFloat < endH) { card.classList.add('active-now'); }
                 iBox.appendChild(card);
-
                 if (type === 'off') totOff += dur;
-                if (isToday && !foundState && curFloat < endH) {
-                    foundState = true;
-                    startTimer(endH, dur * 3600, type === 'on');
-                }
+                if (isToday && !foundState && curFloat < endH) { foundState = true; startTimer(endH, dur * 3600, type === 'on'); }
                 curH = endH;
             });
 
+            // 🔥 ЗАВЖДИ додаємо 24:00
             addLabel(lBox, 24, "24:00", "end");
 
-            if (isToday && !foundState) {
-                document.getElementById('batteryTimer').innerText = "--:--";
-                setBat(0, true);
-            }
+            if (isToday && !foundState) { document.getElementById('batteryTimer').innerText = "--:--"; setBat(0, true); }
             totBox.innerHTML = `Всього без світла: <b>${fmtDur(totOff)}</b>`;
         }
 
         function handleSegmentClick(segEl, type, startH, endH, dur) {
             const detailBox = document.getElementById('detailCardContainer');
 
+            // Якщо натиснули на той самий сегмент (щоб закрити)
             if (activeSegmentElement === segEl) {
                 segEl.classList.remove('segment-selected');
                 activeSegmentElement = null;
-                detailBox.classList.add('hidden');
-                detailBox.innerHTML = '';
+
+                // 🔥 АНІМАЦІЯ ЗАКРИТТЯ
+                const card = detailBox.querySelector('.detail-card');
+                if (card) {
+                    card.classList.add('closing'); // Додаємо клас анімації зникнення
+
+                    // Чекаємо 300мс (час анімації), перш ніж видалити
+                    setTimeout(() => {
+                        detailBox.classList.add('hidden');
+                        detailBox.innerHTML = '';
+                    }, 280); // Трохи менше 300, щоб не блимало
+                } else {
+                    detailBox.classList.add('hidden');
+                    detailBox.innerHTML = '';
+                }
                 return;
             }
 
+            // Якщо натиснули на інший сегмент (перемикання)
             if (activeSegmentElement) {
                 activeSegmentElement.classList.remove('segment-selected');
             }
@@ -1133,51 +832,17 @@
         function showDetailCard(type, startH, endH, durH) {
             const box = document.getElementById('detailCardContainer');
             if (!box) return;
-
-            const startStr = formatHM(startH);
-            const endStr = formatHM(endH);
-            const durStr = fmtDur(durH);
-
+            const startStr = formatHM(startH); const endStr = formatHM(endH); const durStr = fmtDur(durH);
             let titleStatus, icon, headerClass, bodyHtml;
-
             if (type === 'on') {
-                titleStatus = 'СВІТЛО Є';
-                icon = '💡';
-                headerClass = 'detail-status-on';
-                bodyHtml = `
-                    <p>Світло буде з <b>${startStr}</b> до <b>${endStr}</b>.</p>
-                    <p>Наступне вимкнення очікується о <b>${endStr}</b>.</p>
-                `;
+                titleStatus = 'СВІТЛО Є'; icon = '💡'; headerClass = 'detail-status-on';
+                bodyHtml = `<p>Світло буде з <b>${startStr}</b> до <b>${endStr}</b>.</p><p>Наступне вимкнення очікується о <b>${endStr}</b>.</p>`;
             } else {
-                titleStatus = 'ВІДКЛЮЧЕННЯ';
-                icon = '🔌';
-                headerClass = 'detail-status-off';
-                bodyHtml = `
-                    <p>Світло буде вимкнене о <b>${startStr}</b> і повернеться о <b>${endStr}</b>.</p>
-                    <p>Планове відключення.</p>
-                `;
+                titleStatus = 'ВІДКЛЮЧЕННЯ'; icon = '🔌'; headerClass = 'detail-status-off';
+                bodyHtml = `<p>Світло буде вимкнене о <b>${startStr}</b> і повернеться о <b>${endStr}</b>.</p><p>Планове відключення.</p>`;
             }
-
             box.classList.remove('hidden');
-            box.innerHTML = `
-                <div class="detail-card ${type === 'on' ? 'on' : 'off'}">
-                    <div class="detail-header">
-                        <div class="detail-left">
-                            <div class="detail-icon">${icon}</div>
-                            <div class="detail-main">
-                                <div class="detail-status ${headerClass}">${titleStatus}</div>
-                                <div class="detail-time">${startStr} - ${endStr}</div>
-                            </div>
-                        </div>
-                        <div class="detail-duration">${durStr}</div>
-                    </div>
-                    <div class="detail-divider"></div>
-                    <div class="detail-body">
-                        ${bodyHtml}
-                        <p class="detail-note">* Включення/вимкнення може відбуватися з невеликою похибкою у часі.</p>
-                    </div>
-                </div>
-            `;
+            box.innerHTML = `<div class="detail-card ${type === 'on' ? 'on' : 'off'}"><div class="detail-header"><div class="detail-left"><div class="detail-icon">${icon}</div><div class="detail-main"><div class="detail-status ${headerClass}">${titleStatus}</div><div class="detail-time">${startStr} - ${endStr}</div></div></div><div class="detail-duration">${durStr}</div></div><div class="detail-divider"></div><div class="detail-body">${bodyHtml}<p class="detail-note">* Включення/вимкнення може відбуватися з невеликою похибкою у часі.</p></div></div>`;
         }
 
         function addLabel(box, h, txt, align) {
@@ -1185,142 +850,41 @@
             el.className = `t-label ${align}`;
             el.innerText = txt;
             el.style.left = (h / 24 * 100) + "%";
-            if (align === 'mid') {
-                let t = document.createElement('div');
-                t.className = 't-tick';
-                el.appendChild(t);
-            }
+
+            // 🔥 ВИПРАВЛЕНО: Завжди додаємо тік (лінію), незалежно від типу
+            let t = document.createElement('div');
+            t.className = 't-tick';
+            el.appendChild(t);
+
             box.appendChild(el);
         }
 
-        function updateTopUsers(val) {
-            const el = document.getElementById("topUsers");
-            if (el) {
-                el.innerText = val; // НЕ додаємо іконку "👥"
-            }
-        }
-
-        function updateCursor() {
-            if (currentTab !== 1 || !cursor) return;
-            const d = new Date(); const m = d.getHours() * 60 + d.getMinutes();
-            let p = m / 1440 * 100; if (p > 100) p = 100;
-            cursor.style.left = p + "%";
-        }
-
-        function updateTopUpdated() {
-            const el = document.getElementById("topUpdated");
-            if (!el) return;
-
-            if (window.LAST_UPDATED) {
-                el.innerText = formatUpdateTime(window.LAST_UPDATED);
-            } else {
-                el.innerText = "Оновлено…";
-            }
-        }
-
-
+        function updateTopUsers(val) { const el = document.getElementById("topUsers"); if (el) el.innerText = val; }
+        function updateCursor() { if (currentTab !== 1 || !cursor) return; const d = new Date(); const m = d.getHours() * 60 + d.getMinutes(); let p = m / 1440 * 100; if (p > 100) p = 100; cursor.style.left = p + "%"; }
+        function updateTopUpdated() { const el = document.getElementById("topUpdated"); if (!el) return; if (window.LAST_UPDATED) { el.innerText = formatUpdateTime(window.LAST_UPDATED); } else { el.innerText = "Оновлено…"; } }
         function startTimer(targetH, totalSec, isOn) {
             clearInterval(countdownInterval);
-            const n = new Date();
-            const tH = Math.floor(targetH); const tM = Math.round((targetH - tH) * 60);
+            const n = new Date(); const tH = Math.floor(targetH); const tM = Math.round((targetH - tH) * 60);
             const tD = new Date(); tD.setHours(tH, tM, 0, 0);
             if (tD < n) tD.setDate(tD.getDate() + 1);
             function tick() {
-                const now = new Date();
-                const rem = Math.floor((tD - now) / 1000);
+                const now = new Date(); const rem = Math.floor((tD - now) / 1000);
                 updateCursor();
-                if (rem <= 0) {
-                    clearInterval(countdownInterval);
-                    setTimeout(() => render(currentTab), 1000);
-                    return;
-                }
-                document.getElementById('batteryTimer').innerText = fmtTimer(rem);
-                setBat(rem / totalSec, isOn);
+                if (rem <= 0) { clearInterval(countdownInterval); setTimeout(() => render(currentTab), 1000); return; }
+                document.getElementById('batteryTimer').innerText = fmtTimer(rem); setBat(rem / totalSec, isOn);
             }
             tick(); countdownInterval = setInterval(tick, 1000);
         }
-
-        function setBat(pct, isOn) {
-            pct = Math.min(Math.max(pct, 0), 1);
-            const f = document.getElementById('batteryFill');
-            f.style.width = (pct * 100) + "%";
-            f.className = `battery-fill ${isOn ? 'fill-green' : 'fill-red'}`;
-            document.getElementById('batteryLabel').innerText = isOn ? 'до відключення' : 'до включення';
-        }
-
+        function setBat(pct, isOn) { pct = Math.min(Math.max(pct, 0), 1); const f = document.getElementById('batteryFill'); f.style.width = (pct * 100) + "%"; f.className = `battery-fill ${isOn ? 'fill-green' : 'fill-red'}`; document.getElementById('batteryLabel').innerText = isOn ? 'до відключення' : 'до включення'; }
         function createCard(s, e, d, type) {
-            let c = document.createElement('div');
-            c.className = `card c-${type}`;
-
-            c.innerHTML = `
-                <div class="card-header">
-                    <div class="card-info">
-                        <div class="c-icon">${type==='on'?'💡':'🔌'}</div>
-                        <div class="c-times">
-                            <div class="status-label">${type==='on'?'СВІТЛО Є':'ВІДКЛЮЧЕННЯ'}</div>
-                            <div class="c-time">${formatHM(s)} - ${formatHM(e)}</div>
-                        </div>
-                    </div>
-                    <div class="c-dur">${fmtDur(d)}</div>
-                </div>
-
-                <div class="card-details">
-                    ${type==='on'
-                        ? `
-                        Світло буде з <b>${formatHM(s)}</b> до <b>${formatHM(e)}</b>.<br>
-                        Наступне вимкнення очікується о <b>${formatHM(e)}</b>.<br><br>
-                        <i>* Включення/вимкнення може бути з невеликою похибкою.</i>
-                        `
-                        : `
-                        Світло буде вимкнене о <b>${formatHM(s)}</b> і повернеться о <b>${formatHM(e)}</b>.<br>
-                        Планове відключення.
-                        <br><br>
-                        <i>* Включення/вимкнення може відбуватися з невеликою похибкою у часі.</i>
-                        `
-                    }
-                </div>
-            `;
-
-            c.addEventListener("click", (ev) => {
-                ev.stopPropagation();
-
-                if (activeListCard === c) {
-                    c.classList.remove("expanded");
-                    activeListCard = null;
-                    return;
-                }
-
-                if (activeListCard) {
-                    activeListCard.classList.remove("expanded");
-                }
-
-                c.classList.add("expanded");
-                activeListCard = c;
-            });
-
+            let c = document.createElement('div'); c.className = `card c-${type}`;
+            c.innerHTML = `<div class="card-header"><div class="card-info"><div class="c-icon">${type==='on'?'💡':'🔌'}</div><div class="c-times"><div class="status-label">${type==='on'?'СВІТЛО Є':'ВІДКЛЮЧЕННЯ'}</div><div class="c-time">${formatHM(s)} - ${formatHM(e)}</div></div></div><div class="c-dur">${fmtDur(d)}</div></div><div class="card-details">${type==='on' ? `Світло буде з <b>${formatHM(s)}</b> до <b>${formatHM(e)}</b>.<br>Наступне вимкнення очікується о <b>${formatHM(e)}</b>.<br><br><i>* Включення/вимкнення може бути з невеликою похибкою.</i>` : `Світло буде вимкнене о <b>${formatHM(s)}</b> і повернеться о <b>${formatHM(e)}</b>.<br>Планове відключення.<br><br><i>* Включення/вимкнення може відбуватися з невеликою похибкою у часі.</i>`}</div>`;
+            c.addEventListener("click", (ev) => { ev.stopPropagation(); if (activeListCard === c) { c.classList.remove("expanded"); activeListCard = null; return; } if (activeListCard) { activeListCard.classList.remove("expanded"); } c.classList.add("expanded"); activeListCard = c; });
             return c;
         }
-
-        function fmtTimer(s) {
-            const h = Math.floor(s / 3600);
-            const m = Math.floor((s % 3600) / 60);
-            const sec = s % 60;
-            return `${h}:${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-        }
-
-
-        function formatHM(dt) {
-            let h = Math.floor(dt) % 24;
-            let m = Math.round((dt - Math.floor(dt)) * 60);
-            if (m === 60) { h = (h + 1) % 24; m = 0; }
-            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
-        }
-
-        function fmtDur(dh) {
-            let h = Math.floor(dh);
-            let m = Math.round((dh - h) * 60);
-            return `${h}г ${m > 0 ? m + 'хв' : ''}`;
-        }
+        function fmtTimer(s) { const h = Math.floor(s / 3600); const m = Math.floor((s % 3600) / 60); const sec = s % 60; return `${h}:${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`; }
+        function formatHM(dt) { let h = Math.floor(dt) % 24; let m = Math.round((dt - Math.floor(dt)) * 60); if (m === 60) { h = (h + 1) % 24; m = 0; } return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`; }
+        function fmtDur(dh) { let h = Math.floor(dh); let m = Math.round((dh - h) * 60); return `${h}г ${m > 0 ? m + 'хв' : ''}`; }
 
         init();
     </script>
