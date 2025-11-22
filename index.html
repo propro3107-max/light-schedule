@@ -232,60 +232,78 @@
         }
         .total-block b { color: var(--text-main); }
 
-        .donate-wrapper { display: flex; justify-content: center; width: 100%; margin-top: 4px; margin-bottom: 12px; }
-        .donate-btn {
-            position: relative; /* Важливо для накладання */
-            background: rgba(255, 255, 255, 0.05); /* Тьмяний фон (пуста шкала) */
-            border: 1px solid rgba(255, 193, 7, 0.3);
-            color: white;
-            text-decoration: none; font-weight: 800; font-size: 16px;
-            padding: 0; /* Прибираємо падінг, бо він тепер у content */
-            border-radius: 50px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s;
-            overflow: hidden; /* Щоб шкала не вилазила */
-            height: 54px; /* Фіксована висота */
-            display: flex; align-items: center; justify-content: center;
-            margin-left: 0;
-        }
-        .donate-btn:active { transform: scale(0.96); }
+            .donate-wrapper { display: flex; justify-content: center; width: 100%; margin-top: 4px; margin-bottom: 12px; }
 
-         /* Шкала заповнення */
-        .donate-progress {
-            position: absolute; top: 0; left: 0; bottom: 0;
-            width: 0%; /* Початкова ширина 0 */
-            background: linear-gradient(90deg, #FFC107, #FF9800); /* Жовто-оранжевий */
-            transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1); /* Плавний рух */
-            z-index: 1;
-            box-shadow: 0 0 15px rgba(255, 152, 0, 0.4);
-        /* Контент поверх шкали */
-        .donate-content {
-            position: relative; z-index: 2;
-            display: flex; align-items: center; gap: 8px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Тінь для читабельності */
-        }
+            /* Сама кнопка - ТЕМНА основа */
+            .donate-btn {
+                position: relative;
+                width: 100%;
+                height: 54px;
 
-        .donate-icon {
-            font-size: 20px; display: flex; align-items: center;
-            filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
-        }
-        }
+                /* 🔥 Темний напівпрозорий фон (як у віджета) */
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid rgba(255, 193, 7, 0.3); /* Тонка жовта рамка */
 
-        /* --- TABS --- */
-        .tab-bar {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: rgba(24, 24, 32, 0.95); backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(128,128,128,0.1);
-            display: flex; padding: 10px 20px 30px 20px;
-            justify-content: space-between; gap: 10px; z-index: 80;
-        }
-        [data-theme="light"] .tab-bar { background: rgba(255, 255, 255, 0.95); }
+                color: white;
+                text-decoration: none;
+                border-radius: 16px; /* Більш квадратні краї, як у віджета */
+                overflow: hidden;
+                display: flex; align-items: center; justify-content: center;
+                transition: transform 0.2s;
+                margin-left: 0;
+            }
+            .donate-btn:active { transform: scale(0.98); }
 
-        .tab-item {
-            flex: 1; background: transparent; border: none; padding: 10px;
-            border-radius: 12px; color: var(--text-muted);
-            font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: center;
-        }
+            /* Шкала - ЖОВТИЙ наповнювач */
+            .donate-progress {
+                position: absolute; top: 0; left: 0; bottom: 0;
+                width: 0%; /* Ширина змінюється JS-ом */
+
+                /* 🔥 Жовтий градієнт, що рухається */
+                background: linear-gradient(90deg, #FFC107, #FF9800);
+                box-shadow: 0 0 20px rgba(255, 152, 0, 0.4);
+
+                transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+                z-index: 1;
+                opacity: 0.9;
+            }
+
+            /* Контейнер тексту */
+            .donate-content {
+                position: relative; z-index: 2;
+                display: flex; flex-direction: column; /* Текст у два рядки */
+                align-items: center; justify-content: center;
+                line-height: 1.2;
+            }
+
+            /* Стилі для заголовка і суми (потрібні для JS) */
+            .donate-title {
+                font-size: 15px; font-weight: 800; color: white;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.8); /* Тінь, щоб читалось на жовтому */
+                display: flex; align-items: center; gap: 6px;
+            }
+
+            .donate-amount {
+                font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.9);
+                text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            }
+
+            /* --- TABS --- */
+            .tab-bar {
+                position: fixed; bottom: 0; left: 0; right: 0;
+                background: rgba(24, 24, 32, 0.95); backdrop-filter: blur(10px);
+                border-top: 1px solid rgba(128,128,128,0.1);
+                display: flex; padding: 10px 20px 30px 20px;
+                justify-content: space-between; gap: 10px; z-index: 80;
+            }
+            [data-theme="light"] .tab-bar { background: rgba(255, 255, 255, 0.95); }
+
+            .tab-item {
+                flex: 1; background: transparent; border: none; padding: 10px;
+                border-radius: 12px; color: var(--text-muted);
+                font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: center;
+            }
+
         .tab-item.active { background: var(--glass-bg); color: var(--text-main); }
 
         /* --- POPUP MENU (FAB) --- */
@@ -298,14 +316,16 @@
 
         .fab-container {
             position: fixed;
-            bottom: 60px; /* Відступ від низу */
+            bottom: 70px; /* 🔥 Опустили нижче (було 80px) */
             right: 20px;
             z-index: 90;
-            /* 🔥 ВИПРАВЛЕНО: Звичайний порядок (меню зверху, кнопка знизу) */
+
+            /* Напрямок: кнопка знизу, меню росте вгору */
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             justify-content: flex-end;
+            gap: 12px;
         }
 
         /* Головна кругла кнопка */
@@ -326,14 +346,13 @@
             box-shadow: 0 4px 20px rgba(231, 76, 60, 0.5);
         }
 
-        /* Контейнер для списку кнопок */
+        /* Меню */
         .fab-menu {
-            /* 🔥 ВИПРАВЛЕНО: Елементи йдуть знизу вгору */
-            display: flex;
-            flex-direction: column;
+            display: flex; 
+            flex-direction: column; /* Елементи стовпчиком */
             align-items: flex-end;
             gap: 10px;
-            margin-bottom: 12px; /* Відступ від головної кнопки */
+            margin-bottom: 5px; /* Відступ від головної кнопки */
             pointer-events: none;
         }
         .fab-container.active .fab-menu { pointer-events: auto; }
@@ -511,12 +530,13 @@
         </div>
 
         <div class="donate-wrapper">
-            <a href="https://send.monobank.ua/jar/6qoHuhpGgD" target="_blank" class="donate-btn" id="donateBtn">
+            <a href="https://send.monobank.ua/jar/6qoHuhpGgD" target="_blank" class="donate-btn">
                 <div class="donate-progress" id="donateProgress"></div>
-
                 <div class="donate-content">
-                    <span class="donate-icon">⚡</span>
-                    <span id="donateText">Підзарядити бота</span>
+                    <div class="donate-title">
+                        <span>🔌</span> <span>Підзарядити бота</span>
+                    </div>
+                    <div class="donate-amount" id="donateAmount">Завантаження...</div>
                 </div>
             </a>
         </div>
@@ -1183,6 +1203,45 @@
             const fabOverlay = document.getElementById('fabOverlay');
             if(fab) fab.classList.remove('active');
             if(fabOverlay) fabOverlay.classList.remove('active');
+        }
+
+        // 1. Функція отримання даних
+        async function fetchDonation() {
+            try {
+                // Додаємо ?jar=true до нашого проксі
+                const url = `${CSV_PROXY_URL}?jar=true&t=${Date.now()}`;
+                const r = await fetch(url);
+                const data = await r.json();
+
+                if (data.amount !== undefined) {
+                    updateDonateUI(data.amount, data.goal);
+                }
+            } catch (e) {
+                console.error("Donation error:", e);
+                // Якщо помилка, пишемо дефолтний текст
+                document.getElementById('donateAmount').innerText = "Монобанка";
+            }
+        }
+
+        // 2. Функція оновлення вигляду
+        function updateDonateUI(amount, goal) {
+            // Якщо ціль 0 або не вказана, ставимо якусь умовну (напр. 50 000), щоб шкала працювала
+            const target = goal > 0 ? goal : 50000;
+
+            // Рахуємо відсоток
+            let pct = (amount / target) * 100;
+            if (pct > 100) pct = 100;
+            if (pct < 5) pct = 5; // Щоб трошки було видно завжди
+
+            // Оновлюємо шкалу
+            document.getElementById('donateProgress').style.width = `${pct}%`;
+
+            // Форматуємо суму (наприклад: 12 500)
+            const fmtAmount = amount.toLocaleString('uk-UA');
+            const fmtGoal = target.toLocaleString('uk-UA');
+
+            // Оновлюємо текст
+            document.getElementById('donateAmount').innerText = `Зібрано: ${fmtAmount} / ${fmtGoal} грн`;
         }
 
         function closeInfo() {
