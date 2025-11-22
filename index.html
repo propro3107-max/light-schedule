@@ -30,10 +30,9 @@
 
         /* --- HEADER --- */
         .header {
-            width: 100%; padding: 15px 0 10px 0;
+            width: 100%; padding: 20px 0 10px 0;
             text-align: center; background: var(--bg-color);
             position: sticky; top: 0; z-index: 50;
-            display: flex; flex-direction: column; align-items: center; gap: 5px;
         }
         .queue-select-btn {
             display: inline-flex; align-items: center; gap: 8px;
@@ -44,46 +43,12 @@
         .queue-select-btn:active { background: rgba(255,255,255,0.2); }
         .arrow-icon { font-size: 12px; opacity: 0.7; transition: 0.3s; }
         .queue-select-btn.open .arrow-icon { transform: rotate(180deg); }
-        
-        .update-time { font-size: 11px; color: var(--text-muted); font-weight: 500; opacity: 0; transition: opacity 0.5s; }
-        .update-time.visible { opacity: 0.7; }
-
-        /* --- SKELETON LOADER (Анімація) --- */
-        .skeleton-container {
-            width: 100%; max-width: 500px; padding: 0 24px;
-            display: flex; flex-direction: column; gap: 20px;
-            position: absolute; top: 80px; left: 0; right: 0; margin: auto;
-            transition: opacity 0.3s; z-index: 40;
-        }
-        .skeleton-container.hidden { opacity: 0; pointer-events: none; }
-
-        .skeleton {
-            background: #252530; border-radius: 16px;
-            position: relative; overflow: hidden;
-        }
-        /* Ефект мерехтіння */
-        .skeleton::after {
-            content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-            transform: translateX(-100%);
-            animation: shimmer 1.5s infinite;
-        }
-        @keyframes shimmer {
-            100% { transform: translateX(100%); }
-        }
-        .sk-battery { height: 60px; width: 60%; align-self: center; margin: 10px auto; border-radius: 16px; }
-        .sk-date { height: 20px; width: 120px; margin: 5px auto; border-radius: 6px; }
-        .sk-timeline { height: 50px; width: 100%; border-radius: 25px; }
-        .sk-card { height: 70px; width: 100%; }
-
 
         /* --- CONTENT --- */
         #app-content {
             width: 100%; max-width: 500px; padding: 0 24px;
             display: flex; flex-direction: column; gap: 24px;
-            opacity: 0; transition: opacity 0.5s ease;
         }
-        #app-content.visible { opacity: 1; }
 
         /* --- BATTERY --- */
         .battery-container { display: flex; flex-direction: column; align-items: center; margin-top: 10px; }
@@ -116,22 +81,32 @@
         .timeline-section { width: 100%; }
         .timeline-box { position: relative; padding: 0 10px; }
         
-        /* --- TRACK (Continuous Pill) --- */
+        /* --- TRACK (SOLID CAPSULE - ВИПРАВЛЕНО) --- */
         .timeline-track {
             position: relative; width: 100%; height: 50px;
-            border-radius: 25px; 
+            border-radius: 25px; /* Зовнішнє заокруглення капсули */
             overflow: hidden; background: #2c2c35;
             display: flex;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
-            padding: 0; gap: 0;
+            
+            /* ВАЖЛИВО: Ніяких відступів, щоб блоки зливалися */
+            padding: 0; 
+            gap: 0; 
         }
         
         .segment {
             position: relative; height: 100%;
             display: flex; align-items: center; justify-content: center;
+            /* Прямі кути всередині */
             border-radius: 0; 
         }
-        .segment:not(:last-child) { border-right: 1px solid rgba(0,0,0,0.15); }
+        
+        /* Ледь помітна лінія між блоками */
+        .segment:not(:last-child) {
+            border-right: 1px solid rgba(0,0,0,0.1);
+        }
+
+        /* Заокруглюємо тільки краї першого і останнього блоку, щоб вписатися в капсулу */
         .segment:first-child { border-top-left-radius: 25px; border-bottom-left-radius: 25px; }
         .segment:last-child { border-top-right-radius: 25px; border-bottom-right-radius: 25px; border-right: none; }
 
@@ -145,13 +120,14 @@
         }
 
         .cursor-line {
-            position: absolute; top: 0; bottom: 0; width: 3px;
+            position: absolute; top: 0; bottom: 0; width: 2px;
             background: white; z-index: 10; 
             box-shadow: 0 0 10px rgba(255,255,255,0.8); pointer-events: none;
         }
 
-        /* --- LABELS --- */
+        /* --- CLEAN LABELS --- */
         .time-labels { position: relative; width: 100%; height: 24px; margin-top: 8px; }
+        
         .t-label {
             position: absolute; top: 0;
             font-size: 11px; font-weight: 600; color: var(--text-muted);
@@ -159,6 +135,7 @@
         }
         .t-label.start { transform: translateX(0%); } 
         .t-label.end { transform: translateX(-100%); }
+        
         .t-tick { 
             position: absolute; top: -6px; left: 50%; 
             width: 1px; height: 4px; background: #444; 
@@ -254,7 +231,7 @@
         }
         .q-item.active { background: #3498db; color: white; }
 
-        #loading { display: none; } /* Hide default loader text, use skeleton */
+        #loading { margin-top: 100px; color: var(--text-muted); text-align: center; font-size: 14px; }
         .hidden { display: none !important; }
         .offline-badge {
             position: fixed; top: 10px; right: 10px; background: rgba(255, 69, 58, 0.9);
@@ -268,20 +245,12 @@
 
     <div class="header">
         <div class="queue-select-btn" onclick="toggleModal()">
-            <span id="queueTitle">...</span>
+            <span id="queueTitle">Завантаження...</span>
             <span class="arrow-icon">▼</span>
         </div>
-        <div class="update-time" id="updateTime"></div>
     </div>
 
-    <div id="skeletonLoader" class="skeleton-container">
-        <div class="skeleton sk-battery"></div>
-        <div class="skeleton sk-date"></div>
-        <div class="skeleton sk-timeline"></div>
-        <div class="skeleton sk-card"></div>
-        <div class="skeleton sk-card"></div>
-        <div class="skeleton sk-card"></div>
-    </div>
+    <div id="loading">Отримання даних...</div>
 
     <div id="app-content" class="hidden">
         
@@ -369,10 +338,7 @@
 
         async function init(isSilent = false) {
             try {
-                if (!isSilent) {
-                    document.getElementById('skeletonLoader').classList.remove('hidden');
-                    document.getElementById('app-content').classList.add('hidden');
-                }
+                if (!isSilent) document.getElementById('loading').innerText = "Оновлення даних...";
                 
                 const csvText = await fetchWithRetry(GOOGLE_URL);
                 allData = parseCSV(csvText);
@@ -380,36 +346,20 @@
                 if (!allData.length) throw new Error("Empty Data");
 
                 localStorage.setItem('cachedData', JSON.stringify(allData));
-                const timeStr = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                localStorage.setItem('lastUpdated', timeStr);
-                
-                updateStatusTime(timeStr);
                 removeOfflineBadge();
                 setupApp(isSilent);
 
             } catch (e) {
                 console.error("Online fetch error:", e);
                 const cached = localStorage.getItem('cachedData');
-                const lastTime = localStorage.getItem('lastUpdated');
                 if (cached) {
                     allData = JSON.parse(cached);
                     showOfflineBadge();
-                    if(lastTime) updateStatusTime(lastTime);
                     setupApp(isSilent);
                 } else {
-                     if (!isSilent) {
-                         document.getElementById('skeletonLoader').classList.add('hidden');
-                         // Simple alert or retry UI could go here
-                         document.getElementById('updateTime').innerText = "Помилка з'єднання";
-                     }
+                     if (!isSilent) document.getElementById('loading').innerText = "Помилка з'єднання.";
                 }
             }
-        }
-
-        function updateStatusTime(timeStr) {
-            const el = document.getElementById('updateTime');
-            el.innerText = `Оновлено: ${timeStr}`;
-            el.classList.add('visible');
         }
 
         function setupApp(isSilent) {
@@ -424,9 +374,8 @@
 
             if (!isSilent) {
                 buildMenu();
-                document.getElementById('skeletonLoader').classList.add('hidden');
+                document.getElementById('loading').classList.add('hidden');
                 document.getElementById('app-content').classList.remove('hidden');
-                setTimeout(() => document.getElementById('app-content').classList.add('visible'), 50);
             }
             render(currentTab);
         }
@@ -614,12 +563,9 @@
                 if (dur >= 1.5) seg.innerHTML = `<div class="segment-icon">${type === 'on' ? '💡' : '🔌'}</div>`;
                 track.appendChild(seg);
 
-                if (endH < 23.9) {
-                    // Clean label logic: only show if enough space
-                    if ((endH - lastEndH) > 2.5 && (24 - endH) > 1.5) {
-                         addLabel(lBox, endH, formatHM(endH), "mid");
-                         lastEndH = endH;
-                    }
+                if (endH < 23.9 && (endH - lastEndH) > 2.5 && (24 - endH) > 1.5) {
+                     addLabel(lBox, endH, formatHM(endH), "mid");
+                     lastEndH = endH;
                 }
                 
                 let card = createCard(curH, endH, dur, type);
@@ -648,12 +594,10 @@
         function addLabel(box, h, txt, align) {
             let el = document.createElement('div'); 
             el.className = `t-label ${align}`;
-            el.innerText = txt; 
-            el.style.left = (h/24*100) + "%";
+            el.innerText = txt; el.style.left = (h/24*100) + "%";
             if (align === 'mid') { let t=document.createElement('div'); t.className='t-tick'; el.appendChild(t); }
             box.appendChild(el);
         }
-
         function updateCursor() {
             if (currentTab !== 1) return;
             const d = new Date(); const m = d.getHours()*60 + d.getMinutes();
