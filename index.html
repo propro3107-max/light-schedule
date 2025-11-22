@@ -234,18 +234,41 @@
 
         .donate-wrapper { display: flex; justify-content: center; width: 100%; margin-top: 4px; margin-bottom: 12px; }
         .donate-btn {
-            background: linear-gradient(90deg, #FFC107, #FF9800); color: #000;
+            position: relative; /* Важливо для накладання */
+            background: rgba(255, 255, 255, 0.05); /* Тьмяний фон (пуста шкала) */
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            color: white;
             text-decoration: none; font-weight: 800; font-size: 16px;
-            padding: 14px 30px; border-radius: 50px;
-            box-shadow: 0 5px 20px rgba(255, 152, 0, 0.3);
+            padding: 0; /* Прибираємо падінг, бо він тепер у content */
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
             transition: transform 0.2s;
+            overflow: hidden; /* Щоб шкала не вилазила */
+            height: 54px; /* Фіксована висота */
             display: flex; align-items: center; justify-content: center;
-            gap: 8px; line-height: 1; margin-left: 0;
+            margin-left: 0;
         }
         .donate-btn:active { transform: scale(0.96); }
+
+         /* Шкала заповнення */
+        .donate-progress {
+            position: absolute; top: 0; left: 0; bottom: 0;
+            width: 0%; /* Початкова ширина 0 */
+            background: linear-gradient(90deg, #FFC107, #FF9800); /* Жовто-оранжевий */
+            transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1); /* Плавний рух */
+            z-index: 1;
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.4);
+        /* Контент поверх шкали */
+        .donate-content {
+            position: relative; z-index: 2;
+            display: flex; align-items: center; gap: 8px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Тінь для читабельності */
+        }
+
         .donate-icon {
-            font-size: 20px; display: flex; align-items: center; height: 100%;
-            position: relative; top: -1px; filter: drop-shadow(0 0 1px rgba(0,0,0,0.3));
+            font-size: 20px; display: flex; align-items: center;
+            filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+        }
         }
 
         /* --- TABS --- */
@@ -488,11 +511,15 @@
         </div>
 
         <div class="donate-wrapper">
-            <div class="donate-btn" onclick="showInfo('support')">
-                <span class="donate-icon">🔌</span> Підзарядити бота
-            </div>
+            <a href="https://send.monobank.ua/jar/6qoHuhpGgD" target="_blank" class="donate-btn" id="donateBtn">
+                <div class="donate-progress" id="donateProgress"></div>
+
+                <div class="donate-content">
+                    <span class="donate-icon">⚡</span>
+                    <span id="donateText">Підзарядити бота</span>
+                </div>
+            </a>
         </div>
-    </div>
 
     <div class="tab-bar">
         <div class="tab-item active" id="tab1" onclick="switchTab(1)">Сьогодні</div>
@@ -607,6 +634,43 @@
             } catch (e) {
                 if (retries > 0) return getCSV(retries - 1);
                 throw e;
+            }
+        }
+
+        // Отримання даних про донати з вашого Worker
+        async function fetchDonationData() {
+            try {
+                // Звертаємось до того ж проксі, але з параметром ?jar=true
+                const url = `${CSV_PROXY_URL}?jar=true&t=${Date.now()}`;
+                const r = await fetch(url);
+                const data = await r.json();
+                
+                if (data && data.amount) {
+                    updateDonateButton(data.amount, data.goal || 50000); // 50000 - ціль за замовчуванням
+                }
+            } catch (e) {
+                console.error("Donation fetch error:", e);
+                // Якщо помилка, кнопка просто залишиться "Підзарядити бота"
+            }
+        }
+
+        function updateDonateButton(amount, goal) {
+            const progressEl = document.getElementById('donateProgress');
+            const textEl = document.getElementById('donateText');
+
+            // Розрахунок відсотка
+            let pct = (amount / goal) * 100;
+            if (pct > 100) pct = 100; // Не більше 100%
+
+            // Оновлюємо ширину
+            if (progressEl) progressEl.style.width = `${pct}%`;
+
+            // Оновлюємо текст: форматуємо суму (наприклад 10 500)
+            const formattedAmount = amount.toLocaleString('uk-UA'); // Робить "10 500" замість "10500"
+
+            if (textEl) {
+                // Можна написати "Вт" замість грн для стилю
+                textEl.innerHTML = `Заряджено: ${formattedAmount} Вт`;
             }
         }
 
