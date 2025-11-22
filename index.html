@@ -525,12 +525,14 @@
                 }
 
                 // --- ОНОВЛЕННЯ К-СТІ КОРИСТУВАЧІВ ---
-                if (json.users) {
-                    document.getElementById("topUsers").innerText =
-                        "👥 " + json.users;
-                    // дублюємо у window, щоб інші функції не затирали
-                    window.STARTAPP_USERS = json.users;
+                if (json.users_total || json.users) {
+                    const raw = json.users_total || json.users;
+                    const clean = formatUsersNumber(raw);
+                    document.getElementById("topUsers").innerText = "👥 " + clean;
+                    window.STARTAPP_USERS = clean;
                 }
+
+
 
                 // --- ОНОВЛЕННЯ ЧЕРГИ ---
                 if (json.queue) {
@@ -610,12 +612,34 @@
 
                 setupApp(isSilent);
 
-                // 🔥 ПОКАЗУЄМО КОРИСТУВАЧІВ (ONLINE)
+                const row = allData.find(r => r.group_id == currentQueue);
+                if (!row) return;
+
+                // --- НОРМАЛІЗУЄМО ВСІ КЛЮЧІ ---
+                const cleanRow = normalizeHeaders(row);
+
+                // --- ЧИТАЄМО users ---
+                let u = cleanRow.users_total || cleanRow.users;
+
+                // Якщо порожньо — fallback (перший рядок таблиці)
+                if (!u && allData.length > 0) {
+                    const primary = normalizeHeaders(allData[0]);
+                    u = primary.users_total || primary.users;
+                }
+
+                if (u) {
+                    updateTopUsers(formatUsersNumber(u));
+                }
+
+                // Якщо є STARTAPP — він головний
                 if (window.STARTAPP_USERS) {
                     updateTopUsers(window.STARTAPP_USERS);
                 }
 
+
             } catch (e) {
+
+
                 console.error("Online fetch error:", e);
 
                 const cached = localStorage.getItem('cachedData');
@@ -656,30 +680,57 @@
 
 
 
-        function setupApp(isSilent) {
-            const p = new URLSearchParams(window.location.search);
-            let q = p.get('q');
+            function setupApp(isSilent) {
 
-            if (q) q = q.trim();
-            if (!q) q = localStorage.getItem('savedQueue');
-            if (q) q = q.trim();
+                const p = new URLSearchParams(window.location.search);
+                let q = p.get('q');
 
-            if (q && allData.find(r => (r.group_id || "").trim() === q)) {
-                currentQueue = q;
-            } else if (allData.length) {
-                currentQueue = (allData[0].group_id || "").trim();
+                // Визначаємо чергу
+                if (q) {
+                    currentQueue = q;
+                    localStorage.setItem("savedQueue", q);
+                } else {
+                    const saved = localStorage.getItem("savedQueue");
+                    if (saved) currentQueue = saved;
+                }
+
+                // Створюємо меню + оновлюємо UI
+                if (!isSilent) {
+                    buildMenu();
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('app-content').classList.remove('hidden');
+                }
+
+                // ==============================
+                //    ОНОВЛЕННЯ КІЛЬКОСТІ КОРИСТУВАЧІВ
+                // ==============================
+                const row = allData.find(r => r.group_id == currentQueue);
+
+                let u = null;
+
+                if (row) {
+                    for (const key in row) {
+                        const clean = key
+                            .replace(/\uFEFF/g, "")
+                            .replace(/\u00A0/g, " ")
+                            .replace(/[\u200B-\u200F]/g, "")
+                            .trim()
+                            .toLowerCase();
+
+                        if (clean === "users_total" || clean === "users") {
+                            u = row[key];
+                        }
+                    }
+                }
+
+                if (u) updateTopUsers(formatUsersNumber(u));
+
+                // Рендер
+                render(currentTab);
             }
 
-            localStorage.setItem('savedQueue', currentQueue);
 
-            if (!isSilent) {
-                buildMenu();
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('app-content').classList.remove('hidden');
-            }
 
-            render(currentTab);
-        }
 
         function showOfflineBadge() {
             if (!document.getElementById('offBadge')) {
@@ -694,41 +745,89 @@
             if (b) b.remove();
         }
 
+        function formatUsersNumber(v) {
+            v = String(v).replace(/\s+/g, "");   // "17 553" → "17553"
+            return v.replace(/\B(?=(\d{3})+(?!\d))/g, " ");  // "17553" → "17 553"
+        }
+
+
         function parseCSV(text) {
             const rows = [];
             let currentRow = [];
             let currentVal = '';
             let insideQuotes = false;
+
             for (let i = 0; i < text.length; i++) {
                 const char = text[i];
                 const nextChar = text[i + 1];
+
                 if (char === '"') {
-                    if (insideQuotes && nextChar === '"') { i++; currentVal += '"'; }
-                    else { insideQuotes = !insideQuotes; }
+                    if (insideQuotes && nextChar === '"') {
+                        i++;
+                        currentVal += '"';
+                    } else {
+                        insideQuotes = !insideQuotes;
+                    }
                 } else if (char === ',' && !insideQuotes) {
-                    currentRow.push(currentVal); currentVal = '';
+                    currentRow.push(currentVal);
+                    currentVal = '';
                 } else if ((char === '\r' || char === '\n') && !insideQuotes) {
                     if (char === '\r' && nextChar === '\n') i++;
                     if (currentVal || currentRow.length) currentRow.push(currentVal);
                     if (currentRow.length) rows.push(currentRow);
-                    currentRow = []; currentVal = '';
-                } else { currentVal += char; }
+                    currentRow = [];
+                    currentVal = '';
+                } else {
+                    currentVal += char;
+                }
             }
+
             if (currentVal || currentRow.length) currentRow.push(currentVal);
             if (currentRow.length) rows.push(currentRow);
-            const headers = rows[0].map(h => h.trim());
-            return rows.slice(1).map(row => {
-                let obj = {};
-                headers.forEach((h, i) => {
+
+            if (rows.length < 2) return [];
+
+            // 🧹 Чистимо заголовки
+            const rawHeaders = rows[0].map(h =>
+                h.replace(/\uFEFF/g, '')
+                 .replace(/\u00A0/g, ' ')
+                 .replace(/[\u200B-\u200F]/g, '')
+                 .trim()
+                 .toLowerCase()
+            );
+
+            // 🧹 Мапимо дані
+            const data = rows.slice(1).map(row => {
+                const obj = {};
+                rawHeaders.forEach((h, i) => {
                     let val = row[i] ?? "";
-                    if (val && val.startsWith('"') && val.endsWith('"')) {
-                        val = val.slice(1, -1);
-                    }
+                    if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
                     obj[h] = val.trim();
                 });
                 return obj;
             });
+
+            return data;
         }
+
+
+
+
+            // Фіксуємо криві назви колонок
+            function normalizeHeaders(obj) {
+                const fixed = {};
+                for (let key in obj) {
+                    const clean = key.replace(/\uFEFF/g, "")
+                                     .replace(/\u00A0/g, " ")
+                                     .replace(/[\u200B-\u200F]/g, "")
+                                     .trim()
+                                     .toLowerCase();
+                    fixed[clean] = obj[key];
+                }
+                return fixed;
+            }
+
+
 
         function getSchedule(fullText, targetDate) {
             if (!fullText) return null;
