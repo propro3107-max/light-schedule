@@ -65,7 +65,7 @@
         .fill-green { background: var(--accent-green); box-shadow: 0 0 15px rgba(46, 204, 113, 0.4); }
         .fill-red { background: var(--accent-red); box-shadow: 0 0 15px rgba(231, 76, 60, 0.4); }
         .fill-gray { background: var(--accent-gray); width: 100% !important; box-shadow: none; }
-
+        
         .battery-text {
             position: absolute; top: 50%; left: 50%; transform: translate(-52%, -50%);
             font-size: 22px; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.5);
@@ -79,27 +79,31 @@
         .date-text { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
 
         .timeline-section { width: 100%; }
-        .timeline-box { position: relative; padding: 0 10px; margin-bottom: 10px; }
-
-        /* --- TRACK (CAPSULE) --- */
+        .timeline-box { position: relative; padding: 0 10px; }
+        
+        /* --- TRACK (Continuous Pill) --- */
         .timeline-track {
             position: relative; width: 100%; height: 50px;
-            border-radius: 25px; /* Сильне заокруглення */
+            border-radius: 25px; /* Pill shape */
             overflow: hidden; background: #2c2c35;
             display: flex;
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
-            padding: 4px; gap: 2px;
+            padding: 0; gap: 0;
         }
-
+        
         .segment {
             position: relative; height: 100%;
             display: flex; align-items: center; justify-content: center;
-            border-radius: 16px;
+            border-radius: 0; /* Rectangular inside */
         }
+        .segment:not(:last-child) { border-right: 1px solid rgba(0,0,0,0.15); }
+        /* Round ends */
+        .segment:first-child { border-top-left-radius: 25px; border-bottom-left-radius: 25px; }
+        .segment:last-child { border-top-right-radius: 25px; border-bottom-right-radius: 25px; border-right: none; }
 
         .on { background: var(--accent-green); }
         .off { background: var(--accent-red); }
-
+        
         .segment-icon {
             font-size: 18px; color: white; z-index: 2;
             filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
@@ -107,33 +111,38 @@
         }
 
         .cursor-line {
-            position: absolute; top: -2px; bottom: -2px; width: 3px;
-            background: white; z-index: 10; border-radius: 3px;
+            position: absolute; top: 0; bottom: 0; width: 3px;
+            background: white; z-index: 10; 
             box-shadow: 0 0 10px rgba(255,255,255,0.8); pointer-events: none;
         }
 
-        /* --- CLEAN LABELS (РІВНІ) --- */
-        .time-labels { position: relative; width: 100%; height: 25px; margin-top: 6px; }
-
+        /* --- STAGGERED LABELS --- */
+        .time-labels { position: relative; width: 100%; height: 30px; margin-top: 8px; }
+        
         .t-label {
-            position: absolute; top: 0;
+            position: absolute; 
             font-size: 11px; font-weight: 600; color: var(--text-muted);
             transform: translateX(-50%); white-space: nowrap; letter-spacing: 0.3px;
+            transition: top 0.3s;
         }
-
-        .t-label.start { transform: translateX(0%); }
+        .t-label.start { transform: translateX(0%); } 
         .t-label.end { transform: translateX(-100%); }
-
-        /* Акуратна риска вгору до шкали */
+        
         .t-tick {
-            position: absolute; top: -6px; left: 50%;
-            width: 1px; height: 4px; background: #444;
+            position: absolute; left: 50%; width: 1px; background: #444;
         }
+
+        /* High/Low Levels */
+        .t-label.high { top: 0; }
+        .t-label.high .t-tick { height: 4px; top: -4px; }
+
+        .t-label.low { top: 14px; }
+        .t-label.low .t-tick { height: 18px; top: -18px; background: rgba(255,255,255,0.1); }
 
 
         /* --- CARDS --- */
         .card-list { display: flex; flex-direction: column; gap: 12px; }
-
+        
         .card {
             background: var(--card-bg); border-radius: var(--radius); padding: 16px;
             display: flex; justify-content: space-between; align-items: center;
@@ -143,7 +152,7 @@
         .card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
         .card.c-on::before { background: var(--accent-green); }
         .card.c-off::before { background: var(--accent-red); }
-
+        
         /* ACTIVE HIGHLIGHT */
         .card.active-now {
             background: rgba(255,255,255,0.08); border-color: white;
@@ -156,11 +165,11 @@
         .card-info { display: flex; align-items: center; gap: 14px; }
         .c-icon { font-size: 20px; width: 24px; text-align: center; }
         .c-times { display: flex; flex-direction: column; gap: 2px; }
-
+        
         .status-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
         .c-on .status-label { color: var(--accent-green); }
         .c-off .status-label { color: var(--accent-red); }
-
+        
         .c-time { font-size: 16px; font-weight: 700; color: white; }
         .c-dur { font-size: 14px; font-weight: 500; color: var(--text-muted); }
 
@@ -202,7 +211,7 @@
             font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: center;
         }
         .tab-item.active { background: #343442; color: white; }
-
+        
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.7); z-index: 99;
@@ -239,7 +248,7 @@
     <div id="loading">Отримання даних...</div>
 
     <div id="app-content" class="hidden">
-
+        
         <div id="batterySection" class="battery-container">
             <div class="battery-wrapper">
                 <div class="battery-shell">
@@ -265,14 +274,14 @@
                 <div class="time-labels" id="timeLabelsBox"></div>
             </div>
         </div>
-
+        
         <div id="noDataMessage" class="no-data-msg hidden">
             💤 Графік на цей день ще не сформовано
         </div>
 
         <div class="card-list" id="infoBox"></div>
         <div class="total-block" id="totalBox"></div>
-
+        
         <div class="donate-wrapper">
             <a href="https://send.monobank.ua/jar/6qoHuhpGgD" target="_blank" class="donate-btn">
                 ⚡ Підзарядити бота
@@ -296,9 +305,9 @@
         const SHEET_ID = "1LZWXZ6w5R4Lq5afipAa1YHjLyO8lVizPvRCPdOvdmbc";
         const GOOGLE_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
         const PROXY_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(GOOGLE_URL)}`;
-
+        
         let allData = [];
-        let currentQueue = "1.1";
+        let currentQueue = "1.1"; 
         let currentTab = 1;
         let countdownInterval;
 
@@ -307,13 +316,13 @@
         async function init(isSilent = false) {
             try {
                 if (!isSilent) document.getElementById('loading').innerText = "Оновлення даних...";
-
+                
                 const response = await fetch(PROXY_URL + "&t=" + Date.now());
                 if (!response.ok) throw new Error("Помилка мережі");
-
+                
                 const csvText = await response.text();
                 allData = parseCSV(csvText);
-
+                
                 if (!allData.length) throw new Error("Таблиця пуста");
 
                 if (!isSilent) {
@@ -373,10 +382,10 @@
             if (!fullText) return null;
             const daysMap = ["Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "Пʼятниця", "Субота"];
             const dayName = daysMap[targetDate.getDay()];
-
+            
             const lines = fullText.replace(/\r\n/g, '\n').split('\n');
             let dayLine = lines.find(line => line.trim().startsWith(dayName));
-
+            
             if (!dayLine || dayLine.includes(":-") || dayLine.includes(": -") || dayLine.trim().endsWith("-")) return null;
 
             let timesPart = dayLine.includes(':') ? dayLine.substring(dayLine.indexOf(':') + 1).trim() : "";
@@ -390,7 +399,7 @@
             ranges.forEach(r => {
                 const parts = r.split('-').map(s => s.trim());
                 if (parts.length < 2) return;
-
+                
                 const startH = timeToH(parts[0]);
                 const endH = timeToH(parts[1]);
                 if (isNaN(startH) || isNaN(endH)) return;
@@ -398,30 +407,30 @@
                 if (startH > lastTime) {
                     arr.push(`${parseFloat((startH - lastTime).toFixed(2))}on`);
                 }
-
+                
                 let dur = endH - startH;
-                if (endH < startH) dur = 24 - startH;
+                if (endH < startH) dur = 24 - startH; 
                 if (dur > 0) arr.push(`${parseFloat(dur.toFixed(2))}off`);
-
+                
                 lastTime = (endH >= startH) ? endH : 24;
             });
 
             if (lastTime < 24) {
                 arr.push(`${parseFloat((24 - lastTime).toFixed(2))}on`);
             }
-
+            
             if (arr.length === 0) return "24on";
             return arr.join(',');
         }
 
         function timeToH(t) { const [h, m] = t.split(':').map(Number); return h + (m/60); }
 
-        function toggleModal() {
-            document.getElementById('modal').classList.toggle('show');
+        function toggleModal() { 
+            document.getElementById('modal').classList.toggle('show'); 
             document.querySelector('.queue-select-btn').classList.toggle('open');
         }
         function selectQueue(q) { currentQueue = q; toggleModal(); buildMenu(); render(currentTab); }
-
+        
         function buildMenu() {
             const list = document.getElementById('queueList');
             list.innerHTML = '<div style="text-align:center;margin-bottom:15px;color:#666;font-size:12px">ОБЕРІТЬ ЧЕРГУ</div>';
@@ -459,7 +468,7 @@
 
             const track = document.getElementById('timelineTrack');
             const cursor = document.getElementById('cursor');
-            track.innerHTML = ''; track.appendChild(cursor);
+            track.innerHTML = ''; track.appendChild(cursor); 
 
             const iBox = document.getElementById('infoBox');
             const lBox = document.getElementById('timeLabelsBox');
@@ -485,7 +494,7 @@
 
             tlSec.classList.remove('hidden'); totBox.classList.remove('hidden'); noData.classList.add('hidden');
             const isToday = (dayIdx === 1);
-
+            
             if (isToday) {
                 batSec.classList.remove('hidden');
                 cursor.style.display = 'block';
@@ -499,7 +508,6 @@
             const now = new Date();
             const curFloat = now.getHours() + now.getMinutes()/60 + now.getSeconds()/3600;
             let foundState = false;
-            let lastEndH = 0;
 
             addLabel(lBox, 0, "00:00", "start");
 
@@ -510,18 +518,15 @@
 
                 let seg = document.createElement('div');
                 seg.className = `segment ${type}`;
-                seg.style.flexGrow = dur;
+                seg.style.flexGrow = dur; 
                 if (dur >= 1.5) seg.innerHTML = `<div class="segment-icon">${type === 'on' ? '💡' : '🔌'}</div>`;
                 track.appendChild(seg);
 
-                // --- CLEAN LABELS LOGIC ---
-                // Show label if it's not too close to the start or end (0 and 24)
-                // AND if it's not too close to the previous label
-                if (endH > 2 && endH < 22 && (endH - lastEndH) > 2.5) {
-                    addLabel(lBox, endH, formatHM(endH), "mid");
-                    lastEndH = endH;
+                if (endH < 23.9) {
+                    let pos = (type === 'on') ? 'low' : 'high';
+                    addLabel(lBox, endH, formatHM(endH), "mid", pos);
                 }
-
+                
                 let card = createCard(curH, endH, dur, type);
                 if (isToday && curFloat >= curH && curFloat < endH) {
                     card.classList.add('active-now');
@@ -545,20 +550,13 @@
             totBox.innerHTML = `Всього без світла: <b>${fmtDur(totOff)}</b>`;
         }
 
-        function addLabel(box, h, txt, align) {
-            let el = document.createElement('div');
-            el.className = `t-label ${align}`;
-            el.innerText = txt;
-            el.style.left = (h/24*100) + "%";
-
-            if (align === 'mid') {
-                let t = document.createElement('div');
-                t.className = 't-tick';
-                el.appendChild(t);
-            }
+        function addLabel(box, h, txt, align, pos) {
+            let el = document.createElement('div'); 
+            el.className = `t-label ${align} ${pos}`;
+            el.innerText = txt; el.style.left = (h/24*100) + "%";
+            if (pos==='mid') { let t=document.createElement('div'); t.className='t-tick'; el.appendChild(t); }
             box.appendChild(el);
         }
-
         function updateCursor() {
             if (currentTab !== 1) return;
             const d = new Date(); const m = d.getHours()*60 + d.getMinutes();
@@ -571,11 +569,18 @@
             const tH = Math.floor(targetH); const tM = Math.round((targetH-tH)*60);
             const tD = new Date(); tD.setHours(tH, tM, 0, 0);
             if (tD < n) tD.setDate(tD.getDate() + 1);
+            
             function tick() {
                 const now = new Date();
                 const rem = Math.floor((tD - now) / 1000);
                 updateCursor();
-                if (rem <= 0) { document.getElementById('batteryTimer').innerText="00:00"; setBat(0,isOn); return; }
+                
+                if (rem <= 0) { 
+                    // --- 💡 AUTOMATIC REFRESH LOGIC ---
+                    clearInterval(countdownInterval);
+                    setTimeout(() => render(currentTab), 1000); 
+                    return; 
+                }
                 document.getElementById('batteryTimer').innerText=fmtTimer(rem); setBat(rem/totalSec, isOn);
             }
             tick(); countdownInterval = setInterval(tick, 1000);
