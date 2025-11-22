@@ -33,11 +33,15 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: var(--bg-color); color: var(--text-main);
+            background-color: var(--bg-color);
+            color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; padding-bottom: 100px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
             -webkit-font-smoothing: antialiased;
             transition: background-color 0.3s, color 0.3s;
         }
@@ -68,15 +72,26 @@
 
         .top-bar {
             width: 100%; display: flex; justify-content: space-between;
-            align-items: center; padding: 0 10px; margin-top: 10px; gap: 10px;
+            align-items: center; padding: 10px 16px 0 16px; margin-top: 4px; gap: 10px;
         }
-        .top-bar .users { display: flex; align-items: center; gap: 4px; color: var(--text-muted); }
+        .top-bar .users {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
         .top-bar .updated { color: var(--text-muted); font-size: 11px; font-weight: 500; }
-        .top-bar .users #topUsers { position: relative; top: 2px; }
+        .top-bar .users #topUsers { position: relative; top: 1px; }
 
         #app-content {
-            width: 100%; max-width: 500px; padding: 0 24px;
-            display: flex; flex-direction: column; gap: 24px;
+            width: 100%;
+            max-width: 500px;
+            padding: 0 24px;
+            padding-bottom: 120px; /* щоб контент не ховався під табами */
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
         /* --- БАТАРЕЙКА --- */
@@ -95,7 +110,12 @@
             transition: width 0.5s linear, background 0.5s linear, box-shadow 0.5s linear;
         }
 
-        /* Текстура */
+        /* сіра батарейка коли графік невідомий */
+        .battery-fill.fill-gray {
+            background: #555;
+            box-shadow: none;
+        }
+
         .battery-fill::after {
             content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background-image: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent);
@@ -105,7 +125,7 @@
         .battery-fill.discharging::after { animation-name: moveLeft; }
 
         @keyframes moveRight { 0% { background-position: 0 0; } 100% { background-position: 40px 0; } }
-        @keyframes moveLeft { 0% { background-position: 0 0; } 100% { background-position: -40px 0; } }
+        @keyframes moveLeft  { 0% { background-position: 0 0; } 100% { background-position: -40px 0; } }
 
         .battery-text {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -114,12 +134,19 @@
         }
         .battery-status { margin-top: 8px; font-size: 13px; color: var(--text-muted); font-weight: 500; }
 
-        /* --- ТАЙМЛАЙН --- */
-        .date-header { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; justify-content: center; }
+        /* --- ДАТА --- */
+        .date-header { display: flex; align-items: center; gap: 10px; margin: 12px 0 4px; justify-content: center; }
         .date-line { flex: 1; height: 1px; background: var(--line-color); }
         .date-text { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
 
-        .timeline-section { width: 100%; }
+        /* --- ГОЛОВНИЙ БЛОК ДНЯ (слайдиться) --- */
+        .day-body {
+            position: relative;
+            transition: transform .25s ease, opacity .25s ease;
+            will-change: transform, opacity;
+        }
+
+        .timeline-section { width: 100%; margin-top: 4px; }
         .timeline-box { position: relative; padding: 0 12px; }
 
         .timeline-track {
@@ -138,7 +165,8 @@
             border-left: 1px solid var(--bg-color); border-right: 1px solid var(--bg-color);
             background-clip: padding-box;
         }
-        .segment:first-child { border-left: none; } .segment:last-child { border-right: none; }
+        .segment:first-child { border-left: none; }
+        .segment:last-child  { border-right: none; }
         .segment-selected { transform: translateY(-2px); outline: 2px solid var(--text-main); box-shadow: 0 0 16px rgba(255,255,255,0.4); }
 
         .on { background-color: var(--accent-green); }
@@ -151,7 +179,6 @@
             pointer-events: none; transform: translateX(-50%);
         }
 
-        /* Мітки часу */
         .time-labels { position: relative; width: 100%; height: 24px; margin-top: 8px; padding: 0; left: -1px; }
         .t-label {
             position: absolute; top: 0; font-size: 11px; font-weight: 600; color: var(--text-muted);
@@ -163,7 +190,7 @@
         }
 
         /* --- CARD LIST --- */
-        .card-list { display: flex; flex-direction: column; gap: 12px; }
+        .card-list { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
         .card {
             background: var(--card-bg); border-radius: var(--radius); padding: 16px;
             display: flex; flex-direction: column; position: relative; overflow: hidden;
@@ -171,26 +198,26 @@
             box-shadow: 0 4px 12px var(--shadow-color);
         }
         .card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
-        .card.c-on::before { background: var(--accent-green); }
+        .card.c-on::before  { background: var(--accent-green); }
         .card.c-off::before { background: var(--accent-red); }
         .card-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 
         @keyframes pulseGreen { 0% { box-shadow: 0 0 15px rgba(46, 204, 113, 0.3); transform: scale(1); } 50% { box-shadow: 0 0 30px rgba(46, 204, 113, 0.6); transform: scale(1.02); } 100% { box-shadow: 0 0 15px rgba(46, 204, 113, 0.3); transform: scale(1); } }
-        @keyframes pulseRed { 0% { box-shadow: 0 0 15px rgba(231, 76, 60, 0.3); transform: scale(1); } 50% { box-shadow: 0 0 30px rgba(231, 76, 60, 0.6); transform: scale(1.02); } 100% { box-shadow: 0 0 15px rgba(231, 76, 60, 0.3); transform: scale(1); } }
+        @keyframes pulseRed   { 0% { box-shadow: 0 0 15px rgba(231, 76, 60, 0.3); transform: scale(1); } 50% { box-shadow: 0 0 30px rgba(231, 76, 60, 0.6); transform: scale(1.02); } 100% { box-shadow: 0 0 15px rgba(231, 76, 60, 0.3); transform: scale(1); } }
 
         .card.active-now { z-index: 10; border-width: 2px; }
-        .card.active-now.c-on { border-color: var(--accent-green); animation: pulseGreen 2s infinite ease-in-out; }
-        .card.active-now.c-off { border-color: var(--accent-red); animation: pulseRed 2s infinite ease-in-out; }
+        .card.active-now.c-on  { border-color: var(--accent-green); animation: pulseGreen 2s infinite ease-in-out; }
+        .card.active-now.c-off { border-color: var(--accent-red);  animation: pulseRed  2s infinite ease-in-out; }
         .card.active-now::before { display: none; }
 
         .card-info { display: flex; align-items: center; gap: 14px; }
         .c-icon { font-size: 20px; width: 24px; text-align: center; }
         .c-times { display: flex; flex-direction: column; gap: 2px; }
         .status-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-        .c-on .status-label { color: var(--accent-green); }
+        .c-on  .status-label { color: var(--accent-green); }
         .c-off .status-label { color: var(--accent-red); }
         .c-time { font-size: 16px; font-weight: 700; color: var(--text-main); }
-        .c-dur { font-size: 14px; font-weight: 500; color: var(--text-muted); }
+        .c-dur  { font-size: 14px; font-weight: 500; color: var(--text-muted); }
 
         .card-details {
             padding: 0 2px 0 2px; font-size: 13px; color: var(--text-muted); line-height: 1.5;
@@ -199,7 +226,7 @@
         .card.expanded .card-details { max-height: 200px; opacity: 1; margin-top: 10px; border-top: 1px solid rgba(128,128,128,0.1); padding-top: 10px; }
 
         /* --- DETAIL CARD --- */
-        @keyframes popInSpring { 0% { opacity: 0; transform: translateY(-20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes popInSpring  { 0% { opacity: 0; transform: translateY(-20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
         @keyframes popOutSpring { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-20px) scale(0.95); } }
         .detail-card-container { margin-top: 12px; }
         .detail-card {
@@ -209,12 +236,12 @@
             animation: popInSpring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .detail-card.closing { animation: popOutSpring 0.3s ease-in forwards; }
-        .detail-card.on { border-color: var(--accent-green); box-shadow: 0 0 18px rgba(46, 204, 113, 0.35); }
-        .detail-card.off { border-color: var(--accent-red); box-shadow: 0 0 18px rgba(231, 76, 60, 0.35); }
+        .detail-card.on  { border-color: var(--accent-green); box-shadow: 0 0 18px rgba(46, 204, 113, 0.35); }
+        .detail-card.off { border-color: var(--accent-red);  box-shadow: 0 0 18px rgba(231, 76, 60, 0.35); }
         .detail-header, .detail-left { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
         .detail-main { display: flex; flex-direction: column; gap: 3px; }
         .detail-status { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-        .detail-status-on { color: var(--accent-green); }
+        .detail-status-on  { color: var(--accent-green); }
         .detail-status-off { color: var(--accent-red); }
         .detail-time { font-size: 16px; font-weight: 700; color: var(--text-main); }
         .detail-duration { font-size: 14px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
@@ -223,97 +250,100 @@
         .detail-body p { margin: 0 0 4px 0; }
         .detail-note { margin-top: 6px; font-size: 12px; font-style: italic; color: var(--text-muted); }
 
-        /* --- FOOTER --- */
+        /* --- FOOTER (підсумок + донат) --- */
         .total-block {
             display: inline-block; background: var(--glass-bg);
             padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(128,128,128,0.1);
-            margin-bottom: 15px; margin-left: auto; margin-right: auto; width: fit-content;
+            margin-bottom: 15px; margin-left: auto; margin-right: auto; width: fit-content; margin-top: 20px !important;
             color: var(--text-muted); font-size: 14px; font-weight: 500;
         }
         .total-block b { color: var(--text-main); }
 
-            .donate-wrapper {
-                display: flex;
-                justify-content: center;
-                width: 100%;
-                margin-top: 8px;    /* Трохи більше повітря зверху */
-                margin-bottom: 16px;
-            }
+        .donate-wrapper {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            margin-top: 8px;
+            margin-bottom: 16px;
+        }
 
-            .donate-btn {
-                position: relative;
-                width: 100%;
-                height: 56px;       /* Трохи вища для солідності */
+        .donate-btn {
+            position: relative;
+            width: 100%;
+            height: 56px;
+            background: #1a1a1a;
+            border: none;
+            border-radius: 16px;
+            overflow: hidden;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            margin-left: 0;
+        }
 
-                /* 🔥 Темний фон без рамки (як у віджета) */
-                background: #1a1a1a;
-                border: none;
-                border-radius: 16px;
+        .donate-btn:active { transform: scale(0.98); }
 
-                overflow: hidden;
-                text-decoration: none;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: transform 0.2s;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.3); /* Тінь для глибини */
-                margin-left: 0;
-            }
+        .donate-progress {
+            position: absolute; top: 0; left: 0; bottom: 0;
+            width: 0%;
+            background: linear-gradient(90deg, #FFC107, #FF9800);
+            opacity: 0.8;
+            transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 1;
+        }
 
-            .donate-btn:active { transform: scale(0.98); }
+        .tomorrow-hint {
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+        .hidden { display: none; }
 
-            /* Шкала прогресу (Яскрава, напівпрозора) */
-            .donate-progress {
-                position: absolute; top: 0; left: 0; bottom: 0;
-                width: 0%;
-                background: linear-gradient(90deg, #FFC107, #FF9800);
-                opacity: 0.8;       /* Щоб текст читався краще */
-                transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
-                z-index: 1;
-            }
 
-            /* Текст */
-            .donate-content {
-                position: relative;
-                z-index: 2;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                line-height: 1.3;
-            }
+        .donate-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3;
+        }
 
-            .donate-title {
-                font-size: 15px;
-                font-weight: 800;
-                color: white;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }
+        .donate-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-            /* Цифри суми або текст "Завантаження" */
-            .donate-amount {
-                font-size: 13px; /* 🔥 Збільшили шрифт (було 12) */
-                font-weight: 600;
-                color: rgba(255,255,255,0.7); /* Трохи світліше */
-            }
+        .donate-amount {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.7);
+        }
 
-            /* --- TABS --- */
-            .tab-bar {
-                position: fixed; bottom: 0; left: 0; right: 0;
-                background: rgba(24, 24, 32, 0.95); backdrop-filter: blur(10px);
-                border-top: 1px solid rgba(128,128,128,0.1);
-                display: flex; padding: 10px 20px 30px 20px;
-                justify-content: space-between; gap: 10px; z-index: 80;
-            }
-            [data-theme="light"] .tab-bar { background: rgba(255, 255, 255, 0.95); }
+        /* --- TABS --- */
+        .tab-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(24, 24, 32, 0.95); backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(128,128,128,0.1);
+            display: flex; padding: 10px 20px 30px 20px;
+            justify-content: space-between; gap: 10px; z-index: 80;
+        }
+        [data-theme="light"] .tab-bar { background: rgba(255, 255, 255, 0.95); }
 
-            .tab-item {
-                flex: 1; background: transparent; border: none; padding: 10px;
-                border-radius: 12px; color: var(--text-muted);
-                font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: center;
-            }
+        .tab-item {
+            flex: 1; background: transparent; border: none; padding: 10px;
+            border-radius: 12px; color: var(--text-muted);
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: center;
+        }
 
         .tab-item.active { background: var(--glass-bg); color: var(--text-main); }
 
@@ -327,19 +357,18 @@
 
         .fab-container {
             position: fixed;
-            bottom: 70px; /* 🔥 Опустили нижче (було 80px) */
+            bottom: 90px;     /* було 70 — замінити */
             right: 20px;
             z-index: 90;
 
-            /* Напрямок: кнопка знизу, меню росте вгору */
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            justify-content: flex-end;
-            gap: 12px;
+            pointer-events: none; /* як було */
+
+            display: flex;           /* ДОДАТИ */
+            flex-direction: column;  /* ДОДАТИ */
+            align-items: flex-end;   /* ДОДАТИ */
         }
 
-        /* Головна кругла кнопка */
+
         .fab-main {
             width: 54px; height: 54px; border-radius: 50%;
             background: var(--accent-green); color: white;
@@ -347,8 +376,8 @@
             font-size: 26px; cursor: pointer;
             box-shadow: 0 4px 20px rgba(46, 204, 113, 0.5);
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
-            /* Гарантуємо, що кнопка не стискається */
             flex-shrink: 0;
+            pointer-events: auto; /* клікабельна */
         }
         .fab-main:active { transform: scale(0.9); }
         .fab-container.active .fab-main {
@@ -357,48 +386,130 @@
             box-shadow: 0 4px 20px rgba(231, 76, 60, 0.5);
         }
 
-        /* Меню */
+        .date-box {
+            display: grid;
+            grid-template-columns: auto 1fr auto 1fr;
+            align-items: center;
+            width: 100%;
+            margin: 10px 0 18px 0;
+            column-gap: 12px;
+        }
+
+        .day-title,
+        .date-text {
+            font-size: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+            text-align: center;
+            color: rgba(255,255,255,0.65);
+        }
+
+        .date-line {
+            width: 100%;
+            height: 1px;
+            background: rgba(255,255,255,0.18);
+        }
+
+        /* світла тема */
+        [data-theme="light"] .date-line {
+            background: rgba(0,0,0,0.15);
+        }
+
+        [data-theme="light"] .day-title,
+        [data-theme="light"] .date-text {
+            color: rgba(0,0,0,0.65);
+        }
+
+        .day-body {
+            transition: opacity 0.22s ease, transform 0.25s ease;
+        }
+
+        .day-body.slide-left {
+            opacity: 0;
+            transform: translateX(-40px);
+        }
+
+        .day-body.slide-right {
+            opacity: 0;
+            transform: translateX(40px);
+        }
+
+
+        /* Темна тема */
+        [data-theme="dark"] .day-title,
+        [data-theme="dark"] .date-text {
+            color: rgba(255,255,255,0.65);
+        }
+
+
+        .day-title {
+            font-size: 15px;          /* 🔥 Такий самий розмір як у дати */
+            font-weight: 600;
+            color: rgba(255,255,255,0.65);   /* 🔥 Той самий колір, що у дати */
+            text-transform: uppercase;        /* 🔥 КАПС */
+            white-space: nowrap;
+            letter-spacing: 0.5px;   /* 🔥 Як у дати */
+        }
+
+        .date-text {
+            font-size: 15px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.65);   /* 🔥 */
+            white-space: nowrap;
+            letter-spacing: 0.5px;
+        }
+
+        /* 🔥 Анімація плавного оновлення дати */
+        .date-box {
+            transition: opacity .25s ease, transform .25s ease;
+        }
+
+        .date-box.anim-hide {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        .date-box.anim-show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+
         .fab-menu {
-            display: flex; 
-            flex-direction: column; /* Елементи стовпчиком */
+            display: flex;
+            flex-direction: column;
             align-items: flex-end;
             gap: 10px;
-            margin-bottom: 5px; /* Відступ від головної кнопки */
-            pointer-events: none;
+            margin-bottom: 5px;
+            pointer-events: none; /* активується тільки коли контейнер active */
         }
         .fab-container.active .fab-menu { pointer-events: auto; }
 
-        /* Кнопки меню */
         .fab-item {
             background: var(--card-bg); color: var(--text-main);
             border: 1px solid rgba(128,128,128,0.15);
             padding: 10px 16px 10px 20px; border-radius: 30px;
             display: flex; align-items: center; justify-content: flex-end; gap: 12px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer;
-
-            /* Анімація: починаємо трохи нижче і прозорими */
             opacity: 0;
             transform: translateY(20px) scale(0.8);
             transform-origin: right bottom;
             transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
-        /* Коли активно - піднімаємо на місця */
         .fab-container.active .fab-item { opacity: 1; transform: translateY(0) scale(1); }
         .fab-item:active { transform: scale(0.95); background: var(--glass-bg); }
 
         .fab-text { font-size: 14px; font-weight: 600; }
         .fab-emoji { font-size: 18px; line-height: 1; width: 24px; text-align: center; }
 
-        /* Затримки появи (знизу вгору: 5-й елемент в HTML це Тема, він найнижчий) */
-        /* Оскільки flex-direction: column, останній елемент в HTML (Тема) буде внизу, біля кнопки */
-        /* Ми хочемо, щоб нижній елемент вилітав першим */
-
-        .fab-item:nth-last-child(1) { transition-delay: 0.05s; } /* Тема */
-        .fab-item:nth-last-child(2) { transition-delay: 0.1s; }  /* Донат */
-        .fab-item:nth-last-child(3) { transition-delay: 0.15s; } /* Черга */
-        .fab-item:nth-last-child(4) { transition-delay: 0.2s; }  /* Співпраця */
-        .fab-item:nth-last-child(5) { transition-delay: 0.25s; } /* Про бота */
+        .fab-item:nth-last-child(1) { transition-delay: 0.05s; }
+        .fab-item:nth-last-child(2) { transition-delay: 0.1s;  }
+        .fab-item:nth-last-child(3) { transition-delay: 0.15s; }
+        .fab-item:nth-last-child(4) { transition-delay: 0.2s;  }
+        .fab-item:nth-last-child(5) { transition-delay: 0.25s; }
 
         /* --- MODAL --- */
         .modal-overlay {
@@ -455,7 +566,7 @@
         .hidden { display: none !important; }
         .no-data-msg {
             text-align: center; color: var(--text-muted); padding: 30px 20px;
-            background: var(--glass-bg); border-radius: 16px; font-size: 15px; margin-top: 10px;
+            background: var(--glass-bg); border-radius: 16px; font-size: 15px; margin-top: 12px;
         }
         .offline-badge {
             position: fixed; top: 10px; right: 10px; background: rgba(255, 69, 58, 0.9);
@@ -507,6 +618,8 @@
     </div>
 
     <div id="app-content" class="hidden">
+
+        <!-- Батарейка (стаціонарна) -->
         <div id="batterySection" class="battery-container">
             <div class="battery-wrapper">
                 <div class="battery-shell">
@@ -518,47 +631,59 @@
             <div class="battery-status" id="batteryLabel">статус</div>
         </div>
 
-        <div class="date-header">
+        <!-- Дата (стаціонарна) -->
+
+        <div class="date-box">
+            <span id="dayTitle" class="day-title">Графік на сьогодні</span>
             <div class="date-line"></div>
-            <div class="date-text" id="dateDisplay">...</div>
+            <span id="dateDisplay" class="date-text">---</span>
             <div class="date-line"></div>
         </div>
 
-        <div class="timeline-section" id="timelineSection">
-            <div class="timeline-box">
-                <div class="timeline-track" id="timelineTrack"></div>
-                <div class="time-labels" id="timeLabelsBox"></div>
-            </div>
-            <div id="detailCardContainer" class="detail-card-container hidden"></div>
-        </div>
 
-        <div id="noDataMessage" class="no-data-msg hidden">💤 Графік на цей день ще не сформовано</div>
 
-        <div class="card-list" id="infoBox"></div>
+        <!-- 🔥 Увесь контент дня, який "слайдиться" між Сьогодні/Завтра -->
+        <div id="dayBody" class="day-body">
 
-        <div style="text-align:center;">
-            <div class="total-block" id="totalBox"></div>
-        </div>
-
-        <div class="donate-wrapper">
-            <a href="https://send.monobank.ua/jar/6qoHuhpGgD" target="_blank" class="donate-btn">
-                <div class="donate-progress" id="donateProgress"></div>
-                <div class="donate-content">
-                    <div class="donate-title">
-                        <span>🔌</span> <span>Підзарядити бота</span>
-                    </div>
-                    <div class="donate-amount" id="donateAmount">Завантаження...</div>
+            <div class="timeline-section" id="timelineSection">
+                <div class="timeline-box">
+                    <div class="timeline-track" id="timelineTrack"></div>
+                    <div class="time-labels" id="timeLabelsBox"></div>
                 </div>
-            </a>
-        </div>
+                <div id="detailCardContainer" class="detail-card-container hidden"></div>
+            </div>
+
+            <div id="noDataMessage" class="no-data-msg hidden">💤 Графік на цей день ще не сформовано</div>
+
+            <div class="card-list" id="infoBox"></div>
+
+            <div style="text-align:center;">
+                <div class="total-block" id="totalBox"></div>
+            </div>
+
+            <div class="donate-wrapper">
+                <a href="https://send.monobank.ua/jar/6qoHuhpGgD" target="_blank" class="donate-btn">
+                    <div class="donate-progress" id="donateProgress"></div>
+                    <div class="donate-content">
+                        <div class="donate-title">
+                            <span>🔌</span> <span>Підзарядити бота</span>
+                        </div>
+                        <div class="donate-amount" id="donateAmount">Завантаження...</div>
+                    </div>
+                </a>
+            </div>
+
+        </div> <!-- /dayBody -->
+
+    </div> <!-- /app-content -->
+
+    <div class="modal-overlay" id="modal" onclick="toggleModal()">
+        <div class="queue-list" id="queueList" onclick="event.stopPropagation()"></div>
+    </div>
 
     <div class="tab-bar">
         <div class="tab-item active" id="tab1" onclick="switchTab(1)">Сьогодні</div>
         <div class="tab-item" id="tab2" onclick="switchTab(2)">Завтра</div>
-    </div>
-
-    <div class="modal-overlay" id="modal" onclick="toggleModal()">
-        <div class="queue-list" id="queueList" onclick="event.stopPropagation()"></div>
     </div>
 
     <div class="fab-overlay" id="fabOverlay" onclick="toggleFab()"></div>
@@ -654,6 +779,7 @@
             }
         }
 
+        // автооновлення даних
         setInterval(() => init(true), 120000);
 
         async function getCSV(retries = 1) {
@@ -668,67 +794,26 @@
             }
         }
 
-        // Отримання даних про донати з вашого Worker
-        async function fetchDonationData() {
+        async function init(isSilent = false) {
+            loadTheme();
+
             try {
-                // Звертаємось до того ж проксі, але з параметром ?jar=true
-                const url = `${CSV_PROXY_URL}?jar=true&t=${Date.now()}`;
-                const r = await fetch(url);
-                const data = await r.json();
-                
-                if (data && data.amount) {
-                    updateDonateButton(data.amount, data.goal || 50000); // 50000 - ціль за замовчуванням
+                if (!isSilent) {
+                    const sk = document.getElementById('skeletonLoader');
+                    if (sk) sk.classList.remove('hidden');
+                    document.getElementById('app-content').classList.add('hidden');
                 }
-            } catch (e) {
-                console.error("Donation fetch error:", e);
-                // Якщо помилка, кнопка просто залишиться "Підзарядити бота"
-            }
-        }
 
-        function updateDonateButton(amount, goal) {
-            const progressEl = document.getElementById('donateProgress');
-            const textEl = document.getElementById('donateText');
+                const csvText = await getCSV();
+                allData = parseCSV(csvText);
 
-            // Розрахунок відсотка
-            let pct = (amount / goal) * 100;
-            if (pct > 100) pct = 100; // Не більше 100%
-
-            // Оновлюємо ширину
-            if (progressEl) progressEl.style.width = `${pct}%`;
-
-            // Оновлюємо текст: форматуємо суму (наприклад 10 500)
-            const formattedAmount = amount.toLocaleString('uk-UA'); // Робить "10 500" замість "10500"
-
-            if (textEl) {
-                // Можна написати "Вт" замість грн для стилю
-                textEl.innerHTML = `Заряджено: ${formattedAmount} Вт`;
-            }
-        }
-
-            async function init(isSilent = false) {
-                loadTheme();
-
-                // 🔥 ОСЬ ЦЕЙ РЯДОК ОБОВ'ЯЗКОВО ТРЕБА ДОДАТИ!
-                // Це запускає оновлення кнопки донату паралельно з графіком
-                fetchDonation();
-
-                try {
-                    if (!isSilent) {
-                        const sk = document.getElementById('skeletonLoader');
-                        if (sk) sk.classList.remove('hidden');
-                        document.getElementById('app-content').classList.add('hidden');
+                window.LAST_UPDATED = null;
+                for (const row of allData) {
+                    if (row.updated_at && row.updated_at.trim() !== "") {
+                        window.LAST_UPDATED = row.updated_at.trim();
+                        break;
                     }
-
-                    const csvText = await getCSV();
-                    allData = parseCSV(csvText);
-
-                    window.LAST_UPDATED = null;
-                    for (const row of allData) {
-                        if (row.updated_at && row.updated_at.trim() !== "") {
-                            window.LAST_UPDATED = row.updated_at.trim();
-                            break;
-                        }
-                    }
+                }
 
                 updateTopUpdated();
 
@@ -813,8 +898,13 @@
             const rows = []; let currentRow = []; let currentVal = ''; let insideQuotes = false;
             for (let i = 0; i < text.length; i++) {
                 const char = text[i]; const nextChar = text[i + 1];
-                if (char === '"') { if (insideQuotes && nextChar === '"') { i++; currentVal += '"'; } else { insideQuotes = !insideQuotes; } }
-                else if (char === ',' && !insideQuotes) { currentRow.push(currentVal); currentVal = ''; }
+                if (char === '"') {
+                    if (insideQuotes && nextChar === '"') { i++; currentVal += '"'; }
+                    else { insideQuotes = !insideQuotes; }
+                }
+                else if (char === ',' && !insideQuotes) {
+                    currentRow.push(currentVal); currentVal = '';
+                }
                 else if ((char === '\r' || char === '\n') && !insideQuotes) {
                     if (char === '\r' && nextChar === '\n') i++;
                     if (currentVal || currentRow.length) currentRow.push(currentVal);
@@ -918,54 +1008,200 @@
             return `Оновлено: ${D} ${months[M-1]} о ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
         }
 
+        // 🔥 MODE C SLIDE: слайдиться тільки dayBody, батарейка/дата стоять
         function switchTab(idx) {
-            currentTab = idx;
-            try { tg.HapticFeedback.impactOccurred('light'); } catch (e) { }
-            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab' + idx).classList.add('active');
-            render(idx);
+            if (currentTab === idx) return;
+
+            try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+
+            const body = document.getElementById("dayBody");
+            const dateBox = document.querySelector(".date-box");
+
+            // анімація дати
+            dateBox.classList.add("anim-hide");
+
+            const direction = idx > currentTab ? 1 : -1;
+            // 1 → заїзд справа (сьогодні → завтра)
+            // -1 → заїзд зліва  (завтра → сьогодні)
+
+            // outgoing animation
+            body.style.transition = "transform .25s ease, opacity .25s ease";
+            body.style.transform = `translateX(${-40 * direction}px)`;
+            body.style.opacity = "0";
+
+            setTimeout(() => {
+                currentTab = idx;
+
+                document.querySelectorAll('.tab-item')
+                    .forEach(t => t.classList.remove('active'));
+                document.getElementById("tab" + idx).classList.add("active");
+
+                // ставимо новий контент З ПРОТИЛЕЖНОГО боку
+                body.style.transition = "none";
+                body.style.transform = `translateX(${40 * direction}px)`;
+                body.style.opacity = "0";
+
+                render(idx);
+
+                // і в'їжджаємо
+                setTimeout(() => {
+                    body.style.transition = "transform .25s ease, opacity .25s ease";
+                    body.style.transform = "translateX(0)";
+                    body.style.opacity = "1";
+
+                    // повернути дату
+                    setTimeout(() => {
+                        dateBox.classList.remove("anim-hide");
+                        dateBox.classList.add("anim-show");
+                        setTimeout(() => dateBox.classList.remove("anim-show"), 250);
+                    }, 40);
+
+                }, 20);
+
+            }, 250);
+        }
+
+
+
+
+
+        function setupTomorrowBattery(scheduleStr) {
+            const batSec = document.getElementById('batterySection');
+            const timerEl = document.getElementById('batteryTimer');
+            const labelEl = document.getElementById('batteryLabel');
+            const f = document.getElementById('batteryFill');
+
+            batSec.classList.remove('hidden');
+            clearInterval(countdownInterval);
+
+            const parts = scheduleStr.split(',');
+            let h = 0;
+            let firstOffStart = null;
+
+            for (const p of parts) {
+                const type = p.includes('off') ? 'off' : 'on';
+                const dur = parseFloat(p);
+                if (isNaN(dur) || dur <= 0) continue;
+                const start = h;
+                const end = h + dur;
+
+                if (type === 'off' && firstOffStart === null) {
+                    firstOffStart = start;
+                    break;
+                }
+                h = end;
+            }
+
+            // є перше відключення завтра
+            if (firstOffStart != null) {
+                const now = new Date();
+                const nowFloat = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+
+                const targetH = 24 + firstOffStart; // завтра
+                let totalSec = Math.round((targetH - nowFloat) * 3600);
+                if (totalSec < 60) totalSec = 60;
+
+                // стартуємо таймер як "до відключення"
+                startTimer(targetH, totalSec, true);
+            } else {
+                // завтра відключень немає
+                timerEl.innerText = "--:--";
+                labelEl.innerText = "Світло цілий день";
+                f.classList.remove('discharging');
+                f.style.width = "100%";
+                f.style.background = "linear-gradient(90deg, #1abc9c, #2ecc71)";
+                f.style.boxShadow = "0 0 15px #2ecc71";
+            }
         }
 
         function render(dayIdx) {
             const row = allData.find(r => r.group_id == currentQueue);
             if (!row) return;
-            ensureCursor();
+
             const targetDate = new Date();
             if (dayIdx === 2) targetDate.setDate(targetDate.getDate() + 1);
+
             const scheduleStr = getSchedule(row.schedule_text, targetDate);
+
             const d = String(targetDate.getDate()).padStart(2, '0');
             const m = String(targetDate.getMonth() + 1).padStart(2, '0');
             const daysMap = ["НЕДІЛЯ", "ПОНЕДІЛОК", "ВІВТОРОК", "СЕРЕДА", "ЧЕТВЕР", "ПʼЯТНИЦЯ", "СУБОТА"];
             document.getElementById('dateDisplay').innerText = `${daysMap[targetDate.getDay()]} ${d}.${m}`;
 
-            const track = document.getElementById('timelineTrack');
-            const iBox = document.getElementById('infoBox');
-            const lBox = document.getElementById('timeLabelsBox');
-            const tlSec = document.getElementById('timelineSection');
-            const totBox = document.getElementById('totalBox');
-            const noData = document.getElementById('noDataMessage');
-            const batSec = document.getElementById('batterySection');
+            const track   = document.getElementById('timelineTrack');
+            const iBox    = document.getElementById('infoBox');
+            const lBox    = document.getElementById('timeLabelsBox');
+            const tlSec   = document.getElementById('timelineSection');
+            const totBox  = document.getElementById('totalBox');
+            const noData  = document.getElementById('noDataMessage');
+            const batSec  = document.getElementById('batterySection');
             const detailBox = document.getElementById('detailCardContainer');
 
+            // очищення
             track.innerHTML = '';
             while (lBox.firstChild) lBox.removeChild(lBox.firstChild);
-            iBox.innerHTML = ''; detailBox.innerHTML = ''; detailBox.classList.add('hidden');
+            iBox.innerHTML = '';
+            detailBox.innerHTML = '';
+            detailBox.classList.add('hidden');
             activeSegmentElement = null; activeListCard = null; clearInterval(countdownInterval);
-            track.appendChild(cursor);
 
-            if (scheduleStr === null) {
-                tlSec.classList.add('hidden'); totBox.classList.add('hidden'); noData.classList.remove('hidden');
-                if (dayIdx === 1) {
-                    batSec.classList.remove('hidden'); document.getElementById('batteryTimer').innerText = "—";
+            ensureCursor();
+            track.appendChild(cursor);
+            cursor.style.display = (dayIdx === 1 ? 'block' : 'none');
+
+            const isToday = (dayIdx === 1);
+            document.getElementById("dayTitle").innerText =
+                isToday ? "Графік на сьогодні" : "Графік на завтра";
+
+            const bf = document.getElementById('batteryFill');
+            bf.className = 'battery-fill'; // скидати сірий режим
+
+            // Немає графіка на день
+            if (!scheduleStr) {
+                tlSec.classList.add('hidden');
+                noData.classList.remove('hidden');
+                totBox.innerHTML = '';
+
+                batSec.classList.remove('hidden');
+                bf.className = 'battery-fill';
+
+                if (isToday) {
+                    // Сьогодні без графіка
+                    document.getElementById('batteryTimer').innerText = "—";
                     document.getElementById('batteryLabel').innerText = "Невідомо";
-                    document.getElementById('batteryFill').className = 'battery-fill fill-gray'; document.getElementById('batteryFill').style.width = '100%';
-                } else { batSec.classList.add('hidden'); }
+                } else {
+                    // 🔥 Завтра без графіка → ДУБЛЮЄМО батарейку сьогодні
+                    const t = document.getElementById('batteryTimer').innerText;
+                    const l = document.getElementById('batteryLabel').innerText;
+                    const fNow = document.querySelector('.battery-fill');
+
+                    document.getElementById('batteryTimer').innerText = t;
+                    document.getElementById('batteryLabel').innerText = l;
+
+                    bf.style.width = fNow.style.width;
+                    bf.style.background = fNow.style.background;
+                    bf.style.boxShadow = fNow.style.boxShadow;
+                }
                 return;
             }
 
-            tlSec.classList.remove('hidden'); totBox.classList.remove('hidden'); noData.classList.add('hidden');
-            const isToday = (dayIdx === 1);
-            if (isToday) { batSec.classList.remove('hidden'); cursor.style.display = 'block'; updateCursor(); } else { batSec.classList.add('hidden'); cursor.style.display = 'none'; }
+            // Є графік
+            tlSec.classList.remove('hidden');
+            noData.classList.add('hidden');
+
+            if (!isToday) {
+                // Використовуємо ТОЙ САМИЙ час, що і сьогодні
+                const t = document.getElementById('batteryTimer').innerText;
+                const l = document.getElementById('batteryLabel').innerText;
+                const f = document.getElementById('batteryFill');
+
+                document.getElementById('batteryTimer').innerText = t;
+                document.getElementById('batteryLabel').innerText = l;
+
+                // заливка така сама
+                f.style.width = document.querySelector('.battery-fill').style.width;
+            }
+
 
             let curH = 0; let totOff = 0;
             const now = new Date();
@@ -981,36 +1217,49 @@
                 let type = part.includes('off') ? 'off' : 'on';
                 let dur = parseFloat(part.replace('on', '').replace('off', ''));
                 if (isNaN(dur) || dur <= 0) return;
-                let segStart = curH; let endH = curH + dur;
-                let realTimerTarget = endH; let displayEndH = endH;
+                let segStart = curH;
+                let endH = curH + dur;
+                let realTimerTarget = endH;
+                let displayEndH = endH;
 
                 if (index === parts.length - 1 && Math.abs(endH - 24) < 0.1) {
-                    const tomorrowDate = new Date(targetDate); tomorrowDate.setDate(targetDate.getDate() + 1);
+                    const tomorrowDate = new Date(targetDate);
+                    tomorrowDate.setDate(tomorrowDate.getDate() + 1);
                     const tomorrowSchedule = getSchedule(row.schedule_text, tomorrowDate);
                     if (tomorrowSchedule) {
                         const firstPart = tomorrowSchedule.split(',')[0];
                         const nextType = firstPart.includes('off') ? 'off' : 'on';
                         const nextDur = parseFloat(firstPart.replace('on', '').replace('off', ''));
-                        if (nextType === type) { realTimerTarget = 24 + nextDur; displayEndH = nextDur; finalEndLabel = formatHM(displayEndH); }
+                        if (nextType === type) {
+                            realTimerTarget = 24 + nextDur;
+                            displayEndH = nextDur;
+                            finalEndLabel = formatHM(displayEndH);
+                        }
                     }
                 }
 
-                let seg = document.createElement('div'); seg.className = `segment ${type}`;
-                seg.style.flexGrow = dur; seg.style.flexBasis = '0';
+                let seg = document.createElement('div');
+                seg.className = `segment ${type}`;
+                seg.style.flexGrow = dur;
+                seg.style.flexBasis = '0';
                 if (dur >= 1.5) seg.innerHTML = `<div class="segment-icon">${type === 'on' ? '💡' : '🔌'}</div>`;
                 track.appendChild(seg);
                 seg.addEventListener('click', () => handleSegmentClick(seg, type, segStart, endH, dur));
 
                 if (endH < 23.9 && (endH - lastEndH) > 2.0 && (24 - endH) > 1.5) {
-                    addLabel(lBox, endH, formatHM(endH), "mid"); lastEndH = endH;
+                    addLabel(lBox, endH, formatHM(endH), "mid");
+                    lastEndH = endH;
                 }
 
                 let cardEndText = (displayEndH !== endH) ? displayEndH : endH;
-                let cardDur = dur; if (realTimerTarget > 24) cardDur += (realTimerTarget - 24);
+                let cardDur = dur;
+                if (realTimerTarget > 24) cardDur += (realTimerTarget - 24);
                 let card = createCard(segStart, cardEndText, cardDur, type);
                 if (isToday && curFloat >= segStart && curFloat < endH) card.classList.add('active-now');
                 iBox.appendChild(card);
+
                 if (type === 'off') totOff += dur;
+
                 if (isToday && !foundState && curFloat < endH) {
                     foundState = true;
                     let totalSecForBat = dur * 3600;
@@ -1019,15 +1268,22 @@
                 }
                 curH = endH;
             });
+
             addLabel(lBox, 24, finalEndLabel, "end");
-            if (isToday && !foundState) { document.getElementById('batteryTimer').innerText = "--:--"; setBat(0, true); }
+
+            if (isToday && !foundState) {
+                document.getElementById('batteryTimer').innerText = "--:--";
+                setBat(0, true);
+            }
+
             totBox.innerHTML = `Всього без світла: <b>${fmtDur(totOff)}</b>`;
         }
 
         function handleSegmentClick(segEl, type, startH, endH, dur) {
             const detailBox = document.getElementById('detailCardContainer');
             if (activeSegmentElement === segEl) {
-                segEl.classList.remove('segment-selected'); activeSegmentElement = null;
+                segEl.classList.remove('segment-selected');
+                activeSegmentElement = null;
                 const card = detailBox.querySelector('.detail-card');
                 if (card) {
                     card.classList.add('closing');
@@ -1036,7 +1292,8 @@
                 return;
             }
             if (activeSegmentElement) activeSegmentElement.classList.remove('segment-selected');
-            activeSegmentElement = segEl; segEl.classList.add('segment-selected');
+            activeSegmentElement = segEl;
+            segEl.classList.add('segment-selected');
             showDetailCard(type === 'on' ? 'on' : 'off', startH, endH, dur);
             try { tg.HapticFeedback.selectionChanged(); } catch (e) { }
         }
@@ -1044,7 +1301,9 @@
         function showDetailCard(type, startH, endH, durH) {
             const box = document.getElementById('detailCardContainer');
             if (!box) return;
-            const startStr = formatHM(startH); const endStr = formatHM(endH); const durStr = fmtDur(durH);
+            const startStr = formatHM(startH);
+            const endStr = formatHM(endH);
+            const durStr = fmtDur(durH);
             let titleStatus, icon, headerClass, bodyHtml;
             if (type === 'on') {
                 titleStatus = 'СВІТЛО Є'; icon = '💡'; headerClass = 'detail-status-on';
@@ -1054,13 +1313,34 @@
                 bodyHtml = `<p>Світло буде вимкнене о <b>${startStr}</b> і повернеться о <b>${endStr}</b>.</p><p>Планове відключення.</p>`;
             }
             box.classList.remove('hidden');
-            box.innerHTML = `<div class="detail-card ${type === 'on' ? 'on' : 'off'}"><div class="detail-header"><div class="detail-left"><div class="detail-icon">${icon}</div><div class="detail-main"><div class="detail-status ${headerClass}">${titleStatus}</div><div class="detail-time">${startStr} - ${endStr}</div></div></div><div class="detail-duration">${durStr}</div></div><div class="detail-divider"></div><div class="detail-body">${bodyHtml}<p class="detail-note">* Включення/вимкнення може відбуватися з невеликою похибкою у часі.</p></div></div>`;
+            box.innerHTML = `
+                <div class="detail-card ${type === 'on' ? 'on' : 'off'}">
+                    <div class="detail-header">
+                        <div class="detail-left">
+                            <div class="detail-icon">${icon}</div>
+                            <div class="detail-main">
+                                <div class="detail-status ${headerClass}">${titleStatus}</div>
+                                <div class="detail-time">${startStr} - ${endStr}</div>
+                            </div>
+                        </div>
+                        <div class="detail-duration">${durStr}</div>
+                    </div>
+                    <div class="detail-divider"></div>
+                    <div class="detail-body">
+                        ${bodyHtml}
+                        <p class="detail-note">* Включення/вимкнення може відбуватися з невеликою похибкою у часі.</p>
+                    </div>
+                </div>`;
         }
 
         function addLabel(box, h, txt, align) {
-            let el = document.createElement('div'); el.className = `t-label ${align}`; el.innerText = txt;
+            let el = document.createElement('div');
+            el.className = `t-label ${align}`;
+            el.innerText = txt;
             el.style.left = (h / 24 * 100) + "%";
-            let t = document.createElement('div'); t.className = 't-tick'; el.appendChild(t);
+            let t = document.createElement('div');
+            t.className = 't-tick';
+            el.appendChild(t);
             box.appendChild(el);
         }
 
@@ -1070,17 +1350,23 @@
 
         function startTimer(targetH, totalSec, isOn) {
             clearInterval(countdownInterval);
-            const n = new Date(); const tH = Math.floor(targetH); const tM = Math.round((targetH - tH) * 60);
-            const tD = new Date(); tD.setHours(tH, tM, 0, 0);
+            const n = new Date();
+            const tH = Math.floor(targetH);
+            const tM = Math.round((targetH - tH) * 60);
+            const tD = new Date();
+            tD.setHours(tH, tM, 0, 0);
             if (tD < n) tD.setDate(tD.getDate() + 1);
+
             function tick() {
-                const now = new Date(); const rem = Math.floor((tD - now) / 1000);
+                const now = new Date();
+                const rem = Math.floor((tD - now) / 1000);
                 updateCursor();
                 if (rem <= 0) { clearInterval(countdownInterval); setTimeout(() => render(currentTab), 1000); return; }
                 document.getElementById('batteryTimer').innerText = fmtTimer(rem);
                 setBat(rem / totalSec, isOn);
             }
-            tick(); countdownInterval = setInterval(tick, 1000);
+            tick();
+            countdownInterval = setInterval(tick, 1000);
         }
 
         function setBat(pct, isOn) {
@@ -1101,26 +1387,49 @@
             label.innerText = isOn ? 'до відключення' : 'до включення';
 
             const colorStart = `hsl(${hue}, 100%, 35%)`;
-            const colorEnd = `hsl(${hue}, 100%, 60%)`;
-            const mainColor = `hsl(${hue}, 100%, 45%)`;
+            const colorEnd   = `hsl(${hue}, 100%, 60%)`;
+            const mainColor  = `hsl(${hue}, 100%, 45%)`;
 
             f.style.background = `linear-gradient(90deg, ${colorStart}, ${colorEnd})`;
-            f.style.boxShadow = `0 0 15px ${mainColor}`;
+            f.style.boxShadow  = `0 0 15px ${mainColor}`;
 
             if(tip) {
                 tip.style.background = mainColor;
-                tip.style.boxShadow = `0 0 10px ${mainColor}`;
+                tip.style.boxShadow  = `0 0 10px ${mainColor}`;
             }
         }
 
         function createCard(s, e, d, type) {
-            let c = document.createElement('div'); c.className = `card c-${type}`;
-            c.innerHTML = `<div class="card-header"><div class="card-info"><div class="c-icon">${type==='on'?'💡':'🔌'}</div><div class="c-times"><div class="status-label">${type==='on'?'СВІТЛО Є':'ВІДКЛЮЧЕННЯ'}</div><div class="c-time">${formatHM(s)} - ${formatHM(e)}</div></div></div><div class="c-dur">${fmtDur(d)}</div></div><div class="card-details">${type==='on' ? `Світло буде з <b>${formatHM(s)}</b> до <b>${formatHM(e)}</b>.<br>Наступне вимкнення очікується о <b>${formatHM(e)}</b>.<br><br><i>* Включення/вимкнення може бути з невеликою похибкою.</i>` : `Світло буде вимкнене о <b>${formatHM(s)}</b> і повернеться о <b>${formatHM(e)}</b>.<br>Планове відключення.<br><br><i>* Включення/вимкнення може відбуватися з невеликою похибкою у часі.</i>`}</div>`;
+            let c = document.createElement('div');
+            c.className = `card c-${type}`;
+            c.innerHTML = `
+                <div class="card-header">
+                    <div class="card-info">
+                        <div class="c-icon">${type==='on'?'💡':'🔌'}</div>
+                        <div class="c-times">
+                            <div class="status-label">${type==='on'?'СВІТЛО Є':'ВІДКЛЮЧЕННЯ'}</div>
+                            <div class="c-time">${formatHM(s)} - ${formatHM(e)}</div>
+                        </div>
+                    </div>
+                    <div class="c-dur">${fmtDur(d)}</div>
+                </div>
+                <div class="card-details">
+                    ${
+                        type==='on'
+                        ? `Світло буде з <b>${formatHM(s)}</b> до <b>${formatHM(e)}</b>.<br>Наступне вимкнення очікується о <b>${formatHM(e)}</b>.<br><br><i>* Включення/вимкнення може бути з невеликою похибкою.</i>`
+                        : `Світло буде вимкнене о <b>${formatHM(s)}</b> і повернеться о <b>${formatHM(e)}</b>.<br>Планове відключення.<br><br><i>* Включення/вимкнення може відбуватися з невеликою похибкою у часі.</i>`
+                    }
+                </div>`;
             c.addEventListener("click", (ev) => {
                 ev.stopPropagation();
-                if (activeListCard === c) { c.classList.remove("expanded"); activeListCard = null; return; }
+                if (activeListCard === c) {
+                    c.classList.remove("expanded");
+                    activeListCard = null;
+                    return;
+                }
                 if (activeListCard) { activeListCard.classList.remove("expanded"); }
-                c.classList.add("expanded"); activeListCard = c;
+                c.classList.add("expanded");
+                activeListCard = c;
             });
             return c;
         }
@@ -1158,20 +1467,31 @@
             }
         });
 
-        // --- LOGIC: THEME ---
+        // --- THEME ---
         function toggleTheme() {
             const body = document.body;
             const icon = document.getElementById('fabThemeIcon');
             const isLight = body.getAttribute('data-theme') === 'light';
-            if (isLight) { body.removeAttribute('data-theme'); localStorage.setItem('theme', 'dark'); if(icon) icon.innerText = '🌙'; }
-            else { body.setAttribute('data-theme', 'light'); localStorage.setItem('theme', 'light'); if(icon) icon.innerText = '☀️'; }
+            if (isLight) {
+                body.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'dark');
+                if(icon) icon.innerText = '🌙';
+            } else {
+                body.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                if(icon) icon.innerText = '☀️';
+            }
             try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
         }
         function loadTheme() {
             const saved = localStorage.getItem('theme');
             const icon = document.getElementById('fabThemeIcon');
-            if (saved === 'light') { document.body.setAttribute('data-theme', 'light'); if(icon) icon.innerText = '☀️'; }
-            else { if(icon) icon.innerText = '🌙'; }
+            if (saved === 'light') {
+                document.body.setAttribute('data-theme', 'light');
+                if(icon) icon.innerText = '☀️';
+            } else {
+                if(icon) icon.innerText = '🌙';
+            }
         }
 
         function showInfo(type) {
@@ -1221,10 +1541,8 @@
             if(fabOverlay) fabOverlay.classList.remove('active');
         }
 
-        // 1. Функція отримання даних
         async function fetchDonation() {
             try {
-                // Додаємо ?jar=true до нашого проксі
                 const url = `${CSV_PROXY_URL}?jar=true&t=${Date.now()}`;
                 const r = await fetch(url);
                 const data = await r.json();
@@ -1234,30 +1552,23 @@
                 }
             } catch (e) {
                 console.error("Donation error:", e);
-                // Якщо помилка, пишемо дефолтний текст
                 document.getElementById('donateAmount').innerText = "Монобанка";
             }
         }
 
         function updateDonateUI(amount, goal) {
-            // Якщо ціль не вказана в банці (0), ставимо суму + 1000 (щоб шкала була повною), або 5000
             const target = goal > 0 ? goal : (amount > 0 ? amount * 1.2 : 5000);
-
             let pct = (amount / target) * 100;
             if (pct > 100) pct = 100;
 
-            // Малюємо шкалу
             const progress = document.getElementById('donateProgress');
             if (progress) progress.style.width = `${pct}%`;
 
-            // Форматуємо текст
             const fmtAmount = amount.toLocaleString('uk-UA', {maximumFractionDigits: 0});
-            const fmtGoal = target.toLocaleString('uk-UA', {maximumFractionDigits: 0});
+            const fmtGoal   = target.toLocaleString('uk-UA', {maximumFractionDigits: 0});
 
             const amountEl = document.getElementById('donateAmount');
             if (amountEl) {
-                // Якщо ціль реальна - показуємо "X / Y"
-                // Якщо цілі немає (безлімітна банка) - показуємо просто "Зібрано: X"
                 if (goal > 0) {
                     amountEl.innerText = `${fmtAmount} / ${fmtGoal} ₴`;
                 } else {
@@ -1277,8 +1588,9 @@
             if (now.getDate() !== currentDayNum) { currentDayNum = now.getDate(); init(); }
         }, 1000);
 
-        // 🔥 ЗАПУСК!
+        // 🔥 ЗАПУСК
         init();
+        fetchDonation();
     </script>
 </body>
 </html>
