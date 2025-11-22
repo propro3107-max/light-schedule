@@ -274,9 +274,18 @@
         .fab-overlay.active { opacity: 1; visibility: visible; }
 
         .fab-container {
-            position: fixed; bottom: 60px; right: 20px; z-index: 90;
-            display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 12px;
+            position: fixed;
+            bottom: 60px; /* Відступ від низу */
+            right: 20px;
+            z-index: 90;
+            /* 🔥 ВИПРАВЛЕНО: Звичайний порядок (меню зверху, кнопка знизу) */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: flex-end;
         }
+
+        /* Головна кругла кнопка */
         .fab-main {
             width: 54px; height: 54px; border-radius: 50%;
             background: var(--accent-green); color: white;
@@ -284,35 +293,59 @@
             font-size: 26px; cursor: pointer;
             box-shadow: 0 4px 20px rgba(46, 204, 113, 0.5);
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
+            /* Гарантуємо, що кнопка не стискається */
+            flex-shrink: 0;
         }
         .fab-main:active { transform: scale(0.9); }
-        .fab-container.active .fab-main { transform: rotate(90deg); background: var(--accent-red); box-shadow: 0 4px 20px rgba(231, 76, 60, 0.5); }
+        .fab-container.active .fab-main {
+            transform: rotate(90deg);
+            background: var(--accent-red);
+            box-shadow: 0 4px 20px rgba(231, 76, 60, 0.5);
+        }
 
+        /* Контейнер для списку кнопок */
         .fab-menu {
-            display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 10px;
+            /* 🔥 ВИПРАВЛЕНО: Елементи йдуть знизу вгору */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            margin-bottom: 12px; /* Відступ від головної кнопки */
             pointer-events: none;
         }
         .fab-container.active .fab-menu { pointer-events: auto; }
 
+        /* Кнопки меню */
         .fab-item {
             background: var(--card-bg); color: var(--text-main);
             border: 1px solid rgba(128,128,128,0.15);
             padding: 10px 16px 10px 20px; border-radius: 30px;
             display: flex; align-items: center; justify-content: flex-end; gap: 12px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer;
-            opacity: 0; transform: translateY(20px) scale(0.8); transform-origin: right center;
+
+            /* Анімація: починаємо трохи нижче і прозорими */
+            opacity: 0;
+            transform: translateY(20px) scale(0.8);
+            transform-origin: right bottom;
             transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
+
+        /* Коли активно - піднімаємо на місця */
         .fab-container.active .fab-item { opacity: 1; transform: translateY(0) scale(1); }
         .fab-item:active { transform: scale(0.95); background: var(--glass-bg); }
+
         .fab-text { font-size: 14px; font-weight: 600; }
         .fab-emoji { font-size: 18px; line-height: 1; width: 24px; text-align: center; }
 
-        .fab-item:nth-child(1) { transition-delay: 0.05s; }
-        .fab-item:nth-child(2) { transition-delay: 0.1s; }
-        .fab-item:nth-child(3) { transition-delay: 0.15s; }
-        .fab-item:nth-child(4) { transition-delay: 0.2s; }
-        .fab-item:nth-child(5) { transition-delay: 0.25s; }
+        /* Затримки появи (знизу вгору: 5-й елемент в HTML це Тема, він найнижчий) */
+        /* Оскільки flex-direction: column, останній елемент в HTML (Тема) буде внизу, біля кнопки */
+        /* Ми хочемо, щоб нижній елемент вилітав першим */
+
+        .fab-item:nth-last-child(1) { transition-delay: 0.05s; } /* Тема */
+        .fab-item:nth-last-child(2) { transition-delay: 0.1s; }  /* Донат */
+        .fab-item:nth-last-child(3) { transition-delay: 0.15s; } /* Черга */
+        .fab-item:nth-last-child(4) { transition-delay: 0.2s; }  /* Співпраця */
+        .fab-item:nth-last-child(5) { transition-delay: 0.25s; } /* Про бота */
 
         /* --- MODAL --- */
         .modal-overlay {
