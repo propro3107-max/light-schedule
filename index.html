@@ -359,6 +359,18 @@
             border-color: var(--accent-red);
             animation: pulseRed 2s infinite ease-in-out;
         }
+
+        .total-block {
+            display: inline-block; /* Щоб не розтягувався на всю ширину */
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 15px;
+
+            /* Центруємо блок */
+            margin-left: auto; margin-right: auto; width: fit-content;
+        }
     </style>
 </head>
 <body>
@@ -1116,7 +1128,15 @@
         function fmtDur(dh) {
             let h = Math.floor(dh);
             let m = Math.round((dh - h) * 60);
-            return `${h}г ${m > 0 ? m + 'хв' : ''}`;
+
+            // Якщо є хвилини: "4 год 30 хв"
+            if (m > 0) {
+                return `${h} год ${m} хв`;
+            }
+            // Якщо хвилин немає, пишемо гарно: "7 годин"
+            else {
+                return `${h} годин`;
+            }
         }
 
         // 🔥 ЗАПУСК!
