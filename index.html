@@ -161,6 +161,31 @@
             overflow: hidden;
         }
 
+        .top-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            margin-top: 10px;
+            gap: 10px;
+        }
+
+        .top-bar .updated,
+        .top-bar .users {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .queue-selector {
+            background: rgba(255,255,255,0.08);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
         .detail-card.on {
             border-color: var(--accent-green);
             box-shadow: 0 0 18px rgba(46, 204, 113, 0.35);
@@ -389,19 +414,20 @@
 </head>
 <body>
 
+    <div class="top-bar">
+        <span class="updated" id="topUpdated">Оновлено…</span>
+
+        <span style="flex:1;"></span>
+
+        <span class="users" id="topUsers">👥 …</span>
+    </div>
+
+
     <div class="header">
         <div class="queue-select-btn" onclick="toggleModal()">
             <span id="queueTitle">Завантаження...</span>
             <span class="arrow-icon">▼</span>
         </div>
-    </div>
-
-    <div id="lastUpdateText"
-         style="margin-top:6px;
-                font-size:12px;
-                color:#8e8e93;
-                text-align:center;
-                opacity:0.8;">
     </div>
 
     <div id="loader" class="loader">
@@ -464,6 +490,39 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
+        // ==== ЧИТАННЯ ДАНИХ З startapp (payload від бота) ====
+            (function applyStartAppData() {
+                const param = tg.initDataUnsafe?.start_param;
+                if (!param) return;
+
+                try {
+                    const json = JSON.parse(
+                        atob(param.replace(/-/g, '+').replace(/_/g, '/'))
+                    );
+
+                    if (json.updated) {
+                        document.getElementById("topUpdated").innerText =
+                            "Оновлено: " + json.updated;
+                    }
+
+                    if (json.users) {
+                        document.getElementById("topUsers").innerText =
+                            "👥 " + json.users;
+                    }
+
+                    if (json.queue) {
+                        currentQueue = json.queue;
+                        localStorage.setItem('savedQueue', json.queue);
+                    }
+
+                } catch (err) {
+                    console.error("Помилка читання start_param:", err);
+                }
+            })();
+
+
+
+
         // 🔗 URL твого Cloudflare Worker
         const CSV_PROXY_URL = "https://shy-fog-bb74svitlo-proxy.propro3107.workers.dev";
 
@@ -518,8 +577,8 @@
                     }
                 }
 
-                document.getElementById("lastUpdateText").innerText =
-                    window.LAST_UPDATED ? formatUpdateTime(window.LAST_UPDATED) : "";
+                updateTopUpdated();
+
 
                 if (!allData.length) throw new Error("Empty Data");
 
@@ -540,15 +599,17 @@
                     allData = JSON.parse(cached);
                     showOfflineBadge();
 
-                    window.LAST_UPDATED = null;
-                    for (const row of allData) {
-                        if (row.updated_at && row.updated_at.trim() !== "") {
-                            window.LAST_UPDATED = row.updated_at.trim();
-                            break;
-                        }
+                window.LAST_UPDATED = null;
+                for (const row of allData) {
+                    if (row.updated_at && row.updated_at.trim() !== "") {
+                        window.LAST_UPDATED = row.updated_at.trim();
+                        break;
                     }
-                    document.getElementById("lastUpdateText").innerText =
-                        window.LAST_UPDATED ? formatUpdateTime(window.LAST_UPDATED) : "";
+                }
+
+                // тут теж додай
+                updateTopUpdated();
+
 
                     document.getElementById('loader').classList.add('hidden');
                     document.getElementById('loading').classList.add('hidden');
@@ -699,7 +760,6 @@
             document.getElementById('queueTitle').innerText = `ЧЕРГА ${currentQueue}`;
 
             const upd = window.LAST_UPDATED;
-            document.getElementById("lastUpdateText").innerText = upd ? formatUpdateTime(upd) : "";
         }
 
         function formatUpdateTime(raw) {
@@ -954,6 +1014,18 @@
             cursor.style.left = p + "%";
         }
 
+        function updateTopUpdated() {
+            const el = document.getElementById("topUpdated");
+            if (!el) return;
+
+            if (window.LAST_UPDATED) {
+                el.innerText = formatUpdateTime(window.LAST_UPDATED);
+            } else {
+                el.innerText = "Оновлено…";
+            }
+        }
+
+
         function startTimer(targetH, totalSec, isOn) {
             clearInterval(countdownInterval);
             const n = new Date();
@@ -1042,6 +1114,7 @@
             const sec = s % 60;
             return `${h}:${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
         }
+
 
         function formatHM(dt) {
             let h = Math.floor(dt) % 24;
