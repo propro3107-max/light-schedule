@@ -152,6 +152,28 @@
             padding: 0; left: -1px; /* Мікро-корекція під рамки */
         }
 
+        /* Загальна ширина смуги */
+        ::-webkit-scrollbar {
+            width: 6px;  /* Вертикальний скрол */
+            height: 6px; /* Горизонтальний скрол (якщо буде) */
+        }
+
+        /* Фон під повзунком (трек) */
+        ::-webkit-scrollbar-track {
+            background: transparent; /* Робимо прозорим, щоб було видно фон сайту */
+        }
+
+        /* Сам рухомий повзунок (thumb) */
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2); /* Напівпрозорий білий */
+            border-radius: 10px; /* Закруглені краї */
+        }
+
+        /* Коли наводиш мишкою (для ПК) */
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4); /* Стає яскравішим */
+        }
+
         .t-label {
             position: absolute; top: 0;
             font-size: 11px; font-weight: 600; color: var(--text-muted);
