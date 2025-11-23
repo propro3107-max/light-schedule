@@ -94,6 +94,73 @@
             gap: 16px;
         }
 
+        .emergency-overlay {
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+        }
+        .emergency-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+
+                .emergency-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.65);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0; visibility: hidden;
+            transition: 0.3s;
+        }
+
+        .emergency-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .emergency-box {
+            background: var(--card-bg);
+            border-radius: 20px;
+            width: 88%;
+            max-width: 360px;
+            padding: 26px 22px 22px;
+            text-align: center;
+            border: 1px solid rgba(255,0,0,0.25);
+            box-shadow: 0 10px 28px rgba(255,0,0,0.25);
+        }
+
+        .emergency-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ff4d4d;
+            margin-bottom: 12px;
+        }
+
+        .emergency-text {
+            color: var(--text-main);
+            opacity: 0.9;
+            font-size: 15px;
+            margin-bottom: 22px;
+            line-height: 1.45;
+        }
+
+        .emergency-btn {
+            width: 100%;
+            padding: 12px;
+            background: #ff4d4d;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+
         /* --- БАТАРЕЙКА --- */
         .battery-container { display: flex; flex-direction: column; align-items: center; margin-top: 10px; }
         .battery-wrapper { display: flex; align-items: center; position: relative; }
@@ -114,6 +181,60 @@
         .battery-fill.fill-gray {
             background: #555;
             box-shadow: none;
+        }
+
+        .share-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .share-btn {
+            background: none;               /* мінімалізм */
+            color: #46c97f;                 /* акуратний зелений */
+            font-size: 15px;
+            font-weight: 600;
+            padding: 10px 4px;
+            cursor: pointer;
+            border: none;
+            border-radius: 12px;
+            transition: 0.25s ease;
+        }
+
+        .share-btn:active {
+            opacity: 0.6;
+            transform: scale(0.97);
+        }
+
+        /* плавна поява */
+        .share-wrapper.fade-in {
+            animation: fadeInShare 0.4s ease forwards;
+        }
+
+        @keyframes fadeInShare {
+            from { opacity: 0; transform: translateY(6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+
+        .emergency-banner {
+            text-align: center;
+            color: #ff4d4d;
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: -4px;
+            margin-bottom: 8px;
+            animation: pulseEmergency 1.2s infinite ease-in-out;
+        }
+
+        @keyframes pulseEmergency {
+            0%   { opacity: 0.7; }
+            50%  { opacity: 1;   }
+            100% { opacity: 0.7; }
+        }
+
+        .share-btn:active {
+            transform: scale(0.96);
         }
 
         .battery-fill::after {
@@ -188,6 +309,17 @@
             position: absolute; top: -6px; left: 50%; width: 1px; height: 4px; background: var(--text-muted);
             transform: translateX(-50%);
         }
+
+        @keyframes pulseActive {
+            0% { transform: scale(1); }
+            40% { transform: scale(1.06); }
+            100% { transform: scale(1); }
+        }
+
+        .q-item.pulse {
+            animation: pulseActive 1.2s ease;
+        }
+
 
         /* --- CARD LIST --- */
         .card-list { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
@@ -303,6 +435,20 @@
         }
         .hidden { display: none; }
 
+        /* --- SWIPE ANIMATION --- */
+        #app-content {
+            transition: transform 0.25s ease;
+        }
+
+        .swipe-left {
+            transform: translateX(-100%);
+        }
+        .swipe-right {
+            transform: translateX(100%);
+        }
+        .swipe-reset {
+            transform: translateX(0);
+        }
 
         .donate-content {
             position: relative;
@@ -588,6 +734,51 @@
         .sk-date { height: 20px; width: 150px; margin: 0 auto; }
         .sk-timeline { height: 60px; width: 100%; }
         .sk-card { height: 80px; width: 100%; }
+
+                /* --- MOBILE FIXES --- */
+        @media(max-width: 420px) {
+
+            /* Менший текст колонок СЬОГОДНІ / ЗАВТРА */
+            .day-title,
+            .date-text {
+                font-size: 13px !important;
+                letter-spacing: 0.3px;
+            }
+
+            /* Зменшити відступи щоб все було в одному рядку */
+            .date-box {
+                column-gap: 6px !important;
+                margin: 6px 0 12px !important;
+            }
+
+            /* Лінія трохи коротша */
+            .date-line {
+                height: 1px;
+                opacity: 0.7;
+            }
+
+            /* Текст “ГРАФІК НА СЬОГОДНІ” не роз'їжджається */
+            .date-box span {
+                white-space: nowrap;
+            }
+
+            /* Контейнер шкали трохи ближче до батарейки */
+            .timeline-section {
+                margin-top: -4px !important;
+            }
+
+            /* Шрифт часу під сегментами */
+            .t-label {
+                font-size: 10px !important;
+            }
+
+            /* Щільніше розташовані тік-мітки */
+            .time-labels {
+                margin-top: 4px !important;
+            }
+        }
+
+
     </style>
 </head>
 <body>
@@ -631,16 +822,6 @@
             <div class="battery-status" id="batteryLabel">статус</div>
         </div>
 
-        <!-- Дата (стаціонарна) -->
-
-        <div class="date-box">
-            <span id="dayTitle" class="day-title">Графік на сьогодні</span>
-            <div class="date-line"></div>
-            <span id="dateDisplay" class="date-text">---</span>
-            <div class="date-line"></div>
-        </div>
-
-
 
         <!-- 🔥 Увесь контент дня, який "слайдиться" між Сьогодні/Завтра -->
         <div id="dayBody" class="day-body">
@@ -653,6 +834,19 @@
                 <div id="detailCardContainer" class="detail-card-container hidden"></div>
             </div>
 
+                    <!-- Дата (стаціонарна) -->
+
+        <div class="date-box">
+            <span id="dayTitle" class="day-title">Графік на сьогодні</span>
+            <div class="date-line"></div>
+            <span id="dateDisplay" class="date-text">---</span>
+            <div class="date-line"></div>
+        </div>
+
+            <div id="emergencyBanner" class="emergency-banner hidden">
+                 🚨 Зараз діють екстренні відключення
+            </div>
+
             <div id="noDataMessage" class="no-data-msg hidden">💤 Графік на цей день ще не сформовано</div>
 
             <div class="card-list" id="infoBox"></div>
@@ -660,6 +854,11 @@
             <div style="text-align:center;">
                 <div class="total-block" id="totalBox"></div>
             </div>
+
+            <div id="shareWrapper" class="share-wrapper hidden">
+                <button class="share-btn" onclick="shareSchedule()">🔗 Поділитися графіком</button>
+            </div>
+
 
             <div class="donate-wrapper">
                 <a href="https://send.monobank.ua/jar/6qoHuhpGgD" target="_blank" class="donate-btn">
@@ -674,6 +873,17 @@
             </div>
 
         </div> <!-- /dayBody -->
+
+        <div id="emergencyOverlay" class="emergency-overlay" onclick="closeEmergency()">
+            <div class="emergency-box" onclick="event.stopPropagation()">
+                <div class="emergency-title">🚨 ЕКСТРЕНІ ВІДКЛЮЧЕННЯ</div>
+                <div class="emergency-text">
+                    Ваше світло можуть вимкнути будь-коли, незалежно від графіку.
+                </div>
+                <button class="emergency-btn" onclick="closeEmergency()">Зрозуміло</button>
+            </div>
+        </div>
+
 
     </div> <!-- /app-content -->
 
@@ -704,6 +914,16 @@
             <div class="fab-item" onclick="showInfo('queue')">
                 <span class="fab-text">Черга</span>
                 <span class="fab-emoji">❓</span>
+            </div>
+
+            <div class="fab-item" onclick="showInfo('faq')">
+                <span class="fab-text">Питання-відповіді</span>
+                <span class="fab-emoji">💬</span>
+            </div>
+
+            <div class="fab-item" onclick="showInfo('emergency')">
+                <span class="fab-text">Аварійні служби</span>
+                <span class="fab-emoji">🚨</span>
             </div>
 
             <div class="fab-item" onclick="showInfo('support')">
@@ -794,6 +1014,16 @@
             }
         }
 
+        function showEmergency() {
+            document.getElementById("emergencyOverlay").classList.add("show");
+        }
+
+        function closeEmergency() {
+            document.getElementById("emergencyOverlay").classList.remove("show");
+            localStorage.setItem("emergency_ack", "1"); // щоб не показувати повторно
+        }
+
+
         async function init(isSilent = false) {
             loadTheme();
 
@@ -806,6 +1036,28 @@
 
                 const csvText = await getCSV();
                 allData = parseCSV(csvText);
+
+                // global emergency flag from first row
+                const primary = normalizeHeaders(allData[0]);
+
+                if (primary.emergency === "on") {
+
+                    document.getElementById("emergencyBanner").classList.remove("hidden");
+                
+                    const ack = localStorage.getItem("emergency_ack");
+
+                    if (!ack) {
+                        // Показати плашку через 3 секунди після запуску
+                        setTimeout(() => {
+                            showEmergency();
+                        }, 3000);
+                    }
+
+                } else {
+
+                    document.getElementById("emergencyBanner").classList.add("hidden");
+                    localStorage.removeItem("emergency_ack");
+                }
 
                 window.LAST_UPDATED = null;
                 for (const row of allData) {
@@ -967,9 +1219,18 @@
         function timeToH(t) { const [h, m] = t.split(':').map(Number); return h + (m / 60); }
 
         function toggleModal() {
-            document.getElementById('modal').classList.toggle('show');
+            const modal = document.getElementById('modal');
+            modal.classList.toggle('show');
+
+            // Перемикання стрілочки ▼
             document.querySelector('.queue-select-btn').classList.toggle('open');
+
+            // Якщо модалка відкрилась — через 150 мс залипаємо на активну чергу
+            if (modal.classList.contains('show')) {
+                setTimeout(scrollToActiveQueue, 150);
+            }
         }
+
 
         function selectQueue(q) {
             currentQueue = q; localStorage.setItem('savedQueue', q);
@@ -1277,6 +1538,16 @@
             }
 
             totBox.innerHTML = `Всього без світла: <b>${fmtDur(totOff)}</b>`;
+
+            // показати кнопку "Поділитися графіком"
+            const shareWrap = document.getElementById("shareWrapper");
+            shareWrap.classList.remove("hidden");
+
+            // анімація тільки при першій появі
+            if (!shareWrap.classList.contains("fade-in")) {
+                setTimeout(() => shareWrap.classList.add("fade-in"), 150);
+            }
+            
         }
 
         function handleSegmentClick(segEl, type, startH, endH, dur) {
@@ -1515,6 +1786,42 @@
                     3. Подивіться номер групи.<br><br>
                     Потім оберіть цю чергу у списку зверху.
                 `;
+
+             } else if (type === 'faq') {
+                title.innerText = "💬 Питання-відповіді";
+                text.innerHTML = `
+                    <b>1. Чому графік у боті не співпадає з реальністю?</b><br>
+                    Через аварії або екстрені відключення. Графік відображає лише стабілізаційні відключення.<br><br>
+
+                    <b>2. Звідки ви берете графіки?</b><br>
+                    З офіційного сайту ДТЕК. Дані обробляються автоматично.<br><br>
+
+                    <b>3. Моя адреса без світла, а по графіку має бути світло!</b><br>
+                    Це локальна аварія або екстрене відключення — вони не входять у графік.<br><br>
+
+                    <b>4. Чому оновлення графіків приходить не одразу?</b><br>
+                    ДТЕК не завжди оновлює дані вчасно. Ми перевіряємо їх регулярно.<br><br>
+                `;
+
+            } else if (type === 'emergency') {
+                title.innerText = "🚨 Аварійні служби Броварів";
+                text.innerHTML = `
+                    ⚡ <b>ДТЕК Київські регіональні електромережі</b><br>
+                    Безкоштовно: <a href="tel:0800400740">0 800 400 740</a><br><br>
+
+                    🏛 <b>Контакт-центр Броварської міської ради</b><br>
+                    <a href="tel:+380459461111">+38 045 946 1111</a><br><br>
+
+                    💧 <b>Броваритепловодоенергія</b><br>
+                    <a href="tel:+380459441101">+38 045 944 1101</a><br><br>
+
+                    🔥 <b>ДСНС (Пожежна служба):</b> <a href="tel:101">101</a><br>
+                    🚑 <b>Швидка допомога:</b> <a href="tel:103">103</a><br>
+                    👮 <b>Поліція:</b> <a href="tel:102">102</a><br><br>
+
+                    ❗ У разі небезпеки телефонуйте 101 або 103.
+                `;
+
             } else if (type === 'support') {
                 title.innerText = "💚 Підтримати";
                 text.innerHTML = `
@@ -1556,6 +1863,95 @@
             }
         }
 
+        // === ANIMATED SWIPE CONTROL ===
+
+        let touchStartX = 0;
+        let touchEndX = 0;
+        let swipeLocked = false; // щоб не дублікувати свайпи
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, false);
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleAnimatedSwipe();
+        }, false);
+
+        function handleAnimatedSwipe() {
+            if (swipeLocked) return;
+
+            const dx = touchEndX - touchStartX;
+            if (Math.abs(dx) < 60) return;
+
+            const box = document.getElementById('app-content');
+
+            if (dx < 0 && currentTab !== 2) {
+                // Свайп вліво → НА ЗАВТРА
+                swipeLocked = true;
+                box.classList.add('swipe-left');
+
+                try { tg.HapticFeedback.selectionChanged(); } catch(e){}
+
+                setTimeout(() => {
+                    switchTab(2);
+                    box.classList.remove('swipe-left');
+                    box.classList.add('swipe-right');
+
+                    setTimeout(() => {
+                        box.classList.remove('swipe-right');
+                        box.classList.add('swipe-reset');
+                        swipeLocked = false;
+                    }, 10);
+                }, 250);
+
+            } else if (dx > 0 && currentTab !== 1) {
+                // Свайп вправо → НА СЬОГОДНІ
+                swipeLocked = true;
+                box.classList.add('swipe-right');
+
+                try { tg.HapticFeedback.selectionChanged(); } catch(e){}
+
+                setTimeout(() => {
+                    switchTab(1);
+                    box.classList.remove('swipe-right');
+                    box.classList.add('swipe-left');
+
+                    setTimeout(() => {
+                        box.classList.remove('swipe-left');
+                        box.classList.add('swipe-reset');
+                        swipeLocked = false;
+                    }, 10);
+                }, 250);
+            }
+        }
+
+        function scrollToActiveQueue() {
+            const box = document.getElementById("queueList");
+            const active = box.querySelector(".q-item.active");
+            if (!active) return;
+
+            const offset = active.offsetTop - (box.clientHeight / 2) + (active.clientHeight / 2);
+
+            box.scrollTo({
+                top: offset,
+                behavior: "smooth"
+            });
+
+            active.classList.add("pulse");
+            setTimeout(() => active.classList.remove("pulse"), 1200);
+        }
+
+        function shareSchedule() {
+            try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
+
+            const day = currentTab === 1 ? "today" : "tomorrow";
+            const url = `https://t.me/SvitloBroBot?start=share_${currentQueue}_${day}`;
+
+            tg.openTelegramLink(url);
+        }
+
+
         function updateDonateUI(amount, goal) {
             const target = goal > 0 ? goal : (amount > 0 ? amount * 1.2 : 5000);
             let pct = (amount / target) * 100;
@@ -1577,6 +1973,7 @@
             }
         }
 
+
         function closeInfo() {
             document.getElementById('infoModal').classList.remove('show');
         }
@@ -1589,8 +1986,9 @@
         }, 1000);
 
         // 🔥 ЗАПУСК
-        init();
-        fetchDonation();
-    </script>
+    init();
+    fetchDonation();
+</script>
+
 </body>
 </html>
