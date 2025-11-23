@@ -856,7 +856,7 @@
             </div>
 
             <div id="shareWrapper" class="share-wrapper hidden">
-                <button class="share-btn" onclick="shareSchedule()">🔗 Поділитися графіком</button>
+                <button class="share-btn" onclick="universalShare()">🔗 Поділитися графіком</button>
             </div>
 
 
@@ -930,6 +930,12 @@
                 <span class="fab-text">Донат</span>
                 <span class="fab-emoji">💚</span>
             </div>
+
+            <div class="fab-item" onclick="universalShare()">
+                <span class="fab-text">Поділитися</span>
+                <span class="fab-emoji">📤</span>
+            </div>
+
 
             <div class="fab-item" onclick="toggleTheme()" id="fabThemeBtnBlock">
                 <span class="fab-text">Тема</span>
@@ -1942,30 +1948,39 @@
             setTimeout(() => active.classList.remove("pulse"), 1200);
         }
 
-        function shareSchedule() {
-            try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
-
+        function universalShare() {
             const text =
         `https://t.me/SvitloBroBot
         ⚡️ Я користуюсь ботом для відстеження графіків відключень світла у Броварах. Приєднуйся!
         Моя черга: ${currentQueue}`;
 
-            // Копіюємо текст у буфер
+            // --- Якщо браузер / Telegram WebView підтримує Web Share API ---
+            if (navigator.share) {
+                navigator.share({
+                    title: "Графік світла — Бровари",
+                    text: text,
+                    url: "https://t.me/SvitloBroBot"
+                }).catch(err => console.log("Share cancelled", err));
+                return;
+            }
+
+            // --- Fallback (копіюємо текст + popup) ---
             navigator.clipboard.writeText(text).then(() => {
                 tg.showPopup({
                     title: "Скопійовано!",
-                    message: "Текст запрошення скопійовано. Вставте його у чат.",
+                    message: "Текст запрошення скопійовано. Вставте його у будь-який чат.",
                     buttons: [
-                        {id: "open_tg", type: "default", text: "Відкрити Telegram"},
-                        {type: "cancel"}
+                        { id: "open_tg", text: "Telegram", type: "default" },
+                        { type: "cancel" }
                     ]
                 }, (btn) => {
                     if (btn === "open_tg") {
-                        tg.openTelegramLink("https://t.me/share/url?url=" + encodeURIComponent(text));
+                        tg.openTelegramLink("https://t.me/SvitloBroBot");
                     }
                 });
             });
         }
+
 
         function updateDonateUI(amount, goal) {
             const target = goal > 0 ? goal : (amount > 0 ? amount * 1.2 : 5000);
