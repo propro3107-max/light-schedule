@@ -98,8 +98,6 @@
             opacity: 0;
             visibility: hidden;
             transition: 0.3s;
-        }
-        .emergency-overlay.show {
             opacity: 1;
             visibility: visible;
         }
@@ -126,12 +124,6 @@
 
         .battery-tap-anim {
             animation: batteryTap 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        /* Щоб курсор показував, що можна клікнути */
-        .battery-shell {
-            cursor: pointer;
-            transition: transform 0.1s; /* для плавності */
         }
 
         .emergency-overlay {
@@ -197,11 +189,13 @@
             align-items: center;
             margin-top: 10px;
 
-            /* 🔥 ЗМІНЮЄМО ТУТ: */
-            margin-bottom: 10px; /* Було 30px, ставимо 10px або 8px */
+            /* Відступ знизу, щоб таймлайн не прилипав */
+            margin-bottom: 10px;
 
             position: relative;
-            z-index: 10;
+
+            /* 🔥 ГОЛОВНЕ ВИПРАВЛЕННЯ НАЛІЗАННЯ: */
+            z-index: 10; /* Було 10. Ставимо 30, щоб було вище за таймлайн (у якого 20) */
         }
         /* --- ОНОВЛЕНІ СТИЛІ ДЛЯ БАТАРЕЙКИ --- */
 
@@ -210,10 +204,14 @@
             align-items: center;
             position: relative;
 
-            /* 🔥 Анімація тепер тут, щоб збільшувалось все разом */
             transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.4s ease;
             cursor: pointer;
             z-index: 10;
+
+            /* 🔥 ДОДАЄМО ЦЕЙ РЯДОК: */
+            /* Компенсуємо піптик (6px) + його відступ (4px) = 10px */
+            /* Тепер корпус буде ідеально по центру */
+            margin-left: 10px;
         }
 
         /* Коли збільшена - збільшуємо всю обгортку */
@@ -235,7 +233,88 @@
         .battery-fill {
             height: 100%; width: 100%; border-radius: 9px;
             position: relative; overflow: hidden;
+            /* Плавна зміна кольору та ширини */
             transition: width 0.5s linear, background 0.5s linear, box-shadow 0.5s linear;
+        }
+
+/* --- СТИЛІ ДЛЯ DONATE POPUP --- */
+        .donate-hero {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .donate-emoji-big {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.6));
+            animation: heartBeat 1.5s infinite ease-in-out;
+        }
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            15% { transform: scale(1.15); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.15); }
+            60% { transform: scale(1); }
+        }
+
+        /* Кнопка Монобанки */
+        .btn-mono {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #000000, #333333);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-mono::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: translateX(-100%);
+            transition: 0.5s;
+        }
+        .btn-mono:active { transform: scale(0.96); }
+
+        /* Поле картки */
+        .card-copy-box {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            padding: 14px;
+            border-radius: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .card-copy-box:active { background: rgba(255, 255, 255, 0.15); }
+
+        .cc-num {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--text-main);
+        }
+        .cc-icon { font-size: 18px; opacity: 0.7; }
+
+        .donate-divider {
+            display: flex; align-items: center; gap: 10px;
+            margin: 15px 0; color: var(--text-muted); font-size: 12px; text-transform: uppercase;
+        }
+        .donate-divider::before, .donate-divider::after {
+            content: ''; flex: 1; height: 1px; background: rgba(128,128,128,0.2);
         }
 
         /* сіра батарейка коли графік невідомий */
@@ -298,10 +377,6 @@
             100% { opacity: 0.7; }
         }
 
-        .share-btn:active {
-            transform: scale(0.96);
-        }
-
          .share-native-btn {
             display: block;
             text-align: center;
@@ -321,23 +396,123 @@
             opacity: 0.85;
         }
 
+/* --- АНІМАЦІЇ ЗАРЯДКИ/РОЗРЯДКИ --- */
+
+        /* 1. Смужки (текстура) */
         .battery-fill::after {
             content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background-image: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent);
-            background-size: 20px 20px; z-index: 2;
-            animation: moveRight 4s linear infinite;
+            background-size: 20px 20px;
+            z-index: 2; /* Над фоном */
         }
-        .battery-fill.discharging::after { animation-name: moveLeft; }
 
-        @keyframes moveRight { 0% { background-position: 0 0; } 100% { background-position: 40px 0; } }
-        @keyframes moveLeft  { 0% { background-position: 0 0; } 100% { background-position: -40px 0; } }
+        /* Це біла напівпрозора смуга, що біжить поверху */
+        .battery-fill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%; /* Ширина бліка */
+            left: -100%; /* Стартує за межами зліва */
+
+            /* Градієнт: прозорий -> білий -> прозорий */
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+
+            transform: skewX(-20deg); /* Нахиляємо, щоб було динамічно */
+            z-index: 3; /* Поверх смужок */
+            pointer-events: none;
+        }
+
+        /* --- АНІМАЦІЯ ХВИЛІ (Зліва направо) --- */
+        @keyframes shineMove {
+            0% { left: -100%; }
+            100% { left: 200%; } /* Пробігає до кінця вправо */
+        }
+
+        .battery-fill:not(.discharging)::before {
+            animation: shineMove 2s infinite ease-in-out; /* Хвиля біжить кожні 2 сек */
+        }
+
+        /* Смужки теж рухаються вправо (наповнення) */
+        @keyframes moveStripesRight { 0% { background-position: 0 0; } 100% { background-position: 40px 0; } }
+        .battery-fill:not(.discharging)::after {
+            animation: moveStripesRight 1.5s linear infinite;
+        }
+
+
+        /* 2. КОЛИ РОЗРЯДЖАЄТЬСЯ (Світло є) */
+        /* Хвилі немає (або вона дуже повільна), смужки повзуть вліво */
+
+        /* Прибираємо хвилю, щоб не миготіло, коли світло є (спокійний стан) */
+        .battery-fill.discharging::before {
+            display: none;
+            /* Або якщо хочеш ледь помітну: animation: shineMove 5s infinite; opacity: 0.2; */
+        }
+
+        /* Смужки повільно пливуть вліво (витікання) */
+        @keyframes moveStripesLeft { 0% { background-position: 0 0; } 100% { background-position: -40px 0; } }
+        .battery-fill.discharging::after {
+            animation: moveStripesLeft 4s linear infinite;
+        }
+
+        /* 2. Анімація для стану "ЗАРЯДКА" (Світла нема) */
+        /* Смужки рухаються вправо (наповнення) + пульсація світіння */
+        @keyframes chargeFlow {
+            0% { background-position: 0 0; }
+            100% { background-position: 40px 0; }
+        }
+        @keyframes chargeGlow {
+            0% { box-shadow: 0 0 10px inherit; filter: brightness(1); }
+            50% { box-shadow: 0 0 20px inherit; filter: brightness(1.2); }
+            100% { box-shadow: 0 0 10px inherit; filter: brightness(1); }
+        }
+
+        /* Застосовуємо до батарейки, яка НЕ має класу discharging (тобто заряджається) */
+        .battery-fill:not(.discharging)::after {
+            animation: chargeFlow 1.5s linear infinite;
+        }
+        .battery-fill:not(.discharging) {
+            /* М'яка пульсація світла */
+            animation: chargeGlow 2s ease-in-out infinite;
+        }
+
+
+        /* 3. Анімація для стану "РОЗРЯДКА" (Світло є) */
+        /* Смужки рухаються вліво (витікання) повільно + спокійне дихання */
+        @keyframes dischargeFlow {
+            0% { background-position: 0 0; }
+            100% { background-position: -40px 0; }
+        }
+        @keyframes dischargeBreath {
+            0% { opacity: 1; }
+            50% { opacity: 0.85; } /* Ледь помітне потускніння */
+            100% { opacity: 1; }
+        }
+
+        /* Застосовуємо, коли є клас discharging */
+        .battery-fill.discharging::after {
+            /* Дуже повільний рух (4s), щоб не миготіло */
+            animation: dischargeFlow 4s linear infinite;
+        }
+        .battery-fill.discharging {
+            /* Спокійний ефект "дихання" */
+            animation: dischargeBreath 5s ease-in-out infinite;
+        }
 
         .battery-text {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             font-size: 22px; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3);
             font-variant-numeric: tabular-nums; width: 100%; text-align: center; z-index: 5; color: white;
         }
-        .battery-status { margin-top: 8px; font-size: 13px; color: var(--text-muted); font-weight: 500; }
+        .battery-status {
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+
+            /* 🔥 ДОДАЄМО ВІДСТУП ТУТ: */
+            margin-left: 10px;
+        }
 
         /* --- ДАТА (ВИПРАВЛЕНО: РІВНОМІРНІ ВІДСТУПИ) --- */
         .date-box {
@@ -496,10 +671,36 @@
         .c-dur  { font-size: 14px; font-weight: 500; color: var(--text-muted); }
 
         .card-details {
-            padding: 0 2px 0 2px; font-size: 13px; color: var(--text-muted); line-height: 1.5;
+            padding: 0 2px;
+            font-size: 13px;
+            line-height: 1.5;
+
+            /* Основний текст робимо сріблястим (не чисто білим, не темним) */
+            color: rgba(255, 255, 255, 0.7);
+
             max-height: 0; opacity: 0; overflow: hidden; transition: all 0.25s ease;
         }
-        .card.expanded .card-details { max-height: 200px; opacity: 1; margin-top: 10px; border-top: 1px solid rgba(128,128,128,0.1); padding-top: 10px; }
+
+        /* 🔥 ГОЛОВНЕ: Робимо важливий текст (час) ЯСКРАВО БІЛИМ */
+        .card-details b {
+            color: #ffffff !important; /* Чисто білий */
+            font-weight: 700;          /* Жирний */
+            letter-spacing: 0.3px;
+        }
+
+        /* Примітка знизу (курсив) - робимо тьмянішою */
+        .card-details i {
+            color: rgba(255, 255, 255, 0.4);
+            display: block;
+            margin-top: 8px;
+        }
+
+        .card.expanded .card-details {
+            max-height: 200px; opacity: 1;
+            margin-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 10px;
+        }
 
         /* --- DETAIL CARD --- */
         @keyframes popInSpring  { 0% { opacity: 0; transform: translateY(-20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
@@ -689,15 +890,6 @@
             transform: rotate(90deg);
             background: var(--accent-red);
             box-shadow: 0 4px 20px rgba(231, 76, 60, 0.5);
-        }
-
-        .date-box {
-            display: grid;
-            grid-template-columns: auto 1fr auto 1fr;
-            align-items: center;
-            width: 100%;
-            margin: 10px 0 18px 0;
-            column-gap: 12px;
         }
 
         .day-title,
@@ -1104,126 +1296,218 @@
         </div>
     </div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-        function getUrlParam(name) {
-            const url = new URL(window.location.href);
-            return url.searchParams.get(name);
+    function getUrlParam(name) {
+        const url = new URL(window.location.href);
+        return url.searchParams.get(name);
+    }
+
+    (function applyStartAppData() {
+        let param = null;
+        const fromUrl = getUrlParam("startapp");
+        if (fromUrl) param = fromUrl;
+        if (!param) param = tg.initDataUnsafe?.start_param;
+        if (!param) return;
+
+        try {
+            const json = JSON.parse(atob(param.replace(/-/g, '+').replace(/_/g, '/')));
+            if (json.updated) document.getElementById("topUpdated").innerText = "Оновлено: " + json.updated;
+            if (json.users_total || json.users) {
+                const raw = json.users_total || json.users;
+                const clean = formatUsersNumber(raw);
+                document.getElementById("topUsers").innerText = clean;
+                window.STARTAPP_USERS = clean;
+            }
+            if (json.queue) {
+                currentQueue = json.queue;
+                localStorage.setItem('savedQueue', json.queue);
+            }
+        } catch (err) { console.error(err); }
+    })();
+
+    const CSV_PROXY_URL = "https://shy-fog-bb74svitlo-proxy.propro3107.workers.dev";
+    let allData = [];
+    let currentQueue = "1.1";
+    let currentTab = 1;
+    let countdownInterval;
+    let activeSegmentElement = null;
+    let activeListCard = null;
+    let cursor = null;
+
+    function ensureCursor() {
+        if (!cursor) {
+            cursor = document.createElement('div');
+            cursor.id = 'cursor';
+            cursor.className = 'cursor-line';
         }
+    }
 
-        (function applyStartAppData() {
-            let param = null;
-            const fromUrl = getUrlParam("startapp");
-            if (fromUrl) param = fromUrl;
-            if (!param) param = tg.initDataUnsafe?.start_param;
-            if (!param) return;
+    // автооновлення даних
+    setInterval(() => init(true), 120000);
 
-            try {
-                const json = JSON.parse(atob(param.replace(/-/g, '+').replace(/_/g, '/')));
-                if (json.updated) document.getElementById("topUpdated").innerText = "Оновлено: " + json.updated;
-                if (json.users_total || json.users) {
-                    const raw = json.users_total || json.users;
-                    const clean = formatUsersNumber(raw);
-                    document.getElementById("topUsers").innerText = clean;
-                    window.STARTAPP_USERS = clean;
-                }
-                if (json.queue) {
-                    currentQueue = json.queue;
-                    localStorage.setItem('savedQueue', json.queue);
-                }
-            } catch (err) { console.error(err); }
-        })();
+    async function getCSV(retries = 5) {
+        const url = `${CSV_PROXY_URL}?t=${Date.now()}`;
+        try {
+            const r = await fetch(url, { cache: "no-cache" });
+            if (!r.ok) throw new Error("Bad status " + r.status);
+            return await r.text();
+        } catch (e) {
+            if (retries > 0) return getCSV(retries - 1);
+            throw e;
+        }
+    }
 
-        const CSV_PROXY_URL = "https://shy-fog-bb74svitlo-proxy.propro3107.workers.dev";
-        let allData = [];
-        let currentQueue = "1.1";
-        let currentTab = 1;
-        let countdownInterval;
-        let activeSegmentElement = null;
-        let activeListCard = null;
-        let cursor = null;
+    async function fetchDonation() {
+        try {
+            const url = `${CSV_PROXY_URL}?jar=true&t=${Date.now()}`;
+            const r = await fetch(url);
+            const data = await r.json();
 
-        function ensureCursor() {
-            if (!cursor) {
-                cursor = document.createElement('div');
-                cursor.id = 'cursor';
-                cursor.className = 'cursor-line';
+            if (data.amount !== undefined) {
+                updateDonateUI(data.amount, data.goal);
+            }
+        } catch (e) {
+            console.error("Donation error:", e);
+            document.getElementById('donateAmount').innerText = "Монобанка";
+        }
+    }
+
+            // === ANIMATED SWIPE CONTROL ===
+
+        let touchStartX = 0;
+        let touchEndX = 0;
+        let swipeLocked = false; // щоб не дублікувати свайпи
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, false);
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleAnimatedSwipe();
+        }, false);
+
+        function handleAnimatedSwipe() {
+            if (swipeLocked) return;
+
+            const dx = touchEndX - touchStartX;
+
+            // Поріг спрацювання (60 пікселів)
+            if (Math.abs(dx) < 60) return;
+
+            // Свайп ВЛІВО (йдемо на Завтра)
+            if (dx < 0 && currentTab === 1) {
+                swipeLocked = true;
+                try { tg.HapticFeedback.selectionChanged(); } catch(e){}
+                switchTab(2);
+                // Розблокуємо свайп, коли закінчиться анімація switchTab
+                setTimeout(() => { swipeLocked = false; }, 300);
+            }
+
+            // Свайп ВПРАВО (повертаємось на Сьогодні)
+            else if (dx > 0 && currentTab === 2) {
+                swipeLocked = true;
+                try { tg.HapticFeedback.selectionChanged(); } catch(e){}
+                switchTab(1);
+                setTimeout(() => { swipeLocked = false; }, 300);
             }
         }
 
-        // автооновлення даних
-        setInterval(() => init(true), 120000);
+        function scrollToActiveQueue() {
+            const box = document.getElementById("queueList");
+            const active = box.querySelector(".q-item.active");
+            if (!active) return;
 
-        async function getCSV(retries = 5) {
-            const url = `${CSV_PROXY_URL}?t=${Date.now()}`;
-            try {
-                const r = await fetch(url, { cache: "no-cache" });
-                if (!r.ok) throw new Error("Bad status " + r.status);
-                return await r.text();
-            } catch (e) {
-                if (retries > 0) return getCSV(retries - 1);
-                throw e;
+            const offset = active.offsetTop - (box.clientHeight / 2) + (active.clientHeight / 2);
+
+            box.scrollTo({
+                top: offset,
+                behavior: "smooth"
+            });
+
+            active.classList.add("pulse");
+            setTimeout(() => active.classList.remove("pulse"), 1200);
+        }
+
+    function animateBattery() {
+        const wrapper = document.querySelector('.battery-wrapper');
+        if (wrapper) wrapper.classList.toggle('battery-enlarged');
+        try { tg.HapticFeedback.selectionChanged(); } catch (e) { }
+    }
+
+    function showEmergency() {
+        document.getElementById("emergencyOverlay").classList.add("show");
+    }
+
+    function closeEmergency() {
+        document.getElementById("emergencyOverlay").classList.remove("show");
+        localStorage.setItem("emergency_ack", "1");
+    }
+
+    async function init(isSilent = false) {
+        loadTheme();
+        try {
+            if (!isSilent) {
+                const sk = document.getElementById('skeletonLoader');
+                if (sk) sk.classList.remove('hidden');
+                document.getElementById('app-content').classList.add('hidden');
             }
-        }
 
-        function animateBattery() {
-            // 🔥 Тепер шукаємо враппер (обгортку)
-            const wrapper = document.querySelector('.battery-wrapper');
+            const csvText = await getCSV();
+            allData = parseCSV(csvText);
 
-            wrapper.classList.toggle('battery-enlarged');
-
-            try {
-                tg.HapticFeedback.selectionChanged();
-            } catch (e) {}
-        }
-
-        function showEmergency() {
-            document.getElementById("emergencyOverlay").classList.add("show");
-        }
-
-        function closeEmergency() {
-            document.getElementById("emergencyOverlay").classList.remove("show");
-            localStorage.setItem("emergency_ack", "1"); // щоб не показувати повторно
-        }
-
-
-        async function init(isSilent = false) {
-            loadTheme();
-
-            try {
-                if (!isSilent) {
-                    const sk = document.getElementById('skeletonLoader');
-                    if (sk) sk.classList.remove('hidden');
-                    document.getElementById('app-content').classList.add('hidden');
+            const primary = normalizeHeaders(allData[0]);
+            if (primary.emergency === "on") {
+                document.getElementById("emergencyBanner").classList.remove("hidden");
+                const ack = localStorage.getItem("emergency_ack");
+                if (!ack) {
+                    setTimeout(() => { showEmergency(); }, 3000);
                 }
+            } else {
+                document.getElementById("emergencyBanner").classList.add("hidden");
+                localStorage.removeItem("emergency_ack");
+            }
 
-                const csvText = await getCSV();
-                allData = parseCSV(csvText);
-
-                // global emergency flag from first row
-                const primary = normalizeHeaders(allData[0]);
-
-                if (primary.emergency === "on") {
-
-                    document.getElementById("emergencyBanner").classList.remove("hidden");
-
-                    const ack = localStorage.getItem("emergency_ack");
-
-                    if (!ack) {
-                        // Показати плашку через 3 секунди після запуску
-                        setTimeout(() => {
-                            showEmergency();
-                        }, 3000);
-                    }
-
-                } else {
-
-                    document.getElementById("emergencyBanner").classList.add("hidden");
-                    localStorage.removeItem("emergency_ack");
+            window.LAST_UPDATED = null;
+            for (const row of allData) {
+                if (row.updated_at && row.updated_at.trim() !== "") {
+                    window.LAST_UPDATED = row.updated_at.trim();
+                    break;
                 }
+            }
+            updateTopUpdated();
 
+            if (!allData.length) throw new Error("Empty Data");
+
+            localStorage.setItem('cachedData', JSON.stringify(allData));
+            removeOfflineBadge();
+
+            const sk = document.getElementById('skeletonLoader');
+            if (sk) sk.classList.add('hidden');
+
+            setupApp(isSilent);
+
+            const row = allData.find(r => r.group_id == currentQueue);
+            if (row) {
+                const cleanRow = normalizeHeaders(row);
+                let u = cleanRow.users_total || cleanRow.users;
+                if (!u && allData.length > 0) {
+                    const primary = normalizeHeaders(allData[0]);
+                    u = primary.users_total || primary.users;
+                }
+                if (u) updateTopUsers(formatUsersNumber(u));
+            }
+            if (window.STARTAPP_USERS) updateTopUsers(window.STARTAPP_USERS);
+
+        } catch (e) {
+            console.error("Online fetch error:", e);
+            const cached = localStorage.getItem('cachedData');
+            if (cached) {
+                allData = JSON.parse(cached);
+                showOfflineBadge();
                 window.LAST_UPDATED = null;
                 for (const row of allData) {
                     if (row.updated_at && row.updated_at.trim() !== "") {
@@ -1231,830 +1515,225 @@
                         break;
                     }
                 }
-
                 updateTopUpdated();
-
-                if (!allData.length) throw new Error("Empty Data");
-
-                localStorage.setItem('cachedData', JSON.stringify(allData));
-                removeOfflineBadge();
-
                 const sk = document.getElementById('skeletonLoader');
                 if (sk) sk.classList.add('hidden');
-
                 setupApp(isSilent);
-
-                const row = allData.find(r => r.group_id == currentQueue);
-                if (row) {
-                    const cleanRow = normalizeHeaders(row);
-                    let u = cleanRow.users_total || cleanRow.users;
-                    if (!u && allData.length > 0) {
-                        const primary = normalizeHeaders(allData[0]);
-                        u = primary.users_total || primary.users;
-                    }
-                    if (u) updateTopUsers(formatUsersNumber(u));
-                }
-
-                if (window.STARTAPP_USERS) {
-                    updateTopUsers(window.STARTAPP_USERS);
-                }
-
-            } catch (e) {
-                console.error("Online fetch error:", e);
-                const cached = localStorage.getItem('cachedData');
-
-                if (cached) {
-                    allData = JSON.parse(cached);
-                    showOfflineBadge();
-                    window.LAST_UPDATED = null;
-                    for (const row of allData) {
-                        if (row.updated_at && row.updated_at.trim() !== "") {
-                            window.LAST_UPDATED = row.updated_at.trim();
-                            break;
-                        }
-                    }
-                    updateTopUpdated();
-                    const sk = document.getElementById('skeletonLoader');
-                    if (sk) sk.classList.add('hidden');
-                    setupApp(isSilent);
-                    if (window.STARTAPP_USERS) updateTopUsers(window.STARTAPP_USERS);
-                }
+                if (window.STARTAPP_USERS) updateTopUsers(window.STARTAPP_USERS);
             }
         }
+    }
 
-        function setupApp(isSilent) {
-            const p = new URLSearchParams(window.location.search);
-            let q = p.get('q');
-            if (q) {
-                currentQueue = q;
-                localStorage.setItem("savedQueue", q);
-            } else {
-                const saved = localStorage.getItem("savedQueue");
-                if (saved) currentQueue = saved;
-            }
-            if (!isSilent) {
-                buildMenu();
-                const appContent = document.getElementById('app-content');
-                if (appContent) appContent.classList.remove('hidden');
-            }
-
-            render(currentTab);
-
-            // 🟢 Додаємо сюди
-            updateNativeShareLink();
+    function setupApp(isSilent) {
+        const p = new URLSearchParams(window.location.search);
+        let q = p.get('q');
+        if (q) {
+            currentQueue = q;
+            localStorage.setItem("savedQueue", q);
+        } else {
+            const saved = localStorage.getItem("savedQueue");
+            if (saved) currentQueue = saved;
         }
-
-        function showOfflineBadge() {
-            if (!document.getElementById('offBadge')) {
-                const b = document.createElement('div');
-                b.id = 'offBadge'; b.className = 'offline-badge';
-                b.innerText = 'Offline';
-                document.body.appendChild(b);
-            }
-        }
-        function removeOfflineBadge() { const b = document.getElementById('offBadge'); if (b) b.remove(); }
-        function formatUsersNumber(v) { v = String(v).replace(/\s+/g, ""); return v.replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
-
-        function parseCSV(text) {
-            const rows = []; let currentRow = []; let currentVal = ''; let insideQuotes = false;
-            for (let i = 0; i < text.length; i++) {
-                const char = text[i]; const nextChar = text[i + 1];
-                if (char === '"') {
-                    if (insideQuotes && nextChar === '"') { i++; currentVal += '"'; }
-                    else { insideQuotes = !insideQuotes; }
-                }
-                else if (char === ',' && !insideQuotes) {
-                    currentRow.push(currentVal); currentVal = '';
-                }
-                else if ((char === '\r' || char === '\n') && !insideQuotes) {
-                    if (char === '\r' && nextChar === '\n') i++;
-                    if (currentVal || currentRow.length) currentRow.push(currentVal);
-                    if (currentRow.length) rows.push(currentRow);
-                    currentRow = []; currentVal = '';
-                } else { currentVal += char; }
-            }
-            if (currentVal || currentRow.length) currentRow.push(currentVal);
-            if (currentRow.length) rows.push(currentRow);
-            if (rows.length < 2) return [];
-            const rawHeaders = rows[0].map(h => h.replace(/\uFEFF/g, '').replace(/\u00A0/g, ' ').replace(/[\u200B-\u200F]/g, '').trim().toLowerCase());
-            return rows.slice(1).map(row => {
-                const obj = {};
-                rawHeaders.forEach((h, i) => {
-                    let val = row[i] ?? "";
-                    if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
-                    obj[h] = val.trim();
-                });
-                return obj;
-            });
-        }
-
-        function normalizeHeaders(obj) {
-            const fixed = {};
-            for (let key in obj) {
-                const clean = key.replace(/\uFEFF/g, "").replace(/\u00A0/g, " ").replace(/[\u200B-\u200F]/g, "").trim().toLowerCase();
-                fixed[clean] = obj[key];
-            }
-            return fixed;
-        }
-
-        function getSchedule(fullText, targetDate) {
-            if (!fullText) return null;
-
-            const daysMap = ["Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "Пʼятниця", "Субота"];
-            const dayName = daysMap[targetDate.getDay()];
-
-            const lines = fullText.replace(/\r\n/g, '\n').split('\n');
-            let dayLine = lines.find(line => line.trim().startsWith(dayName));
-
-            if (!dayLine || dayLine.includes(":-") || dayLine.includes(": -") || dayLine.trim().endsWith("-")) return null;
-
-            let timesPart = dayLine.includes(':') ? dayLine.substring(dayLine.indexOf(':') + 1).trim() : "";
-            if (!timesPart || timesPart === "-") return null;
-
-            // Видаляємо плюси, вони нам не треба для математики
-            timesPart = timesPart.replace(/\+/g, "");
-
-            const ranges = timesPart.split(',');
-            let arr = [];
-            let lastTime = 0;
-
-            ranges.forEach(r => {
-                const parts = r.split('-').map(s => s.trim());
-                if (parts.length < 2) return;
-
-                const startH = timeToH(parts[0]);
-                const endH = timeToH(parts[1]);
-
-                if (isNaN(startH) || isNaN(endH)) return;
-
-                // 1. Додаємо "Світло" (проміжок від попереднього до поточного)
-                if (startH > lastTime) {
-                    arr.push(`${parseFloat((startH - lastTime).toFixed(2))}on`);
-                }
-
-                // 2. Рахуємо тривалість відключення
-                let dur;
-                if (endH < startH) {
-                    // 🔥 ВИПРАВЛЕНО ТУТ: Якщо перехід через північ (напр. 21:30 - 01:00)
-                    // Рахуємо повну тривалість: (24 - старт) + кінець
-                    dur = (24 - startH) + endH;
-                } else {
-                    // Звичайний випадок (в межах дня)
-                    dur = endH - startH;
-                }
-
-                if (dur > 0) {
-                    arr.push(`${parseFloat(dur.toFixed(2))}off`);
-                }
-
-                // Оновлюємо останній час (тепер він може бути > 24, це ок)
-                lastTime = startH + dur;
-            });
-
-            // Додаємо "хвіст" світла, якщо графік закінчився до 24:00
-            if (lastTime < 24) {
-                arr.push(`${parseFloat((24 - lastTime).toFixed(2))}on`);
-            }
-
-            if (arr.length === 0) return "24on";
-            return arr.join(',');
-        }
-
-        function timeToH(t) { const [h, m] = t.split(':').map(Number); return h + (m / 60); }
-
-        function toggleModal() {
-            const modal = document.getElementById('modal');
-            modal.classList.toggle('show');
-
-            // Перемикання стрілочки ▼
-            document.querySelector('.queue-select-btn').classList.toggle('open');
-
-            // Якщо модалка відкрилась — через 150 мс залипаємо на активну чергу
-            setTimeout(() => {
-                const active = document.querySelector(".q-item.active");
-                if (active) scrollToActiveQueue();
-            }, 200);
-        }
-
-
-        function selectQueue(q) {
-            currentQueue = q; localStorage.setItem('savedQueue', q);
-            try { tg.HapticFeedback.selectionChanged(); } catch (e) { }
-            toggleModal(); buildMenu(); render(currentTab);
-        }
-
-        function buildMenu() {
-            const list = document.getElementById('queueList');
-            list.innerHTML = '<div style="text-align:center;margin-bottom:15px;color:var(--text-muted);font-size:12px">ОБЕРІТЬ ЧЕРГУ</div>';
-            const queues = [...new Set(allData.map(i => i.group_id))].sort();
-            queues.forEach(q => {
-                if (!q) return;
-                let d = document.createElement('div');
-                d.className = `q-item ${q == currentQueue ? 'active' : ''}`;
-                d.innerText = `Черга ${q}`;
-                d.onclick = () => selectQueue(q);
-                list.appendChild(d);
-            });
-            document.getElementById('queueTitle').innerText = `ЧЕРГА ${currentQueue}`;
-        }
-
-        function formatUpdateTime(raw) {
-            if (!raw) return "";
-            const months = ["січня","лютого","березня","квітня","травня","червня","липня","серпня","вересня","жовтня","листопада","грудня"];
-            const [datePart, timePart] = raw.split(" ");
-            const [Y, M, D] = datePart.split("-").map(Number);
-            const [h, m] = timePart.split(":").map(Number);
-            const dt = new Date(Y, M - 1, D, h, m);
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
-            const dayOnly = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
-            if (dayOnly.getTime() === today.getTime()) return `Оновлено: сьогодні о ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-            if (dayOnly.getTime() === yesterday.getTime()) return `Оновлено: вчора о ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-            return `Оновлено: ${D} ${months[M-1]} о ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
-        }
-
-        // 🔥 MODE C SLIDE: слайдиться тільки dayBody, батарейка/дата стоять
-        function switchTab(idx) {
-            if (currentTab === idx) return;
-
-            try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
-
-            const body = document.getElementById("dayBody");
-            const dateBox = document.querySelector(".date-box");
-
-            // анімація дати
-            dateBox.classList.add("anim-hide");
-
-            const direction = idx > currentTab ? 1 : -1;
-            // 1 → заїзд справа (сьогодні → завтра)
-            // -1 → заїзд зліва  (завтра → сьогодні)
-
-            // outgoing animation
-            body.style.transition = "transform .25s ease, opacity .25s ease";
-            body.style.transform = `translateX(${-40 * direction}px)`;
-            body.style.opacity = "0";
-
-            setTimeout(() => {
-                currentTab = idx;
-
-                document.querySelectorAll('.tab-item')
-                    .forEach(t => t.classList.remove('active'));
-                document.getElementById("tab" + idx).classList.add("active");
-
-                // ставимо новий контент З ПРОТИЛЕЖНОГО боку
-                body.style.transition = "none";
-                body.style.transform = `translateX(${40 * direction}px)`;
-                body.style.opacity = "0";
-
-                render(idx);
-
-                // і в'їжджаємо
-                setTimeout(() => {
-                    body.style.transition = "transform .25s ease, opacity .25s ease";
-                    body.style.transform = "translateX(0)";
-                    body.style.opacity = "1";
-
-                    // повернути дату
-                    setTimeout(() => {
-                        dateBox.classList.remove("anim-hide");
-                        dateBox.classList.add("anim-show");
-                        setTimeout(() => dateBox.classList.remove("anim-show"), 250);
-                    }, 40);
-
-                }, 20);
-
-            }, 250);
-        }
-
-
-
-
-
-        function setupTomorrowBattery(scheduleStr) {
-            const batSec = document.getElementById('batterySection');
-            const timerEl = document.getElementById('batteryTimer');
-            const labelEl = document.getElementById('batteryLabel');
-            const f = document.getElementById('batteryFill');
-
-            batSec.classList.remove('hidden');
-            clearInterval(countdownInterval);
-
-            const parts = scheduleStr.split(',');
-            let h = 0;
-            let firstOffStart = null;
-
-            for (const p of parts) {
-                const type = p.includes('off') ? 'off' : 'on';
-                const dur = parseFloat(p);
-                if (isNaN(dur) || dur <= 0) continue;
-                const start = h;
-                const end = h + dur;
-
-                if (type === 'off' && firstOffStart === null) {
-                    firstOffStart = start;
-                    break;
-                }
-                h = end;
-            }
-
-            // є перше відключення завтра
-            if (firstOffStart != null) {
-                const now = new Date();
-                const nowFloat = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
-
-                const targetH = 24 + firstOffStart; // завтра
-                let totalSec = Math.round((targetH - nowFloat) * 3600);
-                if (totalSec < 60) totalSec = 60;
-
-                // стартуємо таймер як "до відключення"
-                startTimer(targetH, totalSec, true);
-            } else {
-                // завтра відключень немає
-                timerEl.innerText = "--:--";
-                labelEl.innerText = "Світло цілий день";
-                f.classList.remove('discharging');
-                f.style.width = "100%";
-                f.style.background = "linear-gradient(90deg, #1abc9c, #2ecc71)";
-                f.style.boxShadow = "0 0 15px #2ecc71";
-            }
-        }
-
-        function render(dayIdx) {
-            const row = allData.find(r => r.group_id == currentQueue);
-            if (!row) return;
-
-            const targetDate = new Date();
-            if (dayIdx === 2) targetDate.setDate(targetDate.getDate() + 1);
-
-            const scheduleStr = getSchedule(row.schedule_text, targetDate);
-
-            const d = String(targetDate.getDate()).padStart(2, '0');
-            const m = String(targetDate.getMonth() + 1).padStart(2, '0');
-            const daysMap = ["НЕДІЛЯ", "ПОНЕДІЛОК", "ВІВТОРОК", "СЕРЕДА", "ЧЕТВЕР", "ПʼЯТНИЦЯ", "СУБОТА"];
-            document.getElementById('dateDisplay').innerText = `${daysMap[targetDate.getDay()]} ${d}.${m}`;
-
-            const track = document.getElementById('timelineTrack');
-            const iBox = document.getElementById('infoBox');
-            const lBox = document.getElementById('timeLabelsBox');
-            const tlSec = document.getElementById('timelineSection');
-            const totBox = document.getElementById('totalBox');
-            const noData = document.getElementById('noDataMessage');
-            const batSec = document.getElementById('batterySection');
-            const detailBox = document.getElementById('detailCardContainer');
-
-            track.innerHTML = '';
-            while (lBox.firstChild) lBox.removeChild(lBox.firstChild);
-            iBox.innerHTML = '';
-            detailBox.innerHTML = '';
-            detailBox.classList.add('hidden');
-            activeSegmentElement = null; activeListCard = null;
-
-            ensureCursor();
-            track.appendChild(cursor);
-            cursor.style.display = (dayIdx === 1 ? 'block' : 'none');
-
-            const isToday = (dayIdx === 1);
-            document.getElementById("dayTitle").innerText = isToday ? "Графік на сьогодні" : "Графік на завтра";
-            const bf = document.getElementById('batteryFill');
-            bf.className = 'battery-fill';
+        if (!isSilent) {
+            buildMenu();
             const appContent = document.getElementById('app-content');
-
-            // 1. Якщо графіка немає
-            if (!scheduleStr) {
-                tlSec.classList.add('hidden'); noData.classList.remove('hidden'); totBox.innerHTML = ''; batSec.classList.remove('hidden'); bf.className = 'battery-fill';
-                if (isToday) {
-                    document.getElementById('batteryTimer').innerText = "—";
-                    document.getElementById('batteryLabel').innerText = "Невідомо";
-                    bf.style.width = "100%"; bf.style.background = "#555"; bf.style.boxShadow = "none";
-                } else {
-                    const fNow = document.getElementById('batteryFill');
-                    bf.style.width = fNow.style.width; bf.style.background = fNow.style.background; bf.style.boxShadow = fNow.style.boxShadow;
-                }
-                if (appContent) appContent.classList.remove('hidden');
-                return;
-            }
-
-            tlSec.classList.remove('hidden'); noData.classList.add('hidden');
-
-            if (!isToday) {
-                const t = document.getElementById('batteryTimer').innerText;
-                const l = document.getElementById('batteryLabel').innerText;
-
-                document.getElementById('batteryTimer').innerText = t;
-                document.getElementById('batteryLabel').innerText = l;
-            }
-
-
-            // --- АНАЛІЗ ЗАВТРА ---
-            let tomorrowFirstOff = null;
-            let tmrScheduleStr = null;
-            if (isToday) {
-                const tmr = new Date(targetDate); tmr.setDate(tmr.getDate() + 1);
-                tmrScheduleStr = getSchedule(row.schedule_text, tmr);
-                if (tmrScheduleStr) {
-                    const tParts = tmrScheduleStr.split(',');
-                    let hCounter = 0;
-                    for (let p of tParts) {
-                        let pType = p.includes('off') ? 'off' : 'on';
-                        let pDur = parseFloat(p.replace('on', '').replace('off', ''));
-                        if (pType === 'off') { tomorrowFirstOff = hCounter; break; }
-                        hCounter += pDur;
-                    }
-                }
-            }
-
-            let curH = 0; let totOff = 0;
-            const now = new Date();
-            const curFloat = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
-            let foundState = false;
-            let lastEndH = 0;
-            let finalEndLabel = "24:00";
-
-            // 🔥 НОВЕ: Зберігаємо кінець останнього відключення
-            let lastOffEndH = 0;
-
-            addLabel(lBox, 0, "00:00", "start");
-
-            const parts = scheduleStr.split(',');
-            parts.forEach((part, index) => {
-                let type = part.includes('off') ? 'off' : 'on';
-                let dur = parseFloat(part.replace('on', '').replace('off', ''));
-                if (isNaN(dur) || dur <= 0) return;
-                let segStart = curH;
-                let endH = curH + dur;
-                let displayEndH = endH;
-
-                // 🔥 Оновлюємо останнє відключення
-                if (type === 'off') lastOffEndH = endH;
-
-                let seg = document.createElement('div');
-                seg.className = `segment ${type}`;
-                seg.style.flexGrow = dur; seg.style.flexBasis = '0';
-                if (dur >= 1.5) seg.innerHTML = `<div class="segment-icon">${type === 'on' ? '💡' : '🔌'}</div>`;
-                track.appendChild(seg);
-                seg.addEventListener('click', () => handleSegmentClick(seg, type, segStart, endH, dur));
-
-                if (endH < 23.9 && (endH - lastEndH) > 2.0 && (24 - endH) > 1.5) {
-                    addLabel(lBox, endH, formatHM(endH), "mid"); lastEndH = endH;
-                }
-
-                let card = createCard(segStart, displayEndH, dur, type);
-                if (isToday && curFloat >= segStart && curFloat < endH) card.classList.add('active-now');
-                iBox.appendChild(card);
-
-                if (type === 'off') totOff += dur;
-
-                // --- ТАЙМЕР (Всередині дня) ---
-                if (isToday && !foundState && curFloat < endH) {
-                    foundState = true;
-                    const isLastSegment = (index === parts.length - 1);
-
-                    if (type === 'off') {
-                        startTimer(endH, Math.floor((endH - segStart) * 3600), false);
-                    } else {
-                        // Світло Є
-                        if (!isLastSegment) {
-                            startTimer(endH, Math.floor((endH - segStart) * 3600), true);
-                        } else {
-                            // Це останній сегмент світла
-                            if (tomorrowFirstOff !== null) {
-                                // Завтра є відключення -> таймер
-                                const targetH = 24 + tomorrowFirstOff;
-
-                                // 🔥 ВИПРАВЛЕНО: Рахуємо тривалість від початку цього світла (lastOffEndH)
-                                const totalDuration = targetH - lastOffEndH;
-                                const totalSec = Math.floor(totalDuration * 3600);
-
-                                startTimer(targetH, totalSec, true);
-                            } else {
-                                // Завтра чисто або невідомо -> зелена батарейка
-                                setGreenBattery(tmrScheduleStr);
-                            }
-                        }
-                    }
-                }
-                curH = endH;
-            });
-
-            addLabel(lBox, 24, finalEndLabel, "end");
-
-            // --- ТАЙМЕР (Кінець дня / Хвіст) ---
-            if (isToday && !foundState) {
-                if (totOff === 0) {
-                    // Якщо відключень сьогодні взагалі не було
-                    if (tomorrowFirstOff !== null) {
-                        const targetH = 24 + tomorrowFirstOff;
-                        // Весь день світло + шматок завтра = довгий період
-                        const totalDuration = targetH - 0; // від 00:00 сьогодні
-                        const totalSec = Math.floor(totalDuration * 3600);
-                        startTimer(targetH, totalSec, true);
-                    } else {
-                        setGreenBattery(tmrScheduleStr);
-                    }
-                } else if (tomorrowFirstOff !== null) {
-                     const targetH = 24 + tomorrowFirstOff;
-
-                     // 🔥 ВИПРАВЛЕНО ТУТ ТАКОЖ:
-                     // Беремо час від останнього вимкнення сьогодні до першого вимкнення завтра
-                     const totalDuration = targetH - lastOffEndH;
-                     const totalSec = Math.floor(totalDuration * 3600);
-
-                     startTimer(targetH, totalSec, true);
-                } else {
-                     setGreenBattery(tmrScheduleStr);
-                }
-            }
-
-            totBox.innerHTML = `Всього без світла: <b>${fmtDur(totOff)}</b>`;
-
-            const shareWrap = document.getElementById("shareWrapper");
-            shareWrap.classList.remove("hidden");
-            if (!shareWrap.classList.contains("fade-in")) setTimeout(() => shareWrap.classList.add("fade-in"), 150);
             if (appContent) appContent.classList.remove('hidden');
         }
+        render(currentTab);
+        updateNativeShareLink();
+    }
 
-        function handleSegmentClick(segEl, type, startH, endH, dur) {
-            const detailBox = document.getElementById('detailCardContainer');
-            if (activeSegmentElement === segEl) {
-                segEl.classList.remove('segment-selected');
-                activeSegmentElement = null;
-                const card = detailBox.querySelector('.detail-card');
-                if (card) {
-                    card.classList.add('closing');
-                    setTimeout(() => { detailBox.classList.add('hidden'); detailBox.innerHTML = ''; }, 280);
-                } else { detailBox.classList.add('hidden'); detailBox.innerHTML = ''; }
-                return;
-            }
-            if (activeSegmentElement) activeSegmentElement.classList.remove('segment-selected');
-            activeSegmentElement = segEl;
-            segEl.classList.add('segment-selected');
-            showDetailCard(type === 'on' ? 'on' : 'off', startH, endH, dur);
-            try { tg.HapticFeedback.selectionChanged(); } catch (e) { }
+    function showOfflineBadge() {
+        if (!document.getElementById('offBadge')) {
+            const b = document.createElement('div');
+            b.id = 'offBadge'; b.className = 'offline-badge';
+            b.innerText = 'Offline';
+            document.body.appendChild(b);
         }
+    }
+    function removeOfflineBadge() { const b = document.getElementById('offBadge'); if (b) b.remove(); }
+    function formatUsersNumber(v) { v = String(v).replace(/\s+/g, ""); return v.replace(/\B(?=(\d{3})+(?!\d))/g, " "); }
 
-        function showDetailCard(type, startH, endH, durH) {
-            const box = document.getElementById('detailCardContainer');
-            if (!box) return;
-            const startStr = formatHM(startH);
-            const endStr = formatHM(endH);
-            const durStr = fmtDur(durH);
-            let titleStatus, icon, headerClass, bodyHtml;
-            if (type === 'on') {
-                titleStatus = 'СВІТЛО Є'; icon = '💡'; headerClass = 'detail-status-on';
-                bodyHtml = `<p>Світло буде з <b>${startStr}</b> до <b>${endStr}</b>.</p><p>Наступне вимкнення очікується о <b>${endStr}</b>.</p>`;
-            } else {
-                titleStatus = 'ВІДКЛЮЧЕННЯ'; icon = '🔌'; headerClass = 'detail-status-off';
-                bodyHtml = `<p>Світло буде вимкнене о <b>${startStr}</b> і повернеться о <b>${endStr}</b>.</p><p>Планове відключення.</p>`;
-            }
-            box.classList.remove('hidden');
-            box.innerHTML = `
-                <div class="detail-card ${type === 'on' ? 'on' : 'off'}">
-                    <div class="detail-header">
-                        <div class="detail-left">
-                            <div class="detail-icon">${icon}</div>
-                            <div class="detail-main">
-                                <div class="detail-status ${headerClass}">${titleStatus}</div>
-                                <div class="detail-time">${startStr} - ${endStr}</div>
-                            </div>
-                        </div>
-                        <div class="detail-duration">${durStr}</div>
-                    </div>
-                    <div class="detail-divider"></div>
-                    <div class="detail-body">
-                        ${bodyHtml}
-                        <p class="detail-note">* Включення/вимкнення може відбуватися з невеликою похибкою у часі.</p>
-                    </div>
-                </div>`;
-        }
+    /* ====== ДОБАВЛЕНІ КРИТИЧНІ ФУНКЦІЇ, ЯКИХ НЕ ВИСТАЧАЛО ====== */
 
-        function addLabel(box, h, txt, align) {
-            let el = document.createElement('div');
-            el.className = `t-label ${align}`;
-            el.innerText = txt;
-            el.style.left = (h / 24 * 100) + "%";
-            let t = document.createElement('div');
-            t.className = 't-tick';
-            el.appendChild(t);
-            box.appendChild(el);
-        }
-
-        function updateTopUsers(val) { const el = document.getElementById("topUsers"); if (el) el.innerText = val; }
-        function updateCursor() { if (currentTab !== 1 || !cursor) return; const d = new Date(); const m = d.getHours() * 60 + d.getMinutes(); let p = m / 1440 * 100; if (p > 100) p = 100; cursor.style.left = p + "%"; }
-        function updateTopUpdated() { const el = document.getElementById("topUpdated"); if (!el) return; if (window.LAST_UPDATED) { el.innerText = formatUpdateTime(window.LAST_UPDATED); } else { el.innerText = "Оновлено…"; } }
-
-        function startTimer(targetH, totalSec, isOn, customLabel = null) {
-            clearInterval(countdownInterval);
-            const n = new Date();
-            const tH = Math.floor(targetH);
-            const tM = Math.round((targetH - tH) * 60);
-            const tD = new Date();
-            tD.setHours(tH, tM, 0, 0);
-            if (tD < n) tD.setDate(tD.getDate() + 1);
-
-            function tick() {
-                const now = new Date();
-                const rem = Math.floor((tD - now) / 1000);
-                updateCursor();
-                if (rem <= 0) { clearInterval(countdownInterval); setTimeout(() => render(currentTab), 1000); return; }
-                document.getElementById('batteryTimer').innerText = fmtTimer(rem);
-                // 🔥 ТУТ ЗМІНА: передаємо customLabel
-                setBat(rem / totalSec, isOn, customLabel);
-            }
-            tick();
-            countdownInterval = setInterval(tick, 1000);
-        }
-
-        function openTelegramShare() {
-            const text =
-        `⚡️ Я користуюсь ботом для відстеження графіків світла у Броварах.
-        Приєднуйся! Моя черга: ${currentQueue}
-
-        https://t.me/SvitloBroBot`;
-
-            const url =
-                "https://t.me/share/url?url=" +
-                encodeURIComponent("https://t.me/SvitloBroBot") +
-                "&text=" +
-                encodeURIComponent(text);
-
-            window.open(url, "_blank");
-        }
-
-        function setGreenBattery(scheduleExists) {
-            const f = document.getElementById('batteryFill');
-            const tip = document.querySelector('.battery-tip');
-            const label = document.getElementById('batteryLabel');
-
-            // Зелений стиль (як у тебе було)
-            f.classList.remove('discharging');
-            f.style.width = "100%";
-            f.style.background = "linear-gradient(90deg, #1abc9c, #2ecc71)";
-            f.style.boxShadow = "0 0 15px #2ecc71";
-
-            if (tip) {
-                tip.style.background = "#2ecc71";
-                tip.style.boxShadow = "0 0 10px #2ecc71";
-            }
-
-            document.getElementById('batteryTimer').innerText = "";
-            clearInterval(countdownInterval);
-
-            // Логіка тексту
-            if (scheduleExists) {
-                label.innerText = "Відключення ще не заплановані";
-            } else {
-                label.innerText = "Відключення ще не заплановані";
-            }
-        }
-
-        function setBat(pct, isOn, customText = null) {
-            pct = Math.min(Math.max(pct, 0), 1);
-
-            const f = document.getElementById('batteryFill');
-            const label = document.getElementById('batteryLabel');
-            const tip = document.querySelector('.battery-tip');
-
-            let visualPct;
-            let hue;
-
-            if (isOn) {
-                // СВІТЛО Є:
-                // pct йде від 1 до 0 (час спливає).
-                // Батарейка має розряджатися: 100% -> 0%.
-                visualPct = pct;
-
-                hue = visualPct * 120; // Зелений -> Червоний
-                f.classList.add('discharging');
-            } else {
-                // СВІТЛА НЕМА:
-                // pct йде від 1 до 0 (час спливає).
-                // Батарейка має заряджатися: 0% -> 100%.
-                visualPct = 1 - pct;
-
-                hue = visualPct * 120; // Червоний -> Зелений
-                f.classList.remove('discharging');
-            }
-
-            // Задаємо ширину (мінімум 5%, щоб було видно смужку)
-            f.style.width = Math.max(visualPct * 100, 5) + "%";
-
-            if (customText) {
-                label.innerText = customText;
-            } else {
-                label.innerText = isOn ? 'до відключення' : 'до включення';
-            }
-
-            // Кольори
-            const colorStart = `hsl(${hue}, 100%, 35%)`;
-            const colorEnd   = `hsl(${hue}, 100%, 60%)`;
-            const mainColor  = `hsl(${hue}, 100%, 45%)`;
-
-            f.style.background = `linear-gradient(90deg, ${colorStart}, ${colorEnd})`;
-            f.style.boxShadow  = `0 0 15px ${mainColor}`;
-
-            if(tip) {
-                tip.style.background = mainColor;
-                tip.style.boxShadow  = `0 0 10px ${mainColor}`;
-            }
-        }
-
-
-
-        function createCard(s, e, d, type) {
-            let c = document.createElement('div');
-            c.className = `card c-${type}`;
-            c.innerHTML = `
-                <div class="card-header">
-                    <div class="card-info">
-                        <div class="c-icon">${type==='on'?'💡':'🔌'}</div>
-                        <div class="c-times">
-                            <div class="status-label">${type==='on'?'СВІТЛО Є':'ВІДКЛЮЧЕННЯ'}</div>
-                            <div class="c-time">${formatHM(s)} - ${formatHM(e)}</div>
-                        </div>
-                    </div>
-                    <div class="c-dur">${fmtDur(d)}</div>
-                </div>
-                <div class="card-details">
-                    ${
-                        type==='on'
-                        ? `Світло буде з <b>${formatHM(s)}</b> до <b>${formatHM(e)}</b>.<br>Наступне вимкнення очікується о <b>${formatHM(e)}</b>.<br><br><i>* Включення/вимкнення може бути з невеликою похибкою.</i>`
-                        : `Світло буде вимкнене о <b>${formatHM(s)}</b> і повернеться о <b>${formatHM(e)}</b>.<br>Планове відключення.<br><br><i>* Включення/вимкнення може відбуватися з невеликою похибкою у часі.</i>`
-                    }
-                </div>`;
-            c.addEventListener("click", (ev) => {
-                ev.stopPropagation();
-                if (activeListCard === c) {
-                    c.classList.remove("expanded");
-                    activeListCard = null;
-                    return;
-                }
-                if (activeListCard) { activeListCard.classList.remove("expanded"); }
-                c.classList.add("expanded");
-                activeListCard = c;
-            });
-            return c;
-        }
-
-        function fmtTimer(s) {
-            const h = Math.floor(s / 3600); const m = Math.floor((s % 3600) / 60); const sec = s % 60;
-            return `${h}:${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-        }
-        function formatHM(dt) {
-            let h = Math.floor(dt) % 24; let m = Math.round((dt - Math.floor(dt)) * 60);
-            if (m === 60) { h = (h + 1) % 24; m = 0; }
-            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}`;
-        }
-        function fmtDur(dh) {
-            let h = Math.floor(dh); let m = Math.round((dh - h) * 60);
-            if (m > 0) return `${h} год ${m} хв`;
-            return `${h} годин`;
-        }
-
-        // --- FAB LOGIC ---
-        function toggleFab() {
-            const container = document.getElementById('fabContainer');
-            const overlay = document.getElementById('fabOverlay');
-            container.classList.toggle('active');
-            overlay.classList.toggle('active');
-            try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
-        }
-        document.addEventListener('click', function(event) {
-            const container = document.getElementById('fabContainer');
-            const isClickInside = container.contains(event.target);
-            const overlay = document.getElementById('fabOverlay');
-            if (!isClickInside && container.classList.contains('active') && event.target.id !== 'fabOverlay') {
-                container.classList.remove('active');
-                overlay.classList.remove('active');
-            }
-        });
-
-        // --- THEME ---
-        function toggleTheme() {
-            const body = document.body;
-            const icon = document.getElementById('fabThemeIcon');
-            const isLight = body.getAttribute('data-theme') === 'light';
-            if (isLight) {
-                body.removeAttribute('data-theme');
-                localStorage.setItem('theme', 'dark');
-                if(icon) icon.innerText = '🌙';
-            } else {
-                body.setAttribute('data-theme', 'light');
-                localStorage.setItem('theme', 'light');
-                if(icon) icon.innerText = '☀️';
-            }
-            try { tg.HapticFeedback.impactOccurred('medium'); } catch (e) {}
-        }
         function loadTheme() {
-            const saved = localStorage.getItem('theme');
+            let saved = localStorage.getItem('svitlo_theme');
+
+            // Якщо немає — завжди темна
+            if (!saved) {
+                saved = 'dark';
+            }
+
+            applyTheme(saved);
+        }
+
+        function applyTheme(theme) {
+            const root = document.documentElement;
+            root.setAttribute('data-theme', theme);
+
             const icon = document.getElementById('fabThemeIcon');
-            if (saved === 'light') {
-                document.body.setAttribute('data-theme', 'light');
-                if(icon) icon.innerText = '☀️';
-            } else {
-                if(icon) icon.innerText = '🌙';
+            if (icon) {
+                icon.textContent = theme === 'light' ? '☀️' : '🌙';
+            }
+
+            try {
+                if (tg && tg.setBackgroundColor) {
+                    tg.setBackgroundColor(theme === 'dark' ? '#12121a' : '#f2f2f7');
+                }
+            } catch (e) {}
+        }
+
+
+    function toggleTheme() {
+        const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+        const next = cur === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('svitlo_theme', next);
+        applyTheme(next);
+        try {
+            if (tg && tg.setBackgroundColor) {
+                tg.setBackgroundColor(next === 'dark' ? '#12121a' : '#f2f2f7');
+            }
+        } catch (e) { }
+    }
+
+    function updateTopUpdated() {
+        const el = document.getElementById('topUpdated');
+        if (!el) return;
+        if (!window.LAST_UPDATED) {
+            el.innerText = 'Оновлено: —';
+            return;
+        }
+        el.innerText = formatUpdateTime(window.LAST_UPDATED);
+    }
+
+    function updateTopUsers(val) {
+        const el = document.getElementById('topUsers');
+        if (!el) return;
+        el.innerText = formatUsersNumber(val);
+    }
+
+    function addLabel(container, hour, label) {
+        if (!container) return;
+        const pct = (hour / 24) * 100;
+
+        const lbl = document.createElement('div');
+        lbl.className = 't-label';
+        lbl.style.left = pct + '%';
+        lbl.innerText = label;
+        container.appendChild(lbl);
+
+        const tick = document.createElement('div');
+        tick.className = 't-tick';
+        tick.style.left = pct + '%';
+        container.appendChild(tick);
+    }
+
+    function formatHM(h) {
+        if (h < 0) h = 0;
+        let total = Math.round(h * 60);
+        let hh = Math.floor(total / 60) % 24;
+        let mm = total % 60;
+        return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+    }
+
+    function fmtDur(hours) {
+        const totalMin = Math.round(hours * 60);
+        const hrs = Math.floor(totalMin / 60);
+        const mins = totalMin % 60;
+        let parts = [];
+        if (hrs > 0) parts.push(hrs + ' год');
+        if (mins > 0 || parts.length === 0) parts.push(mins + ' хв');
+        return parts.join(' ');
+    }
+
+    function startTimer(targetHour, totalSeconds, isOnNow) {
+        clearInterval(countdownInterval);
+        const timerEl = document.getElementById('batteryTimer');
+        if (!timerEl) return;
+
+        function formatSec(sec) {
+            const h = Math.floor(sec / 3600);
+            const m = Math.floor((sec % 3600) / 60);
+            const s = sec % 60;
+            if (h > 0) {
+                return (
+                    String(h).padStart(2, '0') + ':' +
+                    String(m).padStart(2, '0') + ':' +
+                    String(s).padStart(2, '0')
+                );
+            }
+            return (
+                String(m).padStart(2, '0') + ':' +
+                String(s).padStart(2, '0')
+            );
+        }
+
+        function moveCursor() {
+            if (!cursor) return;
+            const now = new Date();
+            const nowH = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+            const pct = Math.min(100, Math.max(0, (nowH / 24) * 100));
+            cursor.style.left = pct + '%';
+        }
+
+        function tick() {
+            const now = new Date();
+            const nowH = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+
+            let diffH = targetHour - nowH;
+            // якщо targetHour ≤ 24 і вже пройшов – значить подія завтра
+            if (targetHour <= 24 && diffH < 0) diffH += 24;
+
+            const remaining = Math.max(0, Math.round(diffH * 3600));
+            const total = totalSeconds && totalSeconds > 0 ? totalSeconds : Math.max(remaining, 1);
+            const pct = total > 0 ? remaining / total : 0;
+
+            setBat(pct, isOnNow);
+            timerEl.innerText = formatSec(remaining);
+            moveCursor();
+
+            if (remaining <= 0) {
+                clearInterval(countdownInterval);
+                timerEl.innerText = isOnNow ? 'Світло має вимкнутись' : 'Світло має зʼявитись';
+                // трохи почекаємо і перезавантажимо графік тихо
+                setTimeout(() => init(true), 60000);
             }
         }
+
+        tick();
+        countdownInterval = setInterval(tick, 1000);
+    }
+
+    function openTelegramShare() {
+        const text = `Графік світла для черги ${currentQueue} у Броварах`;
+        const url = 'https://t.me/SvitloBroBot';
+        const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text);
+        try {
+            if (tg && tg.openTelegramLink) tg.openTelegramLink(shareUrl);
+            else window.open(shareUrl, '_blank');
+        } catch (e) {
+            window.open(shareUrl, '_blank');
+        }
+    }
+
+    function universalShare() {
+        const text = `Графік світла для черги ${currentQueue} у Броварах: https://t.me/SvitloBroBot`;
+        if (navigator.share) {
+            navigator.share({ text }).catch(() => {
+                openTelegramShare();
+            });
+        } else {
+            openTelegramShare();
+        }
+    }
+
+    function toggleFab() {
+        const cont = document.getElementById('fabContainer');
+        const ov = document.getElementById('fabOverlay');
+        if (!cont || !ov) return;
+        const isActive = cont.classList.toggle('active');
+        ov.classList.toggle('active', isActive);
+    }
 
         function showInfo(type) {
             const overlay = document.getElementById('infoModal');
@@ -2154,149 +1833,676 @@
             }
         }
 
-        // === ANIMATED SWIPE CONTROL ===
+    function scrollToActiveQueue() {
+        const list = document.getElementById('queueList');
+        if (!list) return;
+        const active = list.querySelector('.q-item.active');
+        if (!active) return;
+        const offset = active.offsetTop - list.clientHeight / 2;
+        list.scrollTo({ top: offset, behavior: 'smooth' });
+    }
 
-        let touchStartX = 0;
-        let touchEndX = 0;
-        let swipeLocked = false; // щоб не дублікувати свайпи
+    /* ====== ДАЛІ ЙДЕ ТВОЯ ІСНУЮЧА ЛОГІКА ПАРСИНГУ / РЕНДЕРУ ====== */
 
-        document.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-        }, false);
-
-        document.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            handleAnimatedSwipe();
-        }, false);
-
-        function handleAnimatedSwipe() {
-            if (swipeLocked) return;
-
-            const dx = touchEndX - touchStartX;
-
-            // Поріг спрацювання (60 пікселів)
-            if (Math.abs(dx) < 60) return;
-
-            // Свайп ВЛІВО (йдемо на Завтра)
-            if (dx < 0 && currentTab === 1) {
-                swipeLocked = true;
-                try { tg.HapticFeedback.selectionChanged(); } catch(e){}
-                switchTab(2);
-                // Розблокуємо свайп, коли закінчиться анімація switchTab
-                setTimeout(() => { swipeLocked = false; }, 300);
+    function parseCSV(text) {
+        const rows = []; let currentRow = []; let currentVal = ''; let insideQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i]; const nextChar = text[i + 1];
+            if (char === '"') {
+                if (insideQuotes && nextChar === '"') { i++; currentVal += '"'; }
+                else { insideQuotes = !insideQuotes; }
             }
-
-            // Свайп ВПРАВО (повертаємось на Сьогодні)
-            else if (dx > 0 && currentTab === 2) {
-                swipeLocked = true;
-                try { tg.HapticFeedback.selectionChanged(); } catch(e){}
-                switchTab(1);
-                setTimeout(() => { swipeLocked = false; }, 300);
+            else if (char === ',' && !insideQuotes) {
+                currentRow.push(currentVal); currentVal = '';
             }
+            else if ((char === '\r' || char === '\n') && !insideQuotes) {
+                if (char === '\r' && nextChar === '\n') i++;
+                if (currentVal || currentRow.length) currentRow.push(currentVal);
+                if (currentRow.length) rows.push(currentRow);
+                currentRow = []; currentVal = '';
+            } else { currentVal += char; }
         }
-
-        function scrollToActiveQueue() {
-            const box = document.getElementById("queueList");
-            const active = box.querySelector(".q-item.active");
-            if (!active) return;
-
-            const offset = active.offsetTop - (box.clientHeight / 2) + (active.clientHeight / 2);
-
-            box.scrollTo({
-                top: offset,
-                behavior: "smooth"
+        if (currentVal || currentRow.length) currentRow.push(currentVal);
+        if (currentRow.length) rows.push(currentRow);
+        if (rows.length < 2) return [];
+        const rawHeaders = rows[0].map(h => h.replace(/\uFEFF/g, '').replace(/\u00A0/g, ' ').replace(/[\u200B-\u200F]/g, '').trim().toLowerCase());
+        return rows.slice(1).map(row => {
+            const obj = {};
+            rawHeaders.forEach((h, i) => {
+                let val = row[i] ?? "";
+                if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
+                obj[h] = val.trim();
             });
+            return obj;
+        });
+    }
 
-            active.classList.add("pulse");
-            setTimeout(() => active.classList.remove("pulse"), 1200);
+    function normalizeHeaders(obj) {
+        const fixed = {};
+        for (let key in obj) {
+            const clean = key.replace(/\uFEFF/g, "").replace(/\u00A0/g, " ").replace(/[\u200B-\u200F]/g, "").trim().toLowerCase();
+            fixed[clean] = obj[key];
+        }
+        return fixed;
+    }
+
+    function getSchedule(fullText, targetDate) {
+        if (!fullText) return null;
+        const daysMap = ["Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "Пʼятниця", "Субота"];
+        const dayName = daysMap[targetDate.getDay()];
+        const lines = fullText.replace(/\r\n/g, '\n').split('\n');
+        let dayLine = lines.find(line => line.trim().startsWith(dayName));
+        if (!dayLine || dayLine.includes(":-") || dayLine.includes(": -") || dayLine.trim().endsWith("-")) return null;
+        let timesPart = dayLine.includes(':') ? dayLine.substring(dayLine.indexOf(':') + 1).trim() : "";
+        if (!timesPart || timesPart === "-") return null;
+        timesPart = timesPart.replace(/\+/g, "");
+        const ranges = timesPart.split(',');
+        let arr = [];
+        let lastTime = 0;
+        ranges.forEach(r => {
+            const parts = r.split('-').map(s => s.trim());
+            if (parts.length < 2) return;
+            const startH = timeToH(parts[0]);
+            const endH = timeToH(parts[1]);
+            if (isNaN(startH) || isNaN(endH)) return;
+            if (startH > lastTime) {
+                arr.push(`${parseFloat((startH - lastTime).toFixed(2))}on`);
+            }
+            let dur;
+            if (endH < startH) {
+                dur = (24 - startH) + endH;
+            } else {
+                dur = endH - startH;
+            }
+            if (dur > 0) {
+                arr.push(`${parseFloat(dur.toFixed(2))}off`);
+            }
+            lastTime = startH + dur;
+        });
+        if (lastTime < 24) {
+            arr.push(`${parseFloat((24 - lastTime).toFixed(2))}on`);
+        }
+        if (arr.length === 0) return "24on";
+        return arr.join(',');
+    }
+
+    function timeToH(t) { const [h, m] = t.split(':').map(Number); return h + (m / 60); }
+
+    function toggleModal() {
+        const modal = document.getElementById('modal');
+        modal.classList.toggle('show');
+        document.querySelector('.queue-select-btn').classList.toggle('open');
+        setTimeout(() => {
+            const active = document.querySelector(".q-item.active");
+            if (active) scrollToActiveQueue();
+        }, 200);
+    }
+
+    function selectQueue(q) {
+        currentQueue = q; localStorage.setItem('savedQueue', q);
+        try { tg.HapticFeedback.selectionChanged(); } catch (e) { }
+        toggleModal(); buildMenu(); render(currentTab);
+    }
+
+    function buildMenu() {
+        const list = document.getElementById('queueList');
+        list.innerHTML = '<div style="text-align:center;margin-bottom:15px;color:var(--text-muted);font-size:12px">ОБЕРІТЬ ЧЕРГУ</div>';
+        const queues = [...new Set(allData.map(i => i.group_id))].sort();
+        queues.forEach(q => {
+            if (!q) return;
+            let d = document.createElement('div');
+            d.className = `q-item ${q == currentQueue ? 'active' : ''}`;
+            d.innerText = `Черга ${q}`;
+            d.onclick = () => selectQueue(q);
+            list.appendChild(d);
+        });
+        document.getElementById('queueTitle').innerText = `ЧЕРГА ${currentQueue}`;
+    }
+
+    function formatUpdateTime(raw) {
+        if (!raw) return "";
+        const months = ["січня", "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"];
+        const [datePart, timePart] = raw.split(" ");
+        const [Y, M, D] = datePart.split("-").map(Number);
+        const [h, m] = timePart.split(":").map(Number);
+        const dt = new Date(Y, M - 1, D, h, m);
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+        const dayOnly = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+        if (dayOnly.getTime() === today.getTime()) return `Оновлено: сьогодні о ${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+        if (dayOnly.getTime() === yesterday.getTime()) return `Оновлено: вчора о ${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+        return `Оновлено: ${D} ${months[M - 1]} о ${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    }
+
+    function switchTab(idx) {
+        if (currentTab === idx) return;
+        try { tg.HapticFeedback.impactOccurred('light'); } catch (e) { }
+        const body = document.getElementById("dayBody");
+        const dateBox = document.querySelector(".date-box");
+        dateBox.classList.add("anim-hide");
+        const direction = idx > currentTab ? 1 : -1;
+        body.style.transition = "transform .25s ease, opacity .25s ease";
+        body.style.transform = `translateX(${-40 * direction}px)`;
+        body.style.opacity = "0";
+        setTimeout(() => {
+            currentTab = idx;
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+            document.getElementById("tab" + idx).classList.add("active");
+            body.style.transition = "none";
+            body.style.transform = `translateX(${40 * direction}px)`;
+            body.style.opacity = "0";
+            render(idx);
+            setTimeout(() => {
+                body.style.transition = "transform .25s ease, opacity .25s ease";
+                body.style.transform = "translateX(0)";
+                body.style.opacity = "1";
+                setTimeout(() => {
+                    dateBox.classList.remove("anim-hide");
+                    dateBox.classList.add("anim-show");
+                    setTimeout(() => dateBox.classList.remove("anim-show"), 250);
+                }, 40);
+            }, 20);
+        }, 250);
+    }
+
+    function render(dayIdx) {
+        const row = allData.find(r => r.group_id == currentQueue);
+        if (!row) return;
+
+        const targetDate = new Date();
+        if (dayIdx === 2) targetDate.setDate(targetDate.getDate() + 1);
+
+        const scheduleStr = getSchedule(row.schedule_text, targetDate);
+
+        const d = String(targetDate.getDate()).padStart(2, '0');
+        const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+        const daysMap = ["НЕДІЛЯ", "ПОНЕДІЛОК", "ВІВТОРОК", "СЕРЕДА", "ЧЕТВЕР", "ПʼЯТНИЦЯ", "СУБОТА"];
+        document.getElementById('dateDisplay').innerText = `${daysMap[targetDate.getDay()]} ${d}.${m}`;
+
+        const track = document.getElementById('timelineTrack');
+        const iBox = document.getElementById('infoBox');
+        const lBox = document.getElementById('timeLabelsBox');
+        const tlSec = document.getElementById('timelineSection');
+        const totBox = document.getElementById('totalBox');
+        const noData = document.getElementById('noDataMessage');
+        const batSec = document.getElementById('batterySection');
+        const detailBox = document.getElementById('detailCardContainer');
+        const appContent = document.getElementById('app-content');
+
+        track.innerHTML = '';
+        while (lBox.firstChild) lBox.removeChild(lBox.firstChild);
+        iBox.innerHTML = '';
+        detailBox.innerHTML = '';
+        detailBox.classList.add('hidden');
+        activeSegmentElement = null; activeListCard = null;
+
+        ensureCursor();
+        track.appendChild(cursor);
+        cursor.style.display = (dayIdx === 1 ? 'block' : 'none');
+
+        const isToday = (dayIdx === 1);
+        document.getElementById("dayTitle").innerText = isToday ? "Графік на сьогодні" : "Графік на завтра";
+
+        const bf = document.getElementById('batteryFill');
+        bf.className = 'battery-fill';
+
+        if (!scheduleStr) {
+            tlSec.classList.add('hidden'); noData.classList.remove('hidden'); totBox.innerHTML = ''; batSec.classList.remove('hidden');
+            document.getElementById('batteryTimer').innerText = "—";
+            document.getElementById('batteryLabel').innerText = "Невідомо";
+            bf.style.width = "100%"; bf.style.background = "#555"; bf.style.boxShadow = "none";
+            if (appContent) appContent.classList.remove('hidden');
+            return;
         }
 
-            function universalShare() {
+        tlSec.classList.remove('hidden'); noData.classList.add('hidden');
 
-                const text =
-                `https://t.me/SvitloBroBot
-                ⚡️ Я користуюсь ботом для відстеження графіків відключень світла у Броварах. Приєднуйся!
-                Моя черга: ${currentQueue}`;
+        if (!isToday) {
+            const t = document.getElementById('batteryTimer').innerText;
+            const l = document.getElementById('batteryLabel').innerText;
+            document.getElementById('batteryTimer').innerText = t;
+            document.getElementById('batteryLabel').innerText = l;
+        }
 
-                // 1️⃣ копіюємо текст
-                navigator.clipboard.writeText(text).then(() => {
-
-                    tg.showPopup({
-                        title: "Виберіть чат",
-                        message: "Текст скопійовано. Оберіть чат і вставте повідомлення.",
-                        buttons: [
-                            { id: "open", text: "Відкрити Telegram", type: "default" },
-                            { type: "cancel" }
-                        ]
-                    }, (btn) => {
-                        if (btn === "open") {
-                            // відкриває Telegram у режимі нового повідомлення
-                            window.location.href = "tg://share?text=" + encodeURIComponent(text);
-                        }
-                    });
-
-                });
-            }
-
-            function updateNativeShareLink() {
-                const text = `⚡️ Я користуюсь ботом для світла у Броварах. Моя черга ${currentQueue}. Приєднуйся!`;
-                const url = "https://t.me/SvitloBroBot";
-
-                document.getElementById("telegramShareNative").href =
-                    "https://t.me/share/url?url="
-                    + encodeURIComponent(url)
-                    + "&text="
-                    + encodeURIComponent(text);
-            }
-
-
-        function updateDonateUI(amount, goal) {
-            const target = goal > 0 ? goal : (amount > 0 ? amount * 1.2 : 5000);
-            let pct = (amount / target) * 100;
-            if (pct > 100) pct = 100;
-
-            const progress = document.getElementById('donateProgress');
-            if (progress) progress.style.width = `${pct}%`;
-
-            const fmtAmount = amount.toLocaleString('uk-UA', {maximumFractionDigits: 0});
-            const fmtGoal   = target.toLocaleString('uk-UA', {maximumFractionDigits: 0});
-
-            const amountEl = document.getElementById('donateAmount');
-            if (amountEl) {
-                if (goal > 0) {
-                    amountEl.innerText = `${fmtAmount} / ${fmtGoal} ₴`;
-                } else {
-                    amountEl.innerText = `${fmtAmount} ₴`;
+        let tomorrowFirstOff = null;
+        if (isToday) {
+            const tmr = new Date(targetDate); tmr.setDate(tmr.getDate() + 1);
+            const tmrStr = getSchedule(row.schedule_text, tmr);
+            if (tmrStr) {
+                const tParts = tmrStr.split(',');
+                let hCounter = 0;
+                for (let p of tParts) {
+                    let pType = p.includes('off') ? 'off' : 'on';
+                    let pDur = parseFloat(p.replace('on', '').replace('off', ''));
+                    if (pType === 'off') { tomorrowFirstOff = hCounter; break; }
+                    hCounter += pDur;
                 }
             }
         }
 
+        // аналіз вчорашнього дня
+        let yesterdayExtraOn = 0;
+        let yesterdayExtraOff = 0;
 
-        function closeInfo() {
-            document.getElementById('infoModal').classList.remove('show');
+        if (isToday) {
+            try {
+                const yst = new Date(targetDate);
+                yst.setDate(yst.getDate() - 1);
+                const ystStr = getSchedule(row.schedule_text, yst);
+
+                if (ystStr) {
+                    const yParts = ystStr.split(',');
+                    if (yParts.length > 0) {
+                        const lastPart = yParts[yParts.length - 1];
+                        const dur = parseFloat(lastPart.replace('on', '').replace('off', ''));
+
+                        if (!isNaN(dur)) {
+                            if (lastPart.includes('on')) yesterdayExtraOn = dur;
+                            else yesterdayExtraOff = dur;
+                        }
+                    }
+                }
+            } catch (e) { console.warn("Err yesterday analysis", e); }
         }
 
-        // Auto-update day
-        let currentDayNum = new Date().getDate();
-        setInterval(() => {
-            const now = new Date();
-            if (now.getDate() !== currentDayNum) { currentDayNum = now.getDate(); init(); }
-        }, 1000);
+        let curH = 0; let totOff = 0;
+        const now = new Date();
+        const curFloat = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
+        let foundState = false;
+        let lastEndH = 0;
+        let lastOffEndH = 0;
 
-        // 🔥 ЗАПУСК
-        init();
+        addLabel(lBox, 0, "00:00", "start");
 
-        // ❗ Фікс ривків анімації при першому свайпі
+        const parts = scheduleStr.split(',');
+        parts.forEach((part, index) => {
+            let type = part.includes('off') ? 'off' : 'on';
+            let dur = parseFloat(part.replace('on', '').replace('off', ''));
+            if (isNaN(dur) || dur <= 0) return;
+            let segStart = curH;
+            let endH = curH + dur;
+            let displayEndH = endH;
+
+            if (type === 'off') lastOffEndH = endH;
+
+            let realStartH = segStart;
+            let realDuration = dur;
+
+            if (index === 0) {
+                if (type === 'on' && yesterdayExtraOn > 0) {
+                    realStartH = 24 - yesterdayExtraOn;
+                    realDuration += yesterdayExtraOn;
+                }
+                if (type === 'off' && yesterdayExtraOff > 0) {
+                    realStartH = 24 - yesterdayExtraOff;
+                    realDuration += yesterdayExtraOff;
+                }
+            }
+
+            let seg = document.createElement('div');
+            seg.className = `segment ${type}`;
+            seg.style.flexGrow = dur; seg.style.flexBasis = '0';
+            if (dur >= 1.5) seg.innerHTML = `<div class="segment-icon">${type === 'on' ? '💡' : '🔌'}</div>`;
+            track.appendChild(seg);
+
+            seg.addEventListener('click', () => handleSegmentClick(seg, type, realStartH, endH, realDuration));
+
+            if (endH < 23.9 && (endH - lastEndH) > 2.0 && (24 - endH) > 1.5) {
+                addLabel(lBox, endH, formatHM(endH), "mid"); lastEndH = endH;
+            }
+
+            let nextOffInfo = null;
+            if (type === 'on' && Math.abs(displayEndH - 24) < 0.1 && tomorrowFirstOff !== null) {
+                nextOffInfo = `Наступне вимкнення очікується <b>завтра о ${formatHM(tomorrowFirstOff)}</b>.`;
+            }
+
+            let customMainText = null;
+            if (index === 0 && type === 'off' && yesterdayExtraOff > 0) {
+                customMainText = `Вимкнення триває з вчора <b>(${formatHM(realStartH)})</b> і завершиться о <b>${formatHM(endH)}</b>.`;
+            }
+
+            let card = createCard(realStartH, displayEndH, realDuration, type, nextOffInfo, customMainText);
+
+            if (isToday && curFloat >= segStart && curFloat < endH) card.classList.add('active-now');
+            iBox.appendChild(card);
+
+            if (type === 'off') totOff += dur;
+
+            if (isToday && !foundState && curFloat < endH) {
+                foundState = true;
+                const isLastSegment = (index === parts.length - 1);
+
+                if (type === 'off') {
+                    startTimer(endH, Math.floor(realDuration * 3600), false);
+                } else {
+                    if (!isLastSegment) {
+                        startTimer(endH, Math.floor(realDuration * 3600), true);
+                    } else {
+                        if (tomorrowFirstOff !== null) {
+                            const targetH = 24 + tomorrowFirstOff;
+                            let combinedDur = (targetH - segStart);
+                            if (index === 0) combinedDur += yesterdayExtraOn;
+                            startTimer(targetH, Math.floor(combinedDur * 3600), true);
+                        } else {
+                            setGreenBattery();
+                        }
+                    }
+                }
+            }
+            curH = endH;
+        });
+
+        addLabel(lBox, 24, "24:00", "end");
+
+        if (isToday && !foundState) {
+            if (totOff === 0) {
+                if (tomorrowFirstOff !== null) {
+                    const targetH = 24 + tomorrowFirstOff;
+                    const totalSec = Math.floor(((targetH - 0) + yesterdayExtraOn) * 3600);
+                    startTimer(targetH, totalSec, true);
+                } else { setGreenBattery(); }
+            } else if (tomorrowFirstOff !== null) {
+                const targetH = 24 + tomorrowFirstOff;
+                const totalSec = Math.floor((targetH - lastOffEndH) * 3600);
+                startTimer(targetH, totalSec, true);
+            } else { setGreenBattery(); }
+        }
+
+        totBox.innerHTML = `Всього без світла: <b>${fmtDur(totOff)}</b>`;
+
+        const shareWrap = document.getElementById("shareWrapper");
+        shareWrap.classList.remove("hidden");
+        if (!shareWrap.classList.contains("fade-in")) setTimeout(() => shareWrap.classList.add("fade-in"), 150);
+        if (appContent) appContent.classList.remove('hidden');
+    }
+
+    function handleSegmentClick(segEl, type, startH, endH, durH) {
+        const detailBox = document.getElementById('detailCardContainer');
+        if (activeSegmentElement === segEl) {
+            segEl.classList.remove('segment-selected');
+            activeSegmentElement = null;
+            const card = detailBox.querySelector('.detail-card');
+            if (card) {
+                card.classList.add('closing');
+                setTimeout(() => { detailBox.classList.add('hidden'); detailBox.innerHTML = ''; }, 280);
+            } else { detailBox.classList.add('hidden'); detailBox.innerHTML = ''; }
+            return;
+        }
+        if (activeSegmentElement) activeSegmentElement.classList.remove('segment-selected');
+        activeSegmentElement = segEl;
+        segEl.classList.add('segment-selected');
+        showDetailCard(type === 'on' ? 'on' : 'off', startH, endH, durH);
+        try { tg.HapticFeedback.selectionChanged(); } catch (e) { }
+    }
+
+    function showDetailCard(type, startH, endH, durH) {
+        const box = document.getElementById('detailCardContainer');
+        if (!box) return;
+        const startStr = formatHM(startH);
+        const endStr = formatHM(endH);
+        const durStr = fmtDur(durH);
+        let titleStatus, icon, headerClass, bodyHtml;
+        const isOvernight = startH > endH;
+
+        if (type === 'on') {
+            titleStatus = 'СВІТЛО Є'; icon = '💡'; headerClass = 'detail-status-on';
+            if (isOvernight) bodyHtml = `<p>Світло увімкнули вчора о <b>${startStr}</b>, вимкнення очікується о <b>${endStr}</b>.</p>`;
+            else bodyHtml = `<p>Світло буде з <b>${startStr}</b> до <b>${endStr}</b>.</p><p>Наступне вимкнення очікується о <b>${endStr}</b>.</p>`;
+        } else {
+            titleStatus = 'ВІДКЛЮЧЕННЯ'; icon = '🔌'; headerClass = 'detail-status-off';
+            if (isOvernight) bodyHtml = `<p>Вимкнення триває з вчора <b>(${startStr})</b> і завершиться о <b>${endStr}</b>.</p><p>Планове відключення.</p>`;
+            else bodyHtml = `<p>Світло буде вимкнене о <b>${startStr}</b> і повернеться о <b>${endStr}</b>.</p><p>Планове відключення.</p>`;
+        }
+        box.classList.remove('hidden');
+        box.innerHTML = `
+            <div class="detail-card ${type === 'on' ? 'on' : 'off'}">
+                <div class="detail-header">
+                    <div class="detail-left">
+                        <div class="detail-icon">${icon}</div>
+                        <div class="detail-main">
+                            <div class="detail-status ${headerClass}">${titleStatus}</div>
+                            <div class="detail-time">${startStr} - ${endStr}</div>
+                        </div>
+                    </div>
+                    <div class="detail-duration">${durStr}</div>
+                </div>
+                <div class="detail-divider"></div>
+                <div class="detail-body">
+                    ${bodyHtml}
+                    <p class="detail-note">* Включення/вимкнення може відбуватися з невеликою похибкою у часі.</p>
+                </div>
+            </div>`;
+    }
+
+    function createCard(s, e, d, type, nextOffInfo = null, customMainText = null) {
+        let c = document.createElement('div');
+        c.className = `card c-${type}`;
+        let detailsHtml = '';
+        if (type === 'on') {
+            let nextStr = `Наступне вимкнення очікується о <b>${formatHM(e)}</b>.`;
+            if (nextOffInfo) nextStr = nextOffInfo;
+            detailsHtml = `Світло буде з <b>${formatHM(s)}</b> до <b>${formatHM(e)}</b>.<br>${nextStr}<br><br><i>* Включення/вимкнення може бути з невеликою похибкою.</i>`;
+        } else {
+            let mainStr = `Світло буде вимкнене о <b>${formatHM(s)}</b> і повернеться о <b>${formatHM(e)}</b>.`;
+            if (customMainText) mainStr = customMainText;
+            detailsHtml = `${mainStr}<br>Планове відключення.<br><br><i>* Включення/вимкнення може відбуватися з невеликою похибкою у часі.</i>`;
+        }
+        c.innerHTML = `
+            <div class="card-header">
+                <div class="card-info">
+                    <div class="c-icon">${type === 'on' ? '💡' : '🔌'}</div>
+                    <div class="c-times">
+                        <div class="status-label">${type === 'on' ? 'СВІТЛО Є' : 'ВІДКЛЮЧЕННЯ'}</div>
+                        <div class="c-time">${formatHM(s)} - ${formatHM(e)}</div>
+                    </div>
+                </div>
+                <div class="c-dur">${fmtDur(d)}</div>
+            </div>
+            <div class="card-details">${detailsHtml}</div>`;
+        c.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            if (activeListCard === c) {
+                c.classList.remove("expanded");
+                activeListCard = null;
+                return;
+            }
+            if (activeListCard) { activeListCard.classList.remove("expanded"); }
+            c.classList.add("expanded");
+            activeListCard = c;
+        });
+        return c;
+    }
+
+    function setGreenBattery() {
+        const f = document.getElementById('batteryFill');
+        const tip = document.querySelector('.battery-tip');
+        const label = document.getElementById('batteryLabel');
+        f.classList.remove('discharging');
+        f.style.width = "100%";
+        f.style.background = "linear-gradient(90deg, #1abc9c, #2ecc71)";
+        f.style.boxShadow = "0 0 15px #2ecc71";
+        if (tip) {
+            tip.style.background = "#2ecc71";
+            tip.style.boxShadow = "0 0 10px #2ecc71";
+        }
+        document.getElementById('batteryTimer').innerText = "";
+        clearInterval(countdownInterval);
+        label.innerText = "Відключення ще не заплановані";
+    }
+
+    function setBat(pct, isOn, customText = null) {
+        pct = Math.min(Math.max(pct, 0), 1);
+        const f = document.getElementById('batteryFill');
+        const label = document.getElementById('batteryLabel');
+        const tip = document.querySelector('.battery-tip');
+        let visualPct;
+        let hue;
+        if (isOn) {
+            visualPct = pct;
+            hue = visualPct * 120;
+            f.classList.add('discharging');
+        } else {
+            visualPct = 1 - pct;
+            hue = visualPct * 120;
+            f.classList.remove('discharging');
+        }
+        f.style.width = Math.max(visualPct * 100, 5) + "%";
+        if (customText) {
+            label.innerText = customText;
+        } else {
+            label.innerText = isOn ? 'до відключення' : 'до включення';
+        }
+        const colorStart = `hsl(${hue}, 100%, 35%)`;
+        const colorEnd = `hsl(${hue}, 100%, 60%)`;
+        const mainColor = `hsl(${hue}, 100%, 45%)`;
+        f.style.background = `linear-gradient(90deg, ${colorStart}, ${colorEnd})`;
+        f.style.boxShadow = `0 0 15px ${mainColor}`;
+        if (tip) {
+            tip.style.background = mainColor;
+            tip.style.boxShadow = `0 0 10px ${mainColor}`;
+        }
+    }
+
+    function updateNativeShareLink() {
+        const text = `⚡️ Я користуюсь ботом для світла у Броварах. Моя черга ${currentQueue}. Приєднуйся!`;
+        const url = "https://t.me/SvitloBroBot";
+        document.getElementById("telegramShareNative").href = "https://t.me/share/url?url=" + encodeURIComponent(url) + "&text=" + encodeURIComponent(text);
+    }
+
+    function updateDonateUI(amount, goal) {
+        const target = goal > 0 ? goal : (amount > 0 ? amount * 1.2 : 5000);
+        let pct = (amount / target) * 100;
+        if (pct > 100) pct = 100;
+        const progress = document.getElementById('donateProgress');
+        if (progress) progress.style.width = `${pct}%`;
+        const fmtAmount = amount.toLocaleString('uk-UA', { maximumFractionDigits: 0 });
+        const fmtGoal = target.toLocaleString('uk-UA', { maximumFractionDigits: 0 });
+        const amountEl = document.getElementById('donateAmount');
+        if (amountEl) {
+            if (goal > 0) {
+                amountEl.innerText = `${fmtAmount} / ${fmtGoal} ₴`;
+            } else {
+                amountEl.innerText = `${fmtAmount} ₴`;
+            }
+        }
+    }
+
+function checkDonatePopup() {
+            // 1. Отримуємо сьогоднішню дату
+            const today = new Date().toLocaleDateString();
+
+            // 2. Дістаємо статистику з пам'яті
+            let data = JSON.parse(localStorage.getItem('launch_stats') || '{"date": "", "count": 0}');
+
+            // 3. Логіка лічильника
+            if (data.date !== today) {
+                data.date = today;
+                data.count = 1;
+            } else {
+                data.count++;
+            }
+
+            // Зберігаємо
+            localStorage.setItem('launch_stats', JSON.stringify(data));
+
+            // Умова: 2-й, 5-й або 8-й вхід за день
+            if (data.count === 2 || data.count === 5 || data.count === 8) {
+
+                // Затримка 7 секунд
+                setTimeout(() => {
+                    const overlay = document.getElementById('infoModal');
+                    const title = document.getElementById('infoTitle');
+                    const text = document.getElementById('infoText');
+
+                    title.innerText = "";
+
+                    text.innerHTML = `
+                        <div class="donate-hero">
+                            <span class="donate-emoji-big">💚</span>
+                            <h3 style="margin:0; color:var(--text-main); font-size:22px;">Підтримати проєкт</h3>
+
+                            <p style="font-size:14px; color:var(--text-muted); margin-top:12px; line-height:1.5;">
+                                Друзі, якщо наш бот допомагає вам орієнтуватись у графіках та вчасно отримувати сповіщення про світло — будемо вдячні за вашу підтримку.
+                            </p>
+                            <p style="font-size:14px; color:var(--text-muted); margin-top:8px; line-height:1.5;">
+                                Навіть невеликий внесок допомагає нам покривати витрати на сервери та розвиток проєкту.
+                            </p>
+                        </div>
+
+                        <a href="https://send.monobank.ua/jar/6qoHuhpGgD" target="_blank" class="btn-mono">
+                            <span style="font-size:20px">🐈‍⬛</span>
+                            <span>Monobank (Банка)</span>
+                        </a>
+
+                        <div class="donate-divider">або картка</div>
+
+                        <div class="card-copy-box" onclick="copyDonateCard(this)">
+                            <span class="cc-num">4874 1000 2226 7572</span>
+                            <span class="cc-icon">📋</span>
+                        </div>
+
+                        <p style="font-size:12px; color:var(--text-muted); text-align:center; margin-top:12px; opacity:0.6">
+                            Натисніть на номер, щоб скопіювати
+                        </p>
+                    `;
+
+                    overlay.classList.add('show');
+                    try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
+                }, 7000);
+            }
+        }
+
+        function copyDonateCard(element) {
+            const cardNumber = "4874100022267572";
+            const numSpan = element.querySelector('.cc-num');
+            const iconSpan = element.querySelector('.cc-icon');
+
+            // Зберігаємо старий текст
+            const originalNum = numSpan ? numSpan.innerText : cardNumber;
+            const originalIcon = iconSpan ? iconSpan.innerText : "📋";
+
+            navigator.clipboard.writeText(cardNumber).then(() => {
+                // Ефект успіху
+                element.style.borderColor = "#2ecc71";
+                element.style.background = "rgba(46, 204, 113, 0.1)";
+
+                if(numSpan) numSpan.innerText = "Скопійовано! ✅";
+                if(iconSpan) iconSpan.innerText = "";
+
+                try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
+
+                // Повертаємо назад через 2 сек
+                setTimeout(() => {
+                    element.style.borderColor = "rgba(255, 255, 255, 0.2)";
+                    element.style.background = "rgba(255, 255, 255, 0.08)";
+                    if(numSpan) numSpan.innerText = originalNum;
+                    if(iconSpan) iconSpan.innerText = originalIcon;
+                }, 2000);
+            });
+        }
+
+    function closeInfo() {
+        document.getElementById('infoModal').classList.remove('show');
+    }
+
+    let currentDayNum = new Date().getDate();
+    setInterval(() => {
+        const now = new Date();
+        if (now.getDate() !== currentDayNum) { currentDayNum = now.getDate(); init(); }
+    }, 1000);
+
+    init();
+
         document.body.classList.add("no-anim");
 
         setTimeout(() => {
             document.body.classList.remove("no-anim");
-
-            // 🟢 Викликаємо fetchDonation() вже після включення анімацій
             fetchDonation();
 
-        }, 300);
-</script>
+            // 👇 ЦЕЙ РЯДОК ОБОВ'ЯЗКОВО МАЄ БУТИ ТУТ:
+            checkDonatePopup();
 
+        }, 300);
+    </script>
 </body>
-</html>
