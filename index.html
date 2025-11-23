@@ -273,7 +273,7 @@
 
         .battery-text {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 22px; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            font-size: 22px; font-weight: 700; text-shadow: 0 1px 2px rgba(0,0,0,0.3);
             font-variant-numeric: tabular-nums; width: 100%; text-align: center; z-index: 5; color: white;
         }
         .battery-status { margin-top: 8px; font-size: 13px; color: var(--text-muted); font-weight: 500; }
@@ -1554,7 +1554,7 @@
                     document.getElementById('batteryLabel').innerText = "Невідомо";
                     bf.style.width = "100%"; bf.style.background = "#555"; bf.style.boxShadow = "none";
                 } else {
-                    const fNow = document.querySelector('.battery-fill');
+                    const fNow = document.getElementById('batteryFill');
                     bf.style.width = fNow.style.width; bf.style.background = fNow.style.background; bf.style.boxShadow = fNow.style.boxShadow;
                 }
                 if (appContent) appContent.classList.remove('hidden');
@@ -1566,11 +1566,11 @@
             if (!isToday) {
                 const t = document.getElementById('batteryTimer').innerText;
                 const l = document.getElementById('batteryLabel').innerText;
-                const f = document.getElementById('batteryFill');
+
                 document.getElementById('batteryTimer').innerText = t;
                 document.getElementById('batteryLabel').innerText = l;
-                f.style.width = document.querySelector('.battery-fill').style.width;
             }
+
 
             // --- АНАЛІЗ ЗАВТРА ---
             let tomorrowFirstOff = null;
@@ -1597,6 +1597,9 @@
             let lastEndH = 0;
             let finalEndLabel = "24:00";
 
+            // 🔥 НОВЕ: Зберігаємо кінець останнього відключення
+            let lastOffEndH = 0;
+
             addLabel(lBox, 0, "00:00", "start");
 
             const parts = scheduleStr.split(',');
@@ -1607,6 +1610,9 @@
                 let segStart = curH;
                 let endH = curH + dur;
                 let displayEndH = endH;
+
+                // 🔥 Оновлюємо останнє відключення
+                if (type === 'off') lastOffEndH = endH;
 
                 let seg = document.createElement('div');
                 seg.className = `segment ${type}`;
@@ -1625,23 +1631,27 @@
 
                 if (type === 'off') totOff += dur;
 
-                // --- ТАЙМЕР ---
+                // --- ТАЙМЕР (Всередині дня) ---
                 if (isToday && !foundState && curFloat < endH) {
                     foundState = true;
                     const isLastSegment = (index === parts.length - 1);
 
                     if (type === 'off') {
-                        startTimer(endH, dur * 3600, false);
+                        startTimer(endH, Math.floor((endH - segStart) * 3600), false);
                     } else {
                         // Світло Є
                         if (!isLastSegment) {
-                            startTimer(endH, dur * 3600, true);
+                            startTimer(endH, Math.floor((endH - segStart) * 3600), true);
                         } else {
                             // Це останній сегмент світла
                             if (tomorrowFirstOff !== null) {
                                 // Завтра є відключення -> таймер
                                 const targetH = 24 + tomorrowFirstOff;
-                                const totalSec = Math.floor((targetH - curFloat) * 3600);
+
+                                // 🔥 ВИПРАВЛЕНО: Рахуємо тривалість від початку цього світла (lastOffEndH)
+                                const totalDuration = targetH - lastOffEndH;
+                                const totalSec = Math.floor(totalDuration * 3600);
+
                                 startTimer(targetH, totalSec, true);
                             } else {
                                 // Завтра чисто або невідомо -> зелена батарейка
@@ -1655,15 +1665,28 @@
 
             addLabel(lBox, 24, finalEndLabel, "end");
 
-            // Якщо день закінчився або не було відключень
+            // --- ТАЙМЕР (Кінець дня / Хвіст) ---
             if (isToday && !foundState) {
                 if (totOff === 0) {
-                    setGreenBattery(tmrScheduleStr);
+                    // Якщо відключень сьогодні взагалі не було
+                    if (tomorrowFirstOff !== null) {
+                        const targetH = 24 + tomorrowFirstOff;
+                        // Весь день світло + шматок завтра = довгий період
+                        const totalDuration = targetH - 0; // від 00:00 сьогодні
+                        const totalSec = Math.floor(totalDuration * 3600);
+                        startTimer(targetH, totalSec, true);
+                    } else {
+                        setGreenBattery(tmrScheduleStr);
+                    }
                 } else if (tomorrowFirstOff !== null) {
                      const targetH = 24 + tomorrowFirstOff;
-                     const n = new Date();
-                     const nFl = n.getHours() + n.getMinutes() / 60;
-                     startTimer(targetH, (targetH - nFl)*3600, true);
+
+                     // 🔥 ВИПРАВЛЕНО ТУТ ТАКОЖ:
+                     // Беремо час від останнього вимкнення сьогодні до першого вимкнення завтра
+                     const totalDuration = targetH - lastOffEndH;
+                     const totalSec = Math.floor(totalDuration * 3600);
+
+                     startTimer(targetH, totalSec, true);
                 } else {
                      setGreenBattery(tmrScheduleStr);
                 }
@@ -1813,27 +1836,42 @@
 
         function setBat(pct, isOn, customText = null) {
             pct = Math.min(Math.max(pct, 0), 1);
+
             const f = document.getElementById('batteryFill');
             const label = document.getElementById('batteryLabel');
             const tip = document.querySelector('.battery-tip');
 
-            let visualPct, hue;
+            let visualPct;
+            let hue;
+
             if (isOn) {
-                visualPct = pct; hue = pct * 120;
+                // СВІТЛО Є:
+                // pct йде від 1 до 0 (час спливає).
+                // Батарейка має розряджатися: 100% -> 0%.
+                visualPct = pct;
+
+                hue = visualPct * 120; // Зелений -> Червоний
                 f.classList.add('discharging');
             } else {
-                visualPct = 1 - pct; hue = (visualPct * visualPct) * 120;
+                // СВІТЛА НЕМА:
+                // pct йде від 1 до 0 (час спливає).
+                // Батарейка має заряджатися: 0% -> 100%.
+                visualPct = 1 - pct;
+
+                hue = visualPct * 120; // Червоний -> Зелений
                 f.classList.remove('discharging');
             }
+
+            // Задаємо ширину (мінімум 5%, щоб було видно смужку)
             f.style.width = Math.max(visualPct * 100, 5) + "%";
 
-            // 🔥 ТУТ ЗМІНА:
             if (customText) {
                 label.innerText = customText;
             } else {
                 label.innerText = isOn ? 'до відключення' : 'до включення';
             }
 
+            // Кольори
             const colorStart = `hsl(${hue}, 100%, 35%)`;
             const colorEnd   = `hsl(${hue}, 100%, 60%)`;
             const mainColor  = `hsl(${hue}, 100%, 45%)`;
@@ -1846,6 +1884,8 @@
                 tip.style.boxShadow  = `0 0 10px ${mainColor}`;
             }
         }
+
+
 
         function createCard(s, e, d, type) {
             let c = document.createElement('div');
