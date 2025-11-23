@@ -278,10 +278,53 @@
         }
         .battery-status { margin-top: 8px; font-size: 13px; color: var(--text-muted); font-weight: 500; }
 
-        /* --- ДАТА --- */
-        .date-header { display: flex; align-items: center; gap: 10px; margin: 12px 0 4px; justify-content: center; }
-        .date-line { flex: 1; height: 1px; background: var(--line-color); }
-        .date-text { font-size: 14px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        /* --- ДАТА (ВИПРАВЛЕНО: РІВНОМІРНІ ВІДСТУПИ) --- */
+        .date-box {
+            display: flex !important;
+            align-items: center;
+            width: 100%;
+            margin: 12px 0 16px 0;
+
+            /* Фон та рамка */
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 8px 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .date-line { display: none !important; }
+
+        .day-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            opacity: 0.9;
+            /* Текст залишається зліва */
+        }
+
+        .date-text {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-main);
+
+            background: rgba(255, 255, 255, 0.15);
+            padding: 4px 10px;
+            border-radius: 8px;
+            line-height: 1;
+            display: inline-block;
+
+            /* 🔥 ГОЛОВНА ЗМІНА: ЦЕ ЦЕНТРУЄ ДАТУ У ВІЛЬНОМУ ПРОСТОРІ */
+            margin: 0 auto;
+        }
+
+        /* Світла тема */
+        [data-theme="light"] .date-box { background: #ffffff; border-color: rgba(0,0,0,0.05); }
+        [data-theme="light"] .date-text { background: rgba(0,0,0,0.08); color: #000; }
 
         /* --- ГОЛОВНИЙ БЛОК ДНЯ (слайдиться) --- */
         .day-body {
@@ -794,44 +837,28 @@
         .sk-timeline { height: 60px; width: 100%; }
         .sk-card { height: 80px; width: 100%; }
 
-                /* --- MOBILE FIXES --- */
+           /* --- MOBILE FIXES (ОЧИЩЕНО) --- */
         @media(max-width: 420px) {
 
-            /* Менший текст колонок СЬОГОДНІ / ЗАВТРА */
+            /* Трохи зменшуємо текст на мобільних */
             .day-title,
             .date-text {
-                font-size: 13px !important;
+                font-size: 12px !important; /* Було 13, зробив 12 щоб точно влізло */
                 letter-spacing: 0.3px;
             }
 
-            /* Зменшити відступи щоб все було в одному рядку */
-            .date-box {
-                column-gap: 6px !important;
-                margin: 6px 0 12px !important;
-            }
+            /* 🔥 ПРИБРАВ блок .date-box, щоб він не заважав розкидати текст по краях */
+            /* 🔥 ПРИБРАВ .date-line, бо ліній більше немає */
 
-            /* Лінія трохи коротша */
-            .date-line {
-                height: 1px;
-                opacity: 0.7;
-            }
-
-            /* Текст “ГРАФІК НА СЬОГОДНІ” не роз'їжджається */
-            .date-box span {
-                white-space: nowrap;
-            }
-
-            /* Контейнер шкали трохи ближче до батарейки */
+            /* Фікси для шкали часу залишаємо */
             .timeline-section {
                 margin-top: -4px !important;
             }
 
-            /* Шрифт часу під сегментами */
             .t-label {
                 font-size: 10px !important;
             }
 
-            /* Щільніше розташовані тік-мітки */
             .time-labels {
                 margin-top: 4px !important;
             }
@@ -895,12 +922,10 @@
 
                     <!-- Дата (стаціонарна) -->
 
-        <div class="date-box">
-            <span id="dayTitle" class="day-title">Графік на сьогодні</span>
-            <div class="date-line"></div>
-            <span id="dateDisplay" class="date-text">---</span>
-            <div class="date-line"></div>
-        </div>
+            <div class="date-box">
+                <span id="dayTitle" class="day-title">Графік на сьогодні</span>
+                <span id="dateDisplay" class="date-text">---</span>
+            </div>
 
             <div id="emergencyBanner" class="emergency-banner hidden">
                  🚨 Зараз діють екстренні відключення
@@ -1109,7 +1134,7 @@
                 if (primary.emergency === "on") {
 
                     document.getElementById("emergencyBanner").classList.remove("hidden");
-                
+
                     const ack = localStorage.getItem("emergency_ack");
 
                     if (!ack) {
@@ -1260,28 +1285,63 @@
 
         function getSchedule(fullText, targetDate) {
             if (!fullText) return null;
+
             const daysMap = ["Неділя", "Понеділок", "Вівторок", "Середа", "Четвер", "Пʼятниця", "Субота"];
             const dayName = daysMap[targetDate.getDay()];
+
             const lines = fullText.replace(/\r\n/g, '\n').split('\n');
             let dayLine = lines.find(line => line.trim().startsWith(dayName));
+
             if (!dayLine || dayLine.includes(":-") || dayLine.includes(": -") || dayLine.trim().endsWith("-")) return null;
+
             let timesPart = dayLine.includes(':') ? dayLine.substring(dayLine.indexOf(':') + 1).trim() : "";
             if (!timesPart || timesPart === "-") return null;
+
+            // Видаляємо плюси, вони нам не треба для математики
             timesPart = timesPart.replace(/\+/g, "");
+
             const ranges = timesPart.split(',');
-            let arr = []; let lastTime = 0;
+            let arr = [];
+            let lastTime = 0;
+
             ranges.forEach(r => {
                 const parts = r.split('-').map(s => s.trim());
                 if (parts.length < 2) return;
-                const startH = timeToH(parts[0]); const endH = timeToH(parts[1]);
+
+                const startH = timeToH(parts[0]);
+                const endH = timeToH(parts[1]);
+
                 if (isNaN(startH) || isNaN(endH)) return;
-                if (startH > lastTime) arr.push(`${parseFloat((startH - lastTime).toFixed(2))}on`);
-                let dur = endH - startH;
-                if (endH < startH) dur = 24 - startH;
-                if (dur > 0) arr.push(`${parseFloat(dur.toFixed(2))}off`);
-                lastTime = (endH >= startH) ? endH : 24;
+
+                // 1. Додаємо "Світло" (проміжок від попереднього до поточного)
+                if (startH > lastTime) {
+                    arr.push(`${parseFloat((startH - lastTime).toFixed(2))}on`);
+                }
+
+                // 2. Рахуємо тривалість відключення
+                let dur;
+                if (endH < startH) {
+                    // 🔥 ВИПРАВЛЕНО ТУТ: Якщо перехід через північ (напр. 21:30 - 01:00)
+                    // Рахуємо повну тривалість: (24 - старт) + кінець
+                    dur = (24 - startH) + endH;
+                } else {
+                    // Звичайний випадок (в межах дня)
+                    dur = endH - startH;
+                }
+
+                if (dur > 0) {
+                    arr.push(`${parseFloat(dur.toFixed(2))}off`);
+                }
+
+                // Оновлюємо останній час (тепер він може бути > 24, це ок)
+                lastTime = startH + dur;
             });
-            if (lastTime < 24) arr.push(`${parseFloat((24 - lastTime).toFixed(2))}on`);
+
+            // Додаємо "хвіст" світла, якщо графік закінчився до 24:00
+            if (lastTime < 24) {
+                arr.push(`${parseFloat((24 - lastTime).toFixed(2))}on`);
+            }
+
             if (arr.length === 0) return "24on";
             return arr.join(',');
         }
@@ -1460,16 +1520,15 @@
             const daysMap = ["НЕДІЛЯ", "ПОНЕДІЛОК", "ВІВТОРОК", "СЕРЕДА", "ЧЕТВЕР", "ПʼЯТНИЦЯ", "СУБОТА"];
             document.getElementById('dateDisplay').innerText = `${daysMap[targetDate.getDay()]} ${d}.${m}`;
 
-            const track   = document.getElementById('timelineTrack');
-            const iBox    = document.getElementById('infoBox');
-            const lBox    = document.getElementById('timeLabelsBox');
-            const tlSec   = document.getElementById('timelineSection');
-            const totBox  = document.getElementById('totalBox');
-            const noData  = document.getElementById('noDataMessage');
-            const batSec  = document.getElementById('batterySection');
+            const track = document.getElementById('timelineTrack');
+            const iBox = document.getElementById('infoBox');
+            const lBox = document.getElementById('timeLabelsBox');
+            const tlSec = document.getElementById('timelineSection');
+            const totBox = document.getElementById('totalBox');
+            const noData = document.getElementById('noDataMessage');
+            const batSec = document.getElementById('batterySection');
             const detailBox = document.getElementById('detailCardContainer');
 
-            // очищення
             track.innerHTML = '';
             while (lBox.firstChild) lBox.removeChild(lBox.firstChild);
             iBox.innerHTML = '';
@@ -1482,58 +1541,54 @@
             cursor.style.display = (dayIdx === 1 ? 'block' : 'none');
 
             const isToday = (dayIdx === 1);
-            document.getElementById("dayTitle").innerText =
-                isToday ? "Графік на сьогодні" : "Графік на завтра";
-
+            document.getElementById("dayTitle").innerText = isToday ? "Графік на сьогодні" : "Графік на завтра";
             const bf = document.getElementById('batteryFill');
-            bf.className = 'battery-fill'; // скидати сірий режим
+            bf.className = 'battery-fill';
+            const appContent = document.getElementById('app-content');
 
-            // Немає графіка на день
+            // 1. Якщо графіка немає
             if (!scheduleStr) {
-                tlSec.classList.add('hidden');
-                noData.classList.remove('hidden');
-                totBox.innerHTML = '';
-
-                batSec.classList.remove('hidden');
-                bf.className = 'battery-fill';
-
+                tlSec.classList.add('hidden'); noData.classList.remove('hidden'); totBox.innerHTML = ''; batSec.classList.remove('hidden'); bf.className = 'battery-fill';
                 if (isToday) {
-                    // Сьогодні без графіка
                     document.getElementById('batteryTimer').innerText = "—";
                     document.getElementById('batteryLabel').innerText = "Невідомо";
+                    bf.style.width = "100%"; bf.style.background = "#555"; bf.style.boxShadow = "none";
                 } else {
-                    // 🔥 Завтра без графіка → ДУБЛЮЄМО батарейку сьогодні
-                    const t = document.getElementById('batteryTimer').innerText;
-                    const l = document.getElementById('batteryLabel').innerText;
                     const fNow = document.querySelector('.battery-fill');
-
-                    document.getElementById('batteryTimer').innerText = t;
-                    document.getElementById('batteryLabel').innerText = l;
-
-                    bf.style.width = fNow.style.width;
-                    bf.style.background = fNow.style.background;
-                    bf.style.boxShadow = fNow.style.boxShadow;
+                    bf.style.width = fNow.style.width; bf.style.background = fNow.style.background; bf.style.boxShadow = fNow.style.boxShadow;
                 }
+                if (appContent) appContent.classList.remove('hidden');
                 return;
             }
 
-            // Є графік
-            tlSec.classList.remove('hidden');
-            noData.classList.add('hidden');
+            tlSec.classList.remove('hidden'); noData.classList.add('hidden');
 
             if (!isToday) {
-                // Використовуємо ТОЙ САМИЙ час, що і сьогодні
                 const t = document.getElementById('batteryTimer').innerText;
                 const l = document.getElementById('batteryLabel').innerText;
                 const f = document.getElementById('batteryFill');
-
                 document.getElementById('batteryTimer').innerText = t;
                 document.getElementById('batteryLabel').innerText = l;
-
-                // заливка така сама
                 f.style.width = document.querySelector('.battery-fill').style.width;
             }
 
+            // --- АНАЛІЗ ЗАВТРА ---
+            let tomorrowFirstOff = null;
+            let tmrScheduleStr = null;
+            if (isToday) {
+                const tmr = new Date(targetDate); tmr.setDate(tmr.getDate() + 1);
+                tmrScheduleStr = getSchedule(row.schedule_text, tmr);
+                if (tmrScheduleStr) {
+                    const tParts = tmrScheduleStr.split(',');
+                    let hCounter = 0;
+                    for (let p of tParts) {
+                        let pType = p.includes('off') ? 'off' : 'on';
+                        let pDur = parseFloat(p.replace('on', '').replace('off', ''));
+                        if (pType === 'off') { tomorrowFirstOff = hCounter; break; }
+                        hCounter += pDur;
+                    }
+                }
+            }
 
             let curH = 0; let totOff = 0;
             const now = new Date();
@@ -1551,57 +1606,48 @@
                 if (isNaN(dur) || dur <= 0) return;
                 let segStart = curH;
                 let endH = curH + dur;
-                let realTimerTarget = endH;
                 let displayEndH = endH;
-
-                if (index === parts.length - 1 && Math.abs(endH - 24) < 0.1) {
-                    const tomorrowDate = new Date(targetDate);
-                    tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-                    const tomorrowSchedule = getSchedule(row.schedule_text, tomorrowDate);
-                    if (tomorrowSchedule) {
-                        const firstPart = tomorrowSchedule.split(',')[0];
-                        const nextType = firstPart.includes('off') ? 'off' : 'on';
-                        const nextDur = parseFloat(firstPart.replace('on', '').replace('off', ''));
-                        if (nextType === type) {
-                            realTimerTarget = 24 + nextDur;
-                            displayEndH = nextDur;
-                            finalEndLabel = formatHM(displayEndH);
-                        }
-                    }
-                }
 
                 let seg = document.createElement('div');
                 seg.className = `segment ${type}`;
-                seg.style.flexGrow = dur;
-                seg.style.flexBasis = '0';
+                seg.style.flexGrow = dur; seg.style.flexBasis = '0';
                 if (dur >= 1.5) seg.innerHTML = `<div class="segment-icon">${type === 'on' ? '💡' : '🔌'}</div>`;
                 track.appendChild(seg);
                 seg.addEventListener('click', () => handleSegmentClick(seg, type, segStart, endH, dur));
 
                 if (endH < 23.9 && (endH - lastEndH) > 2.0 && (24 - endH) > 1.5) {
-                    addLabel(lBox, endH, formatHM(endH), "mid");
-                    lastEndH = endH;
+                    addLabel(lBox, endH, formatHM(endH), "mid"); lastEndH = endH;
                 }
 
-                let cardEndText = (displayEndH !== endH) ? displayEndH : endH;
-                let cardDur = dur;
-                if (realTimerTarget > 24) cardDur += (realTimerTarget - 24);
-                let card = createCard(segStart, cardEndText, cardDur, type);
+                let card = createCard(segStart, displayEndH, dur, type);
                 if (isToday && curFloat >= segStart && curFloat < endH) card.classList.add('active-now');
                 iBox.appendChild(card);
 
                 if (type === 'off') totOff += dur;
 
-                // 🛑 Якщо це останній сегмент та ми все ще не знайшли наступний — НЕ запускаємо таймер
+                // --- ТАЙМЕР ---
                 if (isToday && !foundState && curFloat < endH) {
+                    foundState = true;
+                    const isLastSegment = (index === parts.length - 1);
 
-                    const isLastSegment = index === parts.length - 1;
-
-                    if (!isLastSegment) {
-                        foundState = true;
-                        let totalSecForBat = dur * 3600;
-                        if (realTimerTarget > 24) totalSecForBat = cardDur * 3600;
-                        startTimer(realTimerTarget, totalSecForBat, type === 'on');
+                    if (type === 'off') {
+                        startTimer(endH, dur * 3600, false);
+                    } else {
+                        // Світло Є
+                        if (!isLastSegment) {
+                            startTimer(endH, dur * 3600, true);
+                        } else {
+                            // Це останній сегмент світла
+                            if (tomorrowFirstOff !== null) {
+                                // Завтра є відключення -> таймер
+                                const targetH = 24 + tomorrowFirstOff;
+                                const totalSec = Math.floor((targetH - curFloat) * 3600);
+                                startTimer(targetH, totalSec, true);
+                            } else {
+                                // Завтра чисто або невідомо -> зелена батарейка
+                                setGreenBattery(tmrScheduleStr);
+                            }
+                        }
                     }
                 }
                 curH = endH;
@@ -1609,41 +1655,26 @@
 
             addLabel(lBox, 24, finalEndLabel, "end");
 
+            // Якщо день закінчився або не було відключень
             if (isToday && !foundState) {
-
-                const f = document.getElementById('batteryFill');
-                const tip = document.querySelector('.battery-tip');   // 🟢 ДОДАНО
-
-                // Повна батарея
-                f.style.width = "100%";
-                f.style.background = "linear-gradient(90deg, #1abc9c, #2ecc71)";
-                f.style.boxShadow = "0 0 15px #2ecc71";
-
-                // 🟢 Скинути червоний край батарейки
-                tip.style.background = "#2ecc71";
-                tip.style.boxShadow = "0 0 10px #2ecc71";
-
-                // Прибираємо таймер повністю
-                document.getElementById('batteryTimer').innerText = "";
-
-                // Новий підпис
-                document.getElementById('batteryLabel').innerText =
-                    "Більше відключень сьогодні немає";
-
-                return;
+                if (totOff === 0) {
+                    setGreenBattery(tmrScheduleStr);
+                } else if (tomorrowFirstOff !== null) {
+                     const targetH = 24 + tomorrowFirstOff;
+                     const n = new Date();
+                     const nFl = n.getHours() + n.getMinutes() / 60;
+                     startTimer(targetH, (targetH - nFl)*3600, true);
+                } else {
+                     setGreenBattery(tmrScheduleStr);
+                }
             }
 
             totBox.innerHTML = `Всього без світла: <b>${fmtDur(totOff)}</b>`;
 
-            // показати кнопку "Поділитися графіком"
             const shareWrap = document.getElementById("shareWrapper");
             shareWrap.classList.remove("hidden");
-
-            // анімація тільки при першій появі
-            if (!shareWrap.classList.contains("fade-in")) {
-                setTimeout(() => shareWrap.classList.add("fade-in"), 150);
-            }
-            
+            if (!shareWrap.classList.contains("fade-in")) setTimeout(() => shareWrap.classList.add("fade-in"), 150);
+            if (appContent) appContent.classList.remove('hidden');
         }
 
         function handleSegmentClick(segEl, type, startH, endH, dur) {
@@ -1715,7 +1746,7 @@
         function updateCursor() { if (currentTab !== 1 || !cursor) return; const d = new Date(); const m = d.getHours() * 60 + d.getMinutes(); let p = m / 1440 * 100; if (p > 100) p = 100; cursor.style.left = p + "%"; }
         function updateTopUpdated() { const el = document.getElementById("topUpdated"); if (!el) return; if (window.LAST_UPDATED) { el.innerText = formatUpdateTime(window.LAST_UPDATED); } else { el.innerText = "Оновлено…"; } }
 
-        function startTimer(targetH, totalSec, isOn) {
+        function startTimer(targetH, totalSec, isOn, customLabel = null) {
             clearInterval(countdownInterval);
             const n = new Date();
             const tH = Math.floor(targetH);
@@ -1730,7 +1761,8 @@
                 updateCursor();
                 if (rem <= 0) { clearInterval(countdownInterval); setTimeout(() => render(currentTab), 1000); return; }
                 document.getElementById('batteryTimer').innerText = fmtTimer(rem);
-                setBat(rem / totalSec, isOn);
+                // 🔥 ТУТ ЗМІНА: передаємо customLabel
+                setBat(rem / totalSec, isOn, customLabel);
             }
             tick();
             countdownInterval = setInterval(tick, 1000);
@@ -1752,8 +1784,34 @@
             window.open(url, "_blank");
         }
 
+        function setGreenBattery(scheduleExists) {
+            const f = document.getElementById('batteryFill');
+            const tip = document.querySelector('.battery-tip');
+            const label = document.getElementById('batteryLabel');
 
-        function setBat(pct, isOn) {
+            // Зелений стиль (як у тебе було)
+            f.classList.remove('discharging');
+            f.style.width = "100%";
+            f.style.background = "linear-gradient(90deg, #1abc9c, #2ecc71)";
+            f.style.boxShadow = "0 0 15px #2ecc71";
+
+            if (tip) {
+                tip.style.background = "#2ecc71";
+                tip.style.boxShadow = "0 0 10px #2ecc71";
+            }
+
+            document.getElementById('batteryTimer').innerText = "";
+            clearInterval(countdownInterval);
+
+            // Логіка тексту
+            if (scheduleExists) {
+                label.innerText = "Відключення ще не заплановані";
+            } else {
+                label.innerText = "Відключення ще не заплановані";
+            }
+        }
+
+        function setBat(pct, isOn, customText = null) {
             pct = Math.min(Math.max(pct, 0), 1);
             const f = document.getElementById('batteryFill');
             const label = document.getElementById('batteryLabel');
@@ -1768,7 +1826,13 @@
                 f.classList.remove('discharging');
             }
             f.style.width = Math.max(visualPct * 100, 5) + "%";
-            label.innerText = isOn ? 'до відключення' : 'до включення';
+
+            // 🔥 ТУТ ЗМІНА:
+            if (customText) {
+                label.innerText = customText;
+            } else {
+                label.innerText = isOn ? 'до відключення' : 'до включення';
+            }
 
             const colorStart = `hsl(${hue}, 100%, 35%)`;
             const colorEnd   = `hsl(${hue}, 100%, 60%)`;
@@ -1995,47 +2059,25 @@
             if (swipeLocked) return;
 
             const dx = touchEndX - touchStartX;
+
+            // Поріг спрацювання (60 пікселів)
             if (Math.abs(dx) < 60) return;
 
-            const box = document.getElementById('app-content');
-
-            if (dx < 0 && currentTab !== 2) {
-                // Свайп вліво → НА ЗАВТРА
+            // Свайп ВЛІВО (йдемо на Завтра)
+            if (dx < 0 && currentTab === 1) {
                 swipeLocked = true;
-                box.classList.add('swipe-left');
-
                 try { tg.HapticFeedback.selectionChanged(); } catch(e){}
+                switchTab(2);
+                // Розблокуємо свайп, коли закінчиться анімація switchTab
+                setTimeout(() => { swipeLocked = false; }, 300);
+            }
 
-                setTimeout(() => {
-                    switchTab(2);
-                    box.classList.remove('swipe-left');
-                    box.classList.add('swipe-right');
-
-                    setTimeout(() => {
-                        box.classList.remove('swipe-right');
-                        box.classList.add('swipe-reset');
-                        swipeLocked = false;
-                    }, 10);
-                }, 250);
-
-            } else if (dx > 0 && currentTab !== 1) {
-                // Свайп вправо → НА СЬОГОДНІ
+            // Свайп ВПРАВО (повертаємось на Сьогодні)
+            else if (dx > 0 && currentTab === 2) {
                 swipeLocked = true;
-                box.classList.add('swipe-right');
-
                 try { tg.HapticFeedback.selectionChanged(); } catch(e){}
-
-                setTimeout(() => {
-                    switchTab(1);
-                    box.classList.remove('swipe-right');
-                    box.classList.add('swipe-left');
-
-                    setTimeout(() => {
-                        box.classList.remove('swipe-left');
-                        box.classList.add('swipe-reset');
-                        swipeLocked = false;
-                    }, 10);
-                }, 250);
+                switchTab(1);
+                setTimeout(() => { swipeLocked = false; }, 300);
             }
         }
 
