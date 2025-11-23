@@ -1592,11 +1592,17 @@
 
                 if (type === 'off') totOff += dur;
 
+                // 🛑 Якщо це останній сегмент та ми все ще не знайшли наступний — НЕ запускаємо таймер
                 if (isToday && !foundState && curFloat < endH) {
-                    foundState = true;
-                    let totalSecForBat = dur * 3600;
-                    if (realTimerTarget > 24) totalSecForBat = cardDur * 3600;
-                    startTimer(realTimerTarget, totalSecForBat, type === 'on');
+
+                    const isLastSegment = index === parts.length - 1;
+
+                    if (!isLastSegment) {
+                        foundState = true;
+                        let totalSecForBat = dur * 3600;
+                        if (realTimerTarget > 24) totalSecForBat = cardDur * 3600;
+                        startTimer(realTimerTarget, totalSecForBat, type === 'on');
+                    }
                 }
                 curH = endH;
             });
@@ -1604,8 +1610,27 @@
             addLabel(lBox, 24, finalEndLabel, "end");
 
             if (isToday && !foundState) {
-                document.getElementById('batteryTimer').innerText = "--:--";
-                setBat(0, true);
+
+                const f = document.getElementById('batteryFill');
+                const tip = document.querySelector('.battery-tip');   // 🟢 ДОДАНО
+
+                // Повна батарея
+                f.style.width = "100%";
+                f.style.background = "linear-gradient(90deg, #1abc9c, #2ecc71)";
+                f.style.boxShadow = "0 0 15px #2ecc71";
+
+                // 🟢 Скинути червоний край батарейки
+                tip.style.background = "#2ecc71";
+                tip.style.boxShadow = "0 0 10px #2ecc71";
+
+                // Прибираємо таймер повністю
+                document.getElementById('batteryTimer').innerText = "";
+
+                // Новий підпис
+                document.getElementById('batteryLabel').innerText =
+                    "Більше відключень сьогодні немає";
+
+                return;
             }
 
             totBox.innerHTML = `Всього без світла: <b>${fmtDur(totOff)}</b>`;
