@@ -1943,10 +1943,29 @@
         }
 
         function shareSchedule() {
-            const txt = `Графік світла для Черги ${currentQueue} ⚡\nПереглянути: @SvitloBroBot`;
-            tg.shareText(txt);
-        }
+            try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
 
+            const text =
+        `https://t.me/SvitloBroBot
+        ⚡️ Я користуюсь ботом для відстеження графіків відключень світла у Броварах. Приєднуйся!
+        Моя черга: ${currentQueue}`;
+
+            // Копіюємо текст у буфер
+            navigator.clipboard.writeText(text).then(() => {
+                tg.showPopup({
+                    title: "Скопійовано!",
+                    message: "Текст запрошення скопійовано. Вставте його у чат.",
+                    buttons: [
+                        {id: "open_tg", type: "default", text: "Відкрити Telegram"},
+                        {type: "cancel"}
+                    ]
+                }, (btn) => {
+                    if (btn === "open_tg") {
+                        tg.openTelegramLink("https://t.me/share/url?url=" + encodeURIComponent(text));
+                    }
+                });
+            });
+        }
 
         function updateDonateUI(amount, goal) {
             const target = goal > 0 ? goal : (amount > 0 ? amount * 1.2 : 5000);
