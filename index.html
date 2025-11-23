@@ -188,6 +188,10 @@
             display: flex;
             justify-content: center;
         }
+        .share-wrapper {
+            margin-top: 6px !important;
+            margin-bottom: -4px !important;
+        }
 
         .share-btn {
             background: none;               /* мінімалізм */
@@ -237,6 +241,25 @@
             transform: scale(0.96);
         }
 
+         .share-native-btn {
+            display: block;
+            text-align: center;
+            background: #2b8eff;
+            color: #fff;
+            padding: 14px;
+            border-radius: 14px;
+            margin: 12px 20px 0 20px;
+            font-weight: 600;
+            font-size: 15px;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .share-native-btn:active {
+            transform: scale(0.96);
+            opacity: 0.85;
+        }
+
         .battery-fill::after {
             content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             background-image: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent);
@@ -275,6 +298,23 @@
             display: flex; align-items: stretch; gap: 0;
             background: transparent; padding: 0; box-shadow: none; overflow: visible;
         }
+
+        .share-minimal-btn {
+            background: none;
+            border: none;
+            color: #48ff91;
+            font-size: 16px;
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .share-minimal-btn:hover {
+            opacity: 0.8;
+        }
+
 
         .segment {
             position: relative; flex-grow: 1; flex-basis: 0; height: 100%; min-width: 32px;
@@ -384,12 +424,27 @@
 
         /* --- FOOTER (підсумок + донат) --- */
         .total-block {
-            display: inline-block; background: var(--glass-bg);
-            padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(128,128,128,0.1);
-            margin-bottom: 15px; margin-left: auto; margin-right: auto; width: fit-content; margin-top: 20px !important;
-            color: var(--text-muted); font-size: 14px; font-weight: 500;
+            display: inline-block;
+            background: var(--glass-bg);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(128,128,128,0.1);
+
+            /* 🔥 виправлені відступи */
+            margin-top: 8px !important;    /* було 20px — зменшив */
+            margin-bottom: 6px;              /* було 15px — зменшив */
+            margin-left: auto;
+            margin-right: auto;
+            width: fit-content;
+
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
         }
-        .total-block b { color: var(--text-main); }
+
+        .total-block b {
+            color: var(--text-main);
+        }
 
         .donate-wrapper {
             display: flex;
@@ -622,6 +677,10 @@
             transform: translateX(0);
         }
 
+        .no-anim * {
+            transition: none !important;
+            animation: none !important;
+        }
 
         .fab-menu {
             display: flex;
@@ -851,14 +910,15 @@
 
             <div class="card-list" id="infoBox"></div>
 
+            <div id="shareWrapper" class="share-wrapper">
+                <button class="share-minimal-btn" onclick="openTelegramShare()">🔗 Поділитися графіком</button>
+            </div>
+
             <div style="text-align:center;">
                 <div class="total-block" id="totalBox"></div>
             </div>
 
-            <div id="shareWrapper" class="share-wrapper hidden">
-                <button class="share-btn" onclick="universalShare()">🔗 Поділитися графіком</button>
-            </div>
-
+            <a id="telegramShareNative" class="hidden"></a>
 
             <div class="donate-wrapper">
                 <a href="https://send.monobank.ua/jar/6qoHuhpGgD" target="_blank" class="donate-btn">
@@ -1008,7 +1068,7 @@
         // автооновлення даних
         setInterval(() => init(true), 120000);
 
-        async function getCSV(retries = 1) {
+        async function getCSV(retries = 5) {
             const url = `${CSV_PROXY_URL}?t=${Date.now()}`;
             try {
                 const r = await fetch(url, { cache: "no-cache" });
@@ -1138,7 +1198,11 @@
                 const appContent = document.getElementById('app-content');
                 if (appContent) appContent.classList.remove('hidden');
             }
+
             render(currentTab);
+
+            // 🟢 Додаємо сюди
+            updateNativeShareLink();
         }
 
         function showOfflineBadge() {
@@ -1232,9 +1296,10 @@
             document.querySelector('.queue-select-btn').classList.toggle('open');
 
             // Якщо модалка відкрилась — через 150 мс залипаємо на активну чергу
-            if (modal.classList.contains('show')) {
-                setTimeout(scrollToActiveQueue, 150);
-            }
+            setTimeout(() => {
+                const active = document.querySelector(".q-item.active");
+                if (active) scrollToActiveQueue();
+            }, 200);
         }
 
 
@@ -1646,6 +1711,23 @@
             countdownInterval = setInterval(tick, 1000);
         }
 
+        function openTelegramShare() {
+            const text =
+        `⚡️ Я користуюсь ботом для відстеження графіків світла у Броварах.
+        Приєднуйся! Моя черга: ${currentQueue}
+
+        https://t.me/SvitloBroBot`;
+
+            const url =
+                "https://t.me/share/url?url=" +
+                encodeURIComponent("https://t.me/SvitloBroBot") +
+                "&text=" +
+                encodeURIComponent(text);
+
+            window.open(url, "_blank");
+        }
+
+
         function setBat(pct, isOn) {
             pct = Math.min(Math.max(pct, 0), 1);
             const f = document.getElementById('batteryFill');
@@ -1948,38 +2030,43 @@
             setTimeout(() => active.classList.remove("pulse"), 1200);
         }
 
-        function universalShare() {
-            const text =
-        `https://t.me/SvitloBroBot
-        ⚡️ Я користуюсь ботом для відстеження графіків відключень світла у Броварах. Приєднуйся!
-        Моя черга: ${currentQueue}`;
+            function universalShare() {
 
-            // --- Якщо браузер / Telegram WebView підтримує Web Share API ---
-            if (navigator.share) {
-                navigator.share({
-                    title: "Графік світла — Бровари",
-                    text: text,
-                    url: "https://t.me/SvitloBroBot"
-                }).catch(err => console.log("Share cancelled", err));
-                return;
+                const text =
+                `https://t.me/SvitloBroBot
+                ⚡️ Я користуюсь ботом для відстеження графіків відключень світла у Броварах. Приєднуйся!
+                Моя черга: ${currentQueue}`;
+
+                // 1️⃣ копіюємо текст
+                navigator.clipboard.writeText(text).then(() => {
+
+                    tg.showPopup({
+                        title: "Виберіть чат",
+                        message: "Текст скопійовано. Оберіть чат і вставте повідомлення.",
+                        buttons: [
+                            { id: "open", text: "Відкрити Telegram", type: "default" },
+                            { type: "cancel" }
+                        ]
+                    }, (btn) => {
+                        if (btn === "open") {
+                            // відкриває Telegram у режимі нового повідомлення
+                            window.location.href = "tg://share?text=" + encodeURIComponent(text);
+                        }
+                    });
+
+                });
             }
 
-            // --- Fallback (копіюємо текст + popup) ---
-            navigator.clipboard.writeText(text).then(() => {
-                tg.showPopup({
-                    title: "Скопійовано!",
-                    message: "Текст запрошення скопійовано. Вставте його у будь-який чат.",
-                    buttons: [
-                        { id: "open_tg", text: "Telegram", type: "default" },
-                        { type: "cancel" }
-                    ]
-                }, (btn) => {
-                    if (btn === "open_tg") {
-                        tg.openTelegramLink("https://t.me/SvitloBroBot");
-                    }
-                });
-            });
-        }
+            function updateNativeShareLink() {
+                const text = `⚡️ Я користуюсь ботом для світла у Броварах. Моя черга ${currentQueue}. Приєднуйся!`;
+                const url = "https://t.me/SvitloBroBot";
+
+                document.getElementById("telegramShareNative").href =
+                    "https://t.me/share/url?url="
+                    + encodeURIComponent(url)
+                    + "&text="
+                    + encodeURIComponent(text);
+            }
 
 
         function updateDonateUI(amount, goal) {
@@ -2016,8 +2103,18 @@
         }, 1000);
 
         // 🔥 ЗАПУСК
-    init();
-    fetchDonation();
+        init();
+
+        // ❗ Фікс ривків анімації при першому свайпі
+        document.body.classList.add("no-anim");
+
+        setTimeout(() => {
+            document.body.classList.remove("no-anim");
+
+            // 🟢 Викликаємо fetchDonation() вже після включення анімацій
+            fetchDonation();
+
+        }, 300);
 </script>
 
 </body>
