@@ -1944,24 +1944,7 @@
 
         function shareSchedule() {
             const txt = `Графік світла для Черги ${currentQueue} ⚡\nПереглянути: @SvitloBroBot`;
-
-            tg.showPopup({
-                title: "Поділитися графіком",
-                message: txt,
-                buttons: [
-                    {id: "copy", text: "Скопіювати текст"},
-                    {id: "open", text: "Відкрити бот", type: "default"},
-                    {type: "cancel"}
-                ]
-            }, (btn) => {
-                if (btn === "copy") {
-                    navigator.clipboard.writeText(txt);
-                    tg.showAlert("Текст скопійовано 👍");
-                }
-                if (btn === "open") {
-                    tg.openTelegramLink("https://t.me/SvitloBroBot");
-                }
-            });
+            tg.shareText(txt);
         }
 
 
