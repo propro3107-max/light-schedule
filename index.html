@@ -1944,13 +1944,22 @@
 
         function shareSchedule() {
             try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
+        
+            const day = currentTab === 1 ? "сьогодні" : "завтра";
 
-            const day = currentTab === 1 ? "today" : "tomorrow";
-            const url = `https://t.me/SvitloBroBot?start=share_${currentQueue}_${day}`;
+            const shareText =
+                `Графік світла для Черги ${currentQueue} ⚡\n` +
+                `Переглянути: https://t.me/SvitloBroBot`;
 
-            tg.openTelegramLink(url);
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Графік світла',
+                    text: shareText
+                }).catch(()=>{});
+            } else {
+                tg.openLink("https://t.me/SvitloBroBot");
+            }
         }
-
 
         function updateDonateUI(amount, goal) {
             const target = goal > 0 ? goal : (amount > 0 ? amount * 1.2 : 5000);
