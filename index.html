@@ -18,6 +18,7 @@
             --glass-bg: rgba(255,255,255,0.08);
             --shadow-color: rgba(0,0,0,0.45);
             --radius: 16px;
+            --text-card-detail: rgba(255, 255, 255, 0.7); /* Світлий для темної теми */
         }
 
         [data-theme="light"] {
@@ -28,6 +29,7 @@
             --line-color: #d1d1d6;
             --glass-bg: rgba(0,0,0,0.05);
             --shadow-color: rgba(0,0,0,0.1);
+            --text-card-detail: #333333; /* Темний колір для деталей карток */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -674,17 +676,17 @@
             padding: 0 2px;
             font-size: 13px;
             line-height: 1.5;
-
-            /* Основний текст робимо сріблястим (не чисто білим, не темним) */
             color: rgba(255, 255, 255, 0.7);
-
-            max-height: 0; opacity: 0; overflow: hidden; transition: all 0.25s ease;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.25s ease;
         }
 
         /* 🔥 ГОЛОВНЕ: Робимо важливий текст (час) ЯСКРАВО БІЛИМ */
         .card-details b {
-            color: #ffffff !important; /* Чисто білий */
-            font-weight: 700;          /* Жирний */
+            color: var(--text-main) !important;
+            font-weight: 700;
             letter-spacing: 0.3px;
         }
 
@@ -696,10 +698,31 @@
         }
 
         .card.expanded .card-details {
-            max-height: 200px; opacity: 1;
-            margin-top: 10px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding-top: 10px;
+            max-height: 300px;
+            opacity: 1;
+        }
+
+        html[data-theme="light"] .card-details {
+            color: #1a1a1a !important;
+            background: transparent !important;
+            border-top: none !important;
+        }
+
+        /* Додатково для жирного тексту всередині */
+        html[data-theme="light"] .card-details b {
+            color: #000000 !important;
+        }
+
+        /* Додатково для курсиву */
+        html[data-theme="light"] .card-details i {
+            color: #555555 !important;
+        }
+
+        html[data-theme="light"] .c-item,
+        html[data-theme="light"] .status-label,
+        html[data-theme="light"] .card-info,
+        html[data-theme="light"] .c-dur {
+            color: #1a1a1a !important;
         }
 
         /* --- DETAIL CARD --- */
@@ -1117,6 +1140,16 @@
             }
         }
 
+        html[data-theme="light"] .card-details {
+            color: var(--text-card-detail) !important;
+            background: transparent !important;
+            border-top: none !important;
+        }
+
+        html[data-theme="light"] .card.expanded .card-details {
+            max-height: 300px !important;
+            opacity: 1 !important;
+        }
 
     </style>
 </head>
@@ -1494,12 +1527,20 @@
             if (row) {
                 const cleanRow = normalizeHeaders(row);
                 let u = cleanRow.users_total || cleanRow.users;
+
                 if (!u && allData.length > 0) {
                     const primary = normalizeHeaders(allData[0]);
                     u = primary.users_total || primary.users;
                 }
-                if (u) updateTopUsers(formatUsersNumber(u));
+
+                if (u) {
+                    updateTopUsers(formatUsersNumber(u));
+                    // 🔥 ОСЬ ТУТ ВИПРАВЛЕННЯ: Обнуляємо старі дані, бо маємо свіжі
+                    window.STARTAPP_USERS = null;
+                }
             }
+
+            // Використовуємо старі дані тільки якщо нових немає
             if (window.STARTAPP_USERS) updateTopUsers(window.STARTAPP_USERS);
 
         } catch (e) {
