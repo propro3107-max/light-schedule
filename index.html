@@ -2172,12 +2172,20 @@
 
             if (index === 0) {
                 if (type === 'on' && yesterdayExtraOn > 0) {
-                    realStartH = 24 - yesterdayExtraOn;
-                    realDuration += yesterdayExtraOn;
+                    // Віднімаємо від 24:00 тільки те, що було ВЧОРА (Загальне - Сьогоднішнє)
+                    let partYesterday = yesterdayExtraOn - dur;
+                    if (partYesterday < 0) partYesterday = 0; 
+                    
+                    realStartH = 24 - partYesterday;
+                    realDuration = yesterdayExtraOn; // Беремо повну тривалість, розраховану вчора
                 }
                 if (type === 'off' && yesterdayExtraOff > 0) {
-                    realStartH = 24 - yesterdayExtraOff;
-                    realDuration += yesterdayExtraOff;
+                    // Віднімаємо від 24:00 тільки те, що було ВЧОРА
+                    let partYesterday = yesterdayExtraOff - dur;
+                    if (partYesterday < 0) partYesterday = 0;
+
+                    realStartH = 24 - partYesterday;
+                    realDuration = yesterdayExtraOff; // Беремо повну тривалість
                 }
             }
 
