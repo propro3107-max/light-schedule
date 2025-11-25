@@ -32,6 +32,37 @@
             --text-card-detail: #333333; /* Темний колір для деталей карток */
         }
 
+        /* 1. Мітки часу (00:00, 08:00) */
+        [data-theme="light"] .t-label {
+            /* Робимо їх темно-сірими */
+            color: var(--text-muted) !important;
+        }
+
+        /* 2. Риски на таймлайні (вертикальні лінії-позначки) */
+        [data-theme="light"] .t-tick {
+            /* Робимо їх темно-сірими, щоб вони були помітні на білому */
+            background: rgba(0, 0, 0, 0.4) !important;
+        }
+
+        /* 3. Міні-таймер пігулка (щоб була помітна на білому) */
+        [data-theme="light"] .mini-timer {
+            background: rgba(0, 0, 0, 0.1); 
+            border: 1px solid rgba(0, 0, 0, 0.3);
+            color: var(--text-main); /* Чорний текст */
+        }
+
+        [data-theme="light"] .day-title {
+            /* Робимо 'ГРАФІК НА СЬОГОДНІ' чорним */
+            color: var(--text-main) !important; 
+            opacity: 1 !important; /* Повна непрозорість */
+        }
+
+        [data-theme="light"] .date-text {
+            /* Робимо 'СЕРЕДА 26.11' чорним */
+            color: var(--text-main) !important; 
+            /* Фон для пігулки вже має бути сірим/темним, що дає контраст */
+        }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
@@ -952,6 +983,63 @@
             font-weight: 500;
             color: var(--text-muted);
             white-space: nowrap;            /* Забороняємо перенос тексту */
+        }
+
+
+        /* --- МІНІ-ТАЙМЕР (ЗМЕНШЕНИЙ) --- */
+/* --- МІНІ-ТАЙМЕР (ФІНАЛЬНА КОМПАКТНІСТЬ) --- */
+        .mini-timer {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            
+            margin-left: 6px;
+            
+            /* 🔥 Фіксована висота та мінімальний padding для компактності */
+            height: 18px; /* Замість padding, що плаває */
+            padding: 0 5px; /* Лише бокові відступи */
+
+            background: rgba(255, 255, 255, 0.2); 
+            border-radius: 4px;
+            
+            /* Розмір тексту і вирівнювання */
+            font-size: 10px; 
+            line-height: 1;
+            font-weight: 700;
+            color: #fff;
+            
+            /* 💥 ОПТИЧНА КОРЕКЦІЯ: Зміщуємо весь вміст на 0.5px вниз, щоб компенсувати емодзі */
+            transform: translateY(0.5px); 
+            
+            animation: pulseBadge 2s infinite ease-in-out;
+        }
+
+        /* 🟢 АКТИВНИЙ ТАЙМЕР (СВІТЛО Є) */
+        .card.c-on .mini-timer {
+            background: rgba(48, 209, 88, 0.2);       /* Прозорий зелений фон */
+            color: #30d158;                          /* Зелений текст */
+            border: 1px solid rgba(48, 209, 88, 0.5); /* Зелена рамка */
+        }
+
+        /* 🔴 АКТИВНИЙ ТАЙМЕР (ВІДКЛЮЧЕННЯ) */
+        .card.c-off .mini-timer {
+            background: rgba(255, 69, 58, 0.2);       /* Прозорий червоний фон */
+            color: #ff453a;                           /* Червоний текст */
+            border: 1px solid rgba(255, 69, 58, 0.5); /* Червона рамка */
+        }
+
+        /* 2. Фікс вирівнювання статусу */
+        .status-label {
+            /* Робимо весь рядок гнучким, щоб він сам вирівнював свій вміст (текст + пігулку) */
+            display: inline-flex;
+            align-items: center;
+            
+            /* Зберігаємо оригінальні стилі */
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .card-details {
@@ -2541,7 +2629,7 @@
         }, 250);
     }
 
-    function render(dayIdx) {
+function render(dayIdx) {
         const row = allData.find(r => r.group_id == currentQueue);
         if (!row) return;
 
@@ -2565,6 +2653,7 @@
         const detailBox = document.getElementById('detailCardContainer');
         const appContent = document.getElementById('app-content');
 
+        // Очищення
         track.innerHTML = '';
         while (lBox.firstChild) lBox.removeChild(lBox.firstChild);
         iBox.innerHTML = '';
@@ -2572,11 +2661,11 @@
         detailBox.classList.add('hidden');
         activeSegmentElement = null; activeListCard = null;
 
+        // Курсор
         ensureCursor();
         const tr = document.getElementById('timelineTrack') || document.querySelector('.timeline-track');
         if (tr) tr.appendChild(cursor);
         track.appendChild(cursor);
-        
         cursor.style.display = (dayIdx === 1 ? 'block' : 'none');
 
         const isToday = (dayIdx === 1);
@@ -2603,47 +2692,39 @@
             document.getElementById('batteryLabel').innerText = l;
         }
 
-        // --- Аналіз завтрашнього ранку ---
-        let tomorrowFirstOff = null; // Це тривалість ПЕРШОГО шматка завтра (якщо це світло - то тривалість світла)
+        // --- Аналіз завтра ---
+        let tomorrowFirstOff = null;
         if (isToday) {
             const tmr = new Date(targetDate); tmr.setDate(tmr.getDate() + 1);
             const tmrStr = getSchedule(row.schedule_text, tmr);
             if (tmrStr) {
                 const tParts = tmrStr.split(',');
-                // Нам треба знати тривалість першого сегмента, щоб "склеїти" його з сьогоднішнім вечором
                 let firstPart = tParts[0];
                 let pType = firstPart.includes('off') ? 'off' : 'on';
                 let pDur = parseFloat(firstPart.replace('on', '').replace('off', ''));
-                
-                // Якщо завтра зранку світло є -> запам'ятовуємо його тривалість для склейки
-                if (pType === 'on') {
-                    tomorrowFirstOff = pDur; 
-                } 
-                // Якщо завтра зранку світла немає, то склеювати 'on' нема з чим (але можна склеїти 'off')
+                if (pType === 'on') tomorrowFirstOff = pDur; 
             }
         }
 
-        // --- Аналіз вчорашнього дня ---
+        // --- Аналіз вчора ---
         let yesterdayExtraOn = 0;
         let yesterdayExtraOff = 0;
         try {
             const yst = new Date(targetDate);
             yst.setDate(yst.getDate() - 1);
             const ystStr = getSchedule(row.schedule_text, yst);
-
             if (ystStr) {
                 const yParts = ystStr.split(',');
                 if (yParts.length > 0) {
                     const lastPart = yParts[yParts.length - 1];
                     const dur = parseFloat(lastPart.replace('on', '').replace('off', ''));
-
                     if (!isNaN(dur)) {
                         if (lastPart.includes('on')) yesterdayExtraOn = dur;
                         else yesterdayExtraOff = dur;
                     }
                 }
             }
-        } catch (e) { console.warn("Err yesterday analysis", e); }
+        } catch (e) { console.warn("Err yesterday", e); }
 
         let curH = 0; let totOff = 0;
         const now = new Date();
@@ -2656,6 +2737,7 @@
 
         const parts = scheduleStr.split(',');
         
+        /* --- ГОЛОВНИЙ ЦИКЛ --- */
         parts.forEach((part, index) => {
             let type = part.includes('off') ? 'off' : 'on';
             let dur = parseFloat(part.replace('on', '').replace('off', ''));
@@ -2663,148 +2745,184 @@
             
             let segStart = curH;
             let endH = curH + dur;
-            
-            // Змінні для розрахунків
-            let mathEndH = endH;        // Час закінчення для математики (може бути > 24)
-            let displayEndH = endH;     // Час для відображення (якщо >24, форматтер зробить 05:30)
-            let fullDuration = dur;     // Повна тривалість
+            let mathEndH = endH; 
+            let displayEndH = endH;
+            let fullDuration = dur;
             let connectsToTomorrow = false;
 
             if (type === 'off') lastOffEndH = endH;
 
-            // 🔥 СКЛЕЮВАННЯ ДНІВ (Тільки для 'on', щоб пофіксити баг на скріншоті)
+            // Логіка склеювання днів
             if (Math.abs(endH - 24) < 0.1) {
-                // Якщо зараз світло і завтра зранку теж світло (tomorrowFirstOff > 0)
                 if (type === 'on' && tomorrowFirstOff !== null && tomorrowFirstOff > 0) {
                     connectsToTomorrow = true;
-                    mathEndH = 24 + tomorrowFirstOff; // Наприклад 29.5
-                    fullDuration += tomorrowFirstOff; // Додаємо ранковий час
-                    displayEndH = mathEndH;           // formatHM(29.5) покаже 05:30
+                    mathEndH = 24 + tomorrowFirstOff;
+                    fullDuration += tomorrowFirstOff;
+                    displayEndH = mathEndH; 
                 }
             }
 
-            // Встановлюємо правильний час початку для першого елемента (через вчорашній день)
+            // Корекція першого блоку (вчора)
             let realStartH = segStart;
             if (index === 0) {
                 if (type === 'on' && yesterdayExtraOn > 0) {
                     realStartH = 24 - yesterdayExtraOn;
-                    // Якщо ми не склеюємо з завтра, то тривалість це (вчора + сьогодні)
-                    // Якщо склеюємо, то fullDuration вже враховує "сьогодні", треба додати "вчора"
                     fullDuration += yesterdayExtraOn; 
                 }
                 if (type === 'off' && yesterdayExtraOff > 0) {
-                    let partYesterday = yesterdayExtraOff - dur; // тут логіка може бути складна, спрощуємо
-                    // Просто для відображення:
-                    realStartH = 24 - (yesterdayExtraOff > dur ? dur : yesterdayExtraOff); // приблизно
-                    // Для першого блоку краще залишити стару логіку realDuration, 
-                    // але в новому коді ми використовуємо fullDuration.
-                    // Давайте для index===0 залишимо fullDuration як dur + yesterday (якщо треба)
-                     if (type === 'off') fullDuration = yesterdayExtraOff; // Якщо це продовження
+                    let partYesterday = yesterdayExtraOff - dur;
+                    realStartH = 24 - (yesterdayExtraOff > dur ? dur : yesterdayExtraOff);
+                    if (type === 'off') fullDuration = yesterdayExtraOff; 
                 }
             }
 
+            const isActiveNow = (isToday && curFloat >= segStart && curFloat < endH);
 
-            // --- МАЛЮЄМО ТАЙМЛАЙН ---
+            // --- ТАЙМЛАЙН ---
             let seg = document.createElement('div');
             seg.className = `segment ${type}`;
-            
-            if (isToday && curFloat >= segStart && curFloat < endH) {
-                seg.classList.add('active-segment');
-            }
-
-            seg.style.flexGrow = dur; // Малюємо тільки шматок до 24:00
+            if (isActiveNow) seg.classList.add('active-segment');
+            seg.style.flexGrow = dur; 
             seg.style.flexBasis = '0';
             track.appendChild(seg);
-
+            
             if (endH < 23.9 && (endH - lastEndH) > 2.0 && (24 - endH) > 1.5) {
                 addLabel(lBox, endH, formatHM(endH), "mid"); lastEndH = endH;
             }
 
-            // Клік: передаємо повну тривалість і розширений кінець
             seg.addEventListener('click', () => handleSegmentClick(seg, type, realStartH, displayEndH, fullDuration));
 
 
-            // --- ТЕКСТ КАРТКИ ---
-            let nextOffInfo = null;
-            if (connectsToTomorrow) {
-                 nextOffInfo = `Наступне вимкнення очікується <b>завтра о ${formatHM(tomorrowFirstOff)}</b>.`;
-            } else if (type === 'on' && Math.abs(endH - 24) < 0.1) {
-                 nextOffInfo = `Наступне вимкнення очікується <b>рівно о півночі</b>.`;
+            // --- 🔥 ГОТУЄМО ВМІСТ КАРТКИ ---
+            
+            let headerTimerHtml = "";
+            if (isActiveNow) {
+                const remaining = mathEndH - curFloat;
+                const remText = fmtDur(remaining);
+                headerTimerHtml = `<span class="mini-timer">⏳ ${remText}</span>`;
             }
 
-            let customMainText = null;
-            if (index === 0 && yesterdayExtraOn > 0 && type === 'on') {
-                 customMainText = `Світло увімкнули ще <b>вчора о ${formatHM(realStartH)}</b>.`;
+            // 2. Детальний текст (Body)
+            let detailsHtml = "";
+            
+            let timeRangeMessage = "";
+            if (type === 'on') {
+                if (index === 0 && yesterdayExtraOn > 0) {
+                    timeRangeMessage = `Світло увімкнули ще <b>вчора о ${formatHM(realStartH)}</b>. (ще до півночі).`;
+                } else {
+                    timeRangeMessage = `Світло буде з <b>${formatHM(realStartH)}</b> до <b>${formatHM(displayEndH)}</b>.`;
+                }
             } else {
-                 // 🔥 ЗАМІСТЬ ДУБЛЮВАННЯ ЧАСУ ПИШЕМО ТРИВАЛІСТЬ
-                 const durTxt = fmtDur(fullDuration);
-                 if (type === 'on') customMainText = `Загальна тривалість: <b>${durTxt}</b>.`;
-                 else customMainText = `Тривалість відключення: <b>${durTxt}</b>.`;
+                timeRangeMessage = `Світло буде вимкнене о <b>${formatHM(realStartH)}</b> і повернеться о <b>${formatHM(displayEndH)}</b>.`;
+            }
+            detailsHtml += `<p>${timeRangeMessage}</p>`;
+            
+            const durTxt = fmtDur(fullDuration);
+            let totalDurationMsg = type === 'on' 
+                ? `Загальна тривалість: <b>${durTxt}</b>.` 
+                : `Тривалість відключення: <b>${durTxt}</b>.`;
+
+            if (!(index === 0 && yesterdayExtraOn > 0 && type === 'on')) {
+                 detailsHtml += `<p>${totalDurationMsg}</p>`;
             }
 
-            let card = createCard(realStartH, displayEndH, fullDuration, type, nextOffInfo, customMainText);
 
-            // --- 🔥 АКТИВНИЙ СТАН + ПРОГРЕС + БЕЙДЖ ---
-            if (isToday && curFloat >= segStart && curFloat < endH) {
-                card.classList.add('active-now');
+            // 3. Наступна дія / Статус
+            if (type === 'on') {
+                if (connectsToTomorrow) {
+                    detailsHtml += `<p>Наступне вимкнення очікується <b>завтра о ${formatHM(tomorrowFirstOff)}</b>.</p>`;
+                } else if (Math.abs(endH - 24) < 0.1) {
+                    detailsHtml += `<p>Наступне вимкнення очікується <b>рівно о півночі</b>.</p>`;
+                } else {
+                    detailsHtml += `<p>Наступне вимкнення очікується о <b>${formatHM(displayEndH)}</b>.</p>`;
+                }
+            } else {
+                 detailsHtml += `<p>Планове відключення.</p>`; 
+            }
+            
 
-                // Рахуємо відсоток від ПОВНОЇ довжини (включно з завтра)
-                const totalLength = mathEndH - segStart;
-                const passed = curFloat - segStart;
+            detailsHtml += `<p class="detail-note" style="margin-top:8px; opacity:0.5"><i>* Можлива невелика похибка у часі.</i></p>`;
+
+
+            // --- СТВОРЕННЯ КАРТКИ ВРУЧНУ ---
+            let card = document.createElement('div');
+            card.className = `card c-${type}`;
+            
+            let statusLabel = type === 'on' ? 'СВІТЛО Є' : 'ВІДКЛЮЧЕННЯ';
+            
+            card.innerHTML = `
+                <div class="card-header">
+                    <div class="card-info">
+                        <div class="c-icon">${type === 'on' ? '💡' : '🔌'}</div>
+                        <div class="c-times">
+                            <div class="status-label">
+                                ${statusLabel}${headerTimerHtml}
+                            </div>
+                            <div class="c-time">${formatHM(realStartH)} - ${formatHM(displayEndH)}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="c-dur">${fmtDur(fullDuration)}</div>
+                </div>
                 
-                let percent = (passed / totalLength) * 100;
+                <div class="card-details">${detailsHtml}</div>
+                <div class="card-progress-track">
+                    <div class="card-progress-fill" style="width: 0%"></div>
+                </div>
+            `;
+
+            // Логіка розкриття
+            card.addEventListener("click", (ev) => {
+                ev.stopPropagation();
+                if (activeListCard === card) {
+                    card.classList.remove("expanded");
+                    activeListCard = null;
+                    return;
+                }
+                if (activeListCard) { activeListCard.classList.remove("expanded"); }
+                card.classList.add("expanded");
+                activeListCard = card;
+            });
+
+
+            // --- 🔥 АКТИВНИЙ СТАН: ФІКС ПРОГРЕС-БАРУ ---
+            if (isActiveNow) {
+                card.classList.add('active-now');
+                
+                // 🔥 NEW LOGIC: Use full duration and calculate elapsed time since true start
+                const totalLen = fullDuration; 
+                const remaining = mathEndH - curFloat; 
+                const passed = totalLen - remaining; 
+
+                let percent = (passed / totalLen) * 100;
                 percent = Math.max(0, Math.min(100, percent));
 
                 const bar = card.querySelector('.card-progress-fill');
                 if (bar) bar.style.width = `${percent}%`;
-
-                // Рахуємо час, що залишився (mathEndH - зараз)
-                const remaining = mathEndH - curFloat;
-                const remText = fmtDur(remaining);
                 
-                const durEl = card.querySelector('.c-dur');
-                if (durEl && !durEl.querySelector('.time-left-badge')) {
-                    const badge = document.createElement('span');
-                    badge.className = 'time-left-badge';
-                    badge.innerHTML = `⏳ ${remText}`;
-                    durEl.insertBefore(badge, durEl.firstChild);
+                // Батарейка
+                if (!foundState) {
+                    foundState = true;
+                    // 🔥 Виклик таймера з повним діапазоном
+                    startTimer(mathEndH, Math.floor(fullDuration * 3600), type === 'on');
                 }
             }
 
             iBox.appendChild(card);
-
             if (type === 'off') totOff += dur;
-            
-            // --- ТАЙМЕР НА БАТАРЕЙЦІ ---
-            if (isToday && !foundState && curFloat < endH) {
-                foundState = true;
-                const isLastSegment = (index === parts.length - 1);
-                
-                if (isLastSegment && connectsToTomorrow) {
-                    // Передаємо 29.5 (05:30) у таймер
-                    startTimer(mathEndH, Math.floor(fullDuration * 3600), type === 'on');
-                } else {
-                    const currentSegmentDurationSeconds = Math.floor(dur * 3600);
-                    startTimer(endH, currentSegmentDurationSeconds, type === 'on');
-                }
-            }
-            
             curH = endH;
         });
 
         addLabel(lBox, 24, "24:00", "end");
 
         if (isToday && !foundState) {
-             // Логіка для "цілодобового світла" або порожнього графіку
             if (totOff === 0) {
-                 // Якщо весь день світло
                  if (tomorrowFirstOff !== null && tomorrowFirstOff > 0) {
                     const targetH = 24 + tomorrowFirstOff;
                     const totalSec = Math.floor(((targetH - 0) + yesterdayExtraOn) * 3600);
                     startTimer(targetH, totalSec, true);
                  } else { setGreenBattery(); }
             } else if (tomorrowFirstOff !== null && tomorrowFirstOff > 0) {
-                // Якщо ми пройшли всі вимкнення і зараз вечірнє світло, яке переходить на завтра
                 const targetH = 24 + tomorrowFirstOff;
                 const totalSec = Math.floor((targetH - lastOffEndH) * 3600);
                 startTimer(targetH, totalSec, true);
