@@ -2000,19 +2000,29 @@
         document.getElementById('queueTitle').innerText = `ЧЕРГА ${currentQueue}`;
     }
 
-    function formatUpdateTime(raw) {
+        function formatUpdateTime(raw) {
         if (!raw) return "";
         const months = ["січня", "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"];
+
+        // Розбиваємо рядок "25.11.2025 22:25:34" на дату і час
         const [datePart, timePart] = raw.split(" ");
-        const [Y, M, D] = datePart.split("-").map(Number);
+
+        // 🔥 ВИПРАВЛЕННЯ ТУТ:
+        // Було: const [Y, M, D] = datePart.split("-").map(Number);
+        // Стало (для формату 25.11.2025):
+        const [D, M, Y] = datePart.split(".").map(Number);
+
         const [h, m] = timePart.split(":").map(Number);
+
         const dt = new Date(Y, M - 1, D, h, m);
         const now = new Date();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
         const dayOnly = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+
         if (dayOnly.getTime() === today.getTime()) return `Оновлено: сьогодні о ${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
         if (dayOnly.getTime() === yesterday.getTime()) return `Оновлено: вчора о ${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+
         return `Оновлено: ${D} ${months[M - 1]} о ${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
     }
 
