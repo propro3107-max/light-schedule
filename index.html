@@ -2228,28 +2228,33 @@
 
             if (type === 'off') totOff += dur;
 
-            if (isToday && !foundState && curFloat < endH) {
-                foundState = true;
-                const isLastSegment = (index === parts.length - 1);
+        if (isToday && !foundState && curFloat < endH) {
+                    foundState = true;
+                    const isLastSegment = (index === parts.length - 1);
 
-                if (type === 'off') {
-                    startTimer(endH, Math.floor(realDuration * 3600), false);
-                } else {
-                    if (!isLastSegment) {
-                        startTimer(endH, Math.floor(realDuration * 3600), true);
+                    // 🔥 ВИЗНАЧАЄМО ТРИВАЛІСТЬ ПОТОЧНОГО СЕГМЕНТА В СЕКУНДАХ
+                    const currentSegmentDurationSeconds = Math.floor(dur * 3600);
+
+                    if (type === 'off') {
+                        startTimer(endH, Math.floor(realDuration * 3600), false);
                     } else {
-                        if (tomorrowFirstOff !== null) {
-                            const targetH = 24 + tomorrowFirstOff;
-                            let combinedDur = (targetH - segStart);
-                            if (index === 0) combinedDur += yesterdayExtraOn;
-                            startTimer(targetH, Math.floor(combinedDur * 3600), true);
+                        if (!isLastSegment) {
+                            // ✅ (СВІТЛО Є, НЕ ОСТАННІЙ СЕГМЕНТ) ВИКОРИСТОВУЄМО ТРИВАЛІСТЬ ПОТОЧНОГО БЛОКУ
+                            startTimer(endH, currentSegmentDurationSeconds, true);
                         } else {
-                            setGreenBattery();
+                            if (tomorrowFirstOff !== null) {
+                                const targetH = 24 + tomorrowFirstOff;
+                                let combinedDur = (targetH - segStart);
+                                if (index === 0) combinedDur += yesterdayExtraOn;
+                                // ✅ ВИКОРИСТОВУЄМО ОБ'ЄДНАНУ ТРИВАЛІСТЬ ДЛЯ ПЕРЕХОДУ
+                                startTimer(targetH, Math.floor(combinedDur * 3600), true);
+                            } else {
+                                setGreenBattery();
+                            }
                         }
                     }
                 }
-            }
-            curH = endH;
+                curH = endH;
         });
 
         addLabel(lBox, 24, "24:00", "end");
