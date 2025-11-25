@@ -291,17 +291,39 @@
             box-shadow: 0 -2px 10px rgba(231, 76, 60, 0.5); /* Світіння вгору */
         }
 
-        /* --- ВИПРАВЛЕННЯ ЗЛИПЛОГО ТЕКСТУ (BADGE) --- */
+        /* --- СТИЛЬНА ПІГУЛКА ТАЙМЕРА --- */
         .time-left-badge {
-            display: inline-block;
-            margin-right: 10px;      /* Відступ від часу */
-            padding-right: 10px;     /* Внутрішній відступ до риски */
-            border-right: 1px solid rgba(255,255,255,0.2); /* Розділова риска */
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
             
-            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            
+            padding: 2px 6px 3px 6px; /* Трохи компактніше */
+            
+            /* 🔥 БУЛО margin-right: 10px; СТАЛО 0 (бо gap у батька вирішує) */
+            margin-right: 0 !important; 
+            
+            font-size: 12px; /* Трохи менший шрифт, щоб влізло */
             font-weight: 700;
-            font-size: 14px;         /* Трохи менше за основний час */
-            opacity: 0.9;
+            color: #ffffff;
+            letter-spacing: 0.3px;
+            
+            border-right: none !important; 
+            
+            /* Щоб бейдж не сплющувався, якщо місця мало */
+            flex-shrink: 0; 
+
+            animation: pulseBadge 2s infinite ease-in-out;
+        }
+
+        /* Анімація дихання */
+        @keyframes pulseBadge {
+            0% { background: rgba(255, 255, 255, 0.15); }
+            50% { background: rgba(255, 255, 255, 0.25); }
+            100% { background: rgba(255, 255, 255, 0.15); }
         }
         
         /* Прибираємо риску для світлої теми, робимо просто відступ */
@@ -920,7 +942,17 @@
         .c-on  .status-label { color: var(--accent-green); }
         .c-off .status-label { color: var(--accent-red); }
         .c-time { font-size: 16px; font-weight: 700; color: var(--text-main); }
-        .c-dur  { font-size: 14px; font-weight: 500; color: var(--text-muted); }
+        .c-dur {
+            display: flex !important;       /* Вмикаємо Flexbox */
+            align-items: center;            /* Рівняємо по вертикалі */
+            justify-content: flex-end;      /* Притискаємо до правого краю */
+            gap: 8px;                       /* Відступ між бейджем і часом */
+            
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+            white-space: nowrap;            /* Забороняємо перенос тексту */
+        }
 
         .card-details {
             padding: 0 2px;
@@ -1526,7 +1558,14 @@
         .sk-card { height: 80px; width: 100%; }
 
            /* --- MOBILE FIXES (ОЧИЩЕНО) --- */
-        @media(max-width: 420px) {
+        @media (max-width: 360px) {
+            .c-dur {
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 2px;
+                font-size: 12px;
+            }
+        }
 
             /* Трохи зменшуємо текст на мобільних */
             .day-title,
@@ -2727,7 +2766,7 @@
                 if (durEl && !durEl.querySelector('.time-left-badge')) {
                     const badge = document.createElement('span');
                     badge.className = 'time-left-badge';
-                    badge.innerHTML = `ще ${remText}`;
+                    badge.innerHTML = `⏳ ${remText}`;
                     durEl.insertBefore(badge, durEl.firstChild);
                 }
             }
