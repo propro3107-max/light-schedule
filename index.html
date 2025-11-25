@@ -596,20 +596,61 @@
             opacity: 0.8;
         }
 
+        .time-pointer {
+            position: absolute;
+            width: 4px;
+            background: #ffffff;
+            border-radius: 2px;
+            z-index: 50; /* ВИЩЕ ніж сегмент (20–30), але нижче ніж модалки */
+        }
 
         .segment {
-            position: relative; flex-grow: 1; flex-basis: 0; height: 100%; min-width: 32px;
-            border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 6px 14px var(--shadow-color); overflow: hidden;
-            cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;
+            position: relative;
+            flex-grow: 1;
+            flex-basis: 0;
+            height: 100%;
+            min-width: 32px;
+
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            box-shadow: 0 6px 14px var(--shadow-color);
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
             z-index: 20;
-            border-left: 1px solid var(--bg-color); border-right: 1px solid var(--bg-color);
-            background-clip: padding-box;
+
+            /* 🔥 Прибираємо чорні штрихи */
+            border-left: none !important;
+            border-right: none !important;
+
+            /* 🔥 НЕ обрізаємо рамку */
+            overflow: visible;
         }
+
+
+
         .segment:first-child { border-left: none; }
         .segment:last-child  { border-right: none; }
-        .segment-selected { transform: translateY(-2px); outline: 2px solid var(--text-main); box-shadow: 0 0 16px rgba(255,255,255,0.4); }
+
+        /* 🔥 Красива обводка + світіння без кривої лінії */
+        .segment-selected {
+            transform: translateY(-3px);
+            z-index: 60;
+        }
+
+        .segment-selected::after {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            border-radius: 16px; /* те саме, ідеально підібрано */
+            border: 2px solid white; /* стало тонше */
+            box-shadow: 0 0 12px rgba(255,255,255,0.4); /* менш агресивне світіння */
+            pointer-events: none;
+            z-index: 61;
+        }
+
 
         .on { background-color: var(--accent-green); }
         .off { background-color: var(--accent-red); }
@@ -735,7 +776,20 @@
             box-shadow: 0 10px 25px var(--shadow-color); position: relative; overflow: hidden;
             animation: popInSpring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .detail-card.closing { animation: popOutSpring 0.3s ease-in forwards; }
+        .detail-card.closing {
+            animation: popOutSpring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes popOutSpring {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+        }
         .detail-card.on  { border-color: var(--accent-green); box-shadow: 0 0 18px rgba(46, 204, 113, 0.35); }
         .detail-card.off { border-color: var(--accent-red);  box-shadow: 0 0 18px rgba(231, 76, 60, 0.35); }
         .detail-header, .detail-left { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
@@ -817,6 +871,12 @@
             margin-bottom: 10px;
         }
         .hidden { display: none; }
+
+        .detail-hidden {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .25s ease;
+        }
 
         /* --- SWIPE ANIMATION --- */
         #app-content {
@@ -930,6 +990,14 @@
             width: 100%;
             height: 1px;
             background: rgba(255,255,255,0.18);
+        }
+
+        .segment.on.segment-selected {
+            box-shadow: 0 0 10px 3px rgba(46, 204, 113, 0.6);
+        }
+
+        .segment.off.segment-selected {
+            box-shadow: 0 0 10px 3px rgba(231, 76, 60, 0.6);
         }
 
         /* світла тема */
@@ -1059,6 +1127,17 @@
         }
         .q-item.active { background: #3498db; color: white; }
 
+        #detailCardContainer {
+            transition: height .28s ease, opacity .28s ease, padding .28s ease;
+            overflow: hidden;
+        }
+
+        #detailCardContainer.closing {
+            height: 0 !important;
+            opacity: 0 !important;
+            padding: 0 !important;
+        }
+
         /* --- INFO MODAL --- */
         .info-modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -1149,6 +1228,27 @@
         html[data-theme="light"] .card.expanded .card-details {
             max-height: 300px !important;
             opacity: 1 !important;
+        }
+
+        @keyframes detailCardClose {
+            from {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: translateY(10px) scale(0.92);
+            }
+        }
+
+        .detail-wrapper {
+            transition: all 0.35s ease;
+        }
+
+        .detail-wrapper.hidden {
+            opacity: 0;
+            transform: translateY(-10px);
+            margin-top: -20px;
         }
 
     </style>
@@ -2281,24 +2381,77 @@
         if (appContent) appContent.classList.remove('hidden');
     }
 
-    function handleSegmentClick(segEl, type, startH, endH, durH) {
-        const detailBox = document.getElementById('detailCardContainer');
-        if (activeSegmentElement === segEl) {
-            segEl.classList.remove('segment-selected');
-            activeSegmentElement = null;
-            const card = detailBox.querySelector('.detail-card');
-            if (card) {
-                card.classList.add('closing');
-                setTimeout(() => { detailBox.classList.add('hidden'); detailBox.innerHTML = ''; }, 280);
-            } else { detailBox.classList.add('hidden'); detailBox.innerHTML = ''; }
-            return;
+        function handleSegmentClick(segEl, type, startH, endH, durH) {
+            const detailBox = document.getElementById('detailCardContainer');
+
+            // Якщо той самий сегмент — ЗАКРИТИ
+            if (activeSegmentElement === segEl) {
+
+                segEl.classList.remove('segment-selected');
+                const card = detailBox.querySelector('.detail-card');
+
+                if (card) {
+                    // Плавна анімація висоти контейнера
+                    const box = detailBox;
+                    const startHeight = box.scrollHeight;
+
+                    box.style.height = startHeight + "px"; // фіксуємо початкову висоту
+                    void box.offsetHeight;                 // примусове перерахування стилів
+                    box.style.transition = "height 0.28s ease";
+                    box.style.height = "0px";
+
+                    // Анімація самої картки
+                    card.classList.add("closing");
+
+                    // Кінець анімації → очищення
+                    box.addEventListener("transitionend", () => {
+                        box.style.transition = "";
+                        box.style.height = "";
+                        box.classList.add("hidden");
+                        box.innerHTML = "";
+                        activeSegmentElement = null;
+                    }, { once: true });
+
+                } else {
+                    detailBox.classList.add("hidden");
+                    detailBox.innerHTML = "";
+                    activeSegmentElement = null;
+                }
+                return;
+            }
+
+            // Якщо інший сегмент — ВІДКРИТИ
+            if (activeSegmentElement)
+                activeSegmentElement.classList.remove('segment-selected');
+
+            activeSegmentElement = segEl;
+            segEl.classList.add('segment-selected');
+
+            showDetailCard(type, startH, endH, durH);
+
+            const box = detailBox;
+            box.classList.remove("hidden");
+
+            // Анімація відкриття
+            box.style.height = "auto";
+            const targetHeight = box.scrollHeight;
+
+            box.style.height = "0px";
+            void box.offsetHeight;
+
+            box.style.transition = "height 0.28s ease";
+            box.style.height = targetHeight + "px";
+
+            box.addEventListener("transitionend", () => {
+                box.style.transition = "";
+                box.style.height = "auto"; // зафіксувати нормальну висоту
+            }, { once: true });
+
+            try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
         }
-        if (activeSegmentElement) activeSegmentElement.classList.remove('segment-selected');
-        activeSegmentElement = segEl;
-        segEl.classList.add('segment-selected');
-        showDetailCard(type === 'on' ? 'on' : 'off', startH, endH, durH);
-        try { tg.HapticFeedback.selectionChanged(); } catch (e) { }
-    }
+
+
+
 
     function showDetailCard(type, startH, endH, durH) {
         const box = document.getElementById('detailCardContainer');
@@ -2395,38 +2548,41 @@
         label.innerText = "Відключення ще не заплановані";
     }
 
-    function setBat(pct, isOn, customText = null) {
-        pct = Math.min(Math.max(pct, 0), 1);
-        const f = document.getElementById('batteryFill');
-        const label = document.getElementById('batteryLabel');
-        const tip = document.querySelector('.battery-tip');
-        let visualPct;
-        let hue;
-        if (isOn) {
-            visualPct = pct;
-            hue = visualPct * 120;
-            f.classList.add('discharging');
-        } else {
-            visualPct = 1 - pct;
-            hue = visualPct * 120;
-            f.classList.remove('discharging');
+        function setBat(pct, isOn, customText = null) {
+            pct = Math.min(Math.max(pct, 0), 1);
+
+            const f = document.getElementById('batteryFill');
+            const label = document.getElementById('batteryLabel');
+            const tip = document.querySelector('.battery-tip');
+
+            let visualPct;
+            let hue;
+
+            if (isOn) {
+                // світло є → батарейка розряджається
+                visualPct = pct;
+                hue = visualPct * 120;
+                f.classList.add('discharging');
+            } else {
+                // світла немає → батарейка заряджається
+                visualPct = 1 - pct;
+                hue = visualPct * 120;
+                f.classList.remove('discharging');
+            }
+
+            f.style.width = Math.max(visualPct * 100, 0) + "%";
+            f.style.background = `hsl(${hue}, 90%, 50%)`;
+            f.style.boxShadow = `0 0 12px hsl(${hue}, 90%, 50%)`;
+
+            if (tip) {
+                tip.style.background = `hsl(${hue}, 90%, 50%)`;
+            }
+
+            label.innerText = customText
+                ? customText
+                : (isOn ? "Світло є" : "Світла немає");
         }
-        f.style.width = Math.max(visualPct * 100, 5) + "%";
-        if (customText) {
-            label.innerText = customText;
-        } else {
-            label.innerText = isOn ? 'до відключення' : 'до включення';
-        }
-        const colorStart = `hsl(${hue}, 100%, 35%)`;
-        const colorEnd = `hsl(${hue}, 100%, 60%)`;
-        const mainColor = `hsl(${hue}, 100%, 45%)`;
-        f.style.background = `linear-gradient(90deg, ${colorStart}, ${colorEnd})`;
-        f.style.boxShadow = `0 0 15px ${mainColor}`;
-        if (tip) {
-            tip.style.background = mainColor;
-            tip.style.boxShadow = `0 0 10px ${mainColor}`;
-        }
-    }
+
 
     function updateNativeShareLink() {
         const text = `⚡️ Я користуюсь ботом для світла у Броварах. Моя черга ${currentQueue}. Приєднуйся!`;
@@ -2570,3 +2726,4 @@ function checkDonatePopup() {
         }, 300);
     </script>
 </body>
+</html>
