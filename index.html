@@ -566,10 +566,18 @@
 
 /* --- АНІМАЦІЇ ЗАРЯДКИ/РОЗРЯДКИ --- */
 
-        /* 1. Смужки (текстура) */
+/* 1. Смужки (текстура) - Зменшена Інтенсивність */
         .battery-fill::after {
             content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background-image: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent);
+            /* 🔥 Зменшили прозорість з 0.4 до 0.25 */
+            background-image: linear-gradient(45deg, 
+                rgba(0,0,0,0.25) 25%, 
+                transparent 25%, 
+                transparent 50%, 
+                rgba(0,0,0,0.25) 50%, 
+                rgba(0,0,0,0.25) 75%, 
+                transparent 75%, 
+                transparent);
             background-size: 20px 20px;
             z-index: 2; /* Над фоном */
         }
@@ -598,13 +606,13 @@
         }
 
         .battery-fill:not(.discharging)::before {
-            animation: shineMove 2s infinite ease-in-out; /* Хвиля біжить кожні 2 сек */
+            animation: shineMove 3s infinite ease-in-out; /* Хвиля біжить кожні 2 сек */
         }
 
         /* Смужки теж рухаються вправо (наповнення) */
         @keyframes moveStripesRight { 0% { background-position: 0 0; } 100% { background-position: 40px 0; } }
         .battery-fill:not(.discharging)::after {
-            animation: moveStripesRight 1.5s linear infinite;
+            animation: moveStripesRight 3s linear infinite;
         }
 
 
@@ -952,6 +960,8 @@
             display: flex; flex-direction: column; position: relative; overflow: hidden;
             border: 2px solid transparent; transition: all 0.3s ease;
             box-shadow: 0 4px 12px var(--shadow-color);
+            transform: translateZ(0); 
+            will-change: transform, box-shadow;
         }
         .card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
         .card.c-on::before  { background: var(--accent-green); }
@@ -1051,6 +1061,8 @@
             opacity: 0;
             overflow: hidden;
             transition: all 0.25s ease;
+            will-change: max-height, opacity; 
+            transform: translateZ(0);
         }
 
         /* 🔥 ГОЛОВНЕ: Робимо важливий текст (час) ЯСКРАВО БІЛИМ */
@@ -1093,6 +1105,7 @@
         html[data-theme="light"] .card-info,
         html[data-theme="light"] .c-dur {
             color: #1a1a1a !important;
+            transform: translateZ(0);
         }
 
         /* --- DETAIL CARD --- */
