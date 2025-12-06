@@ -2783,8 +2783,22 @@ function render(dayIdx) {
                     fullDuration += yesterdayExtraOn; 
                 }
                 if (type === 'off' && yesterdayExtraOff > 0) {
-                    let partYesterday = yesterdayExtraOff - dur;
-                    realStartH = 24 - (yesterdayExtraOff > dur ? dur : yesterdayExtraOff);
+                    // 🔥 ВИПРАВЛЕННЯ ТУТ:
+                    // Раніше було: realStartH = 24 - (yesterdayExtraOff > dur ? dur : yesterdayExtraOff);
+                    // Це помилково віднімало 5 годин від 24 (24-5=19:00).
+                    
+                    // Правильно: відняти різницю між загальною тривалістю і тим, що випало на сьогодні.
+                    // Якщо вчора (22-05) це 7 годин, а сьогодні (00-05) це 5 годин, то вчора лишилось 2 години.
+                    // 24 - 2 = 22:00.
+                    
+                    if (yesterdayExtraOff > dur) {
+                        const partYesterday = yesterdayExtraOff - dur;
+                        realStartH = 24 - partYesterday;
+                    } else {
+                        // Якщо раптом дані криві і вчорашній шматок менший за сьогоднішній (малоймовірно, але буває)
+                        realStartH = 24 - yesterdayExtraOff;
+                    }
+
                     if (type === 'off') fullDuration = yesterdayExtraOff; 
                 }
             }
