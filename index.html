@@ -536,6 +536,31 @@
             transform: scale(0.97);
         }
 
+        /* --- НОВИЙ ІДЕАЛЬНИЙ AMBIENT GLOW --- */
+        .battery-container::before {
+            content: '';
+            position: absolute;
+            top: 40%; /* Центруємо прямо за самою батарейкою */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 90px;
+            background: var(--ambient-color, transparent);
+
+            /* Створюємо ідеальне об'ємне світіння замість градієнта */
+            filter: blur(45px);
+            opacity: 0.35; /* Оптимальна яскравість */
+
+            z-index: -1; /* Кладемо позаду батарейки, але поверх загального фону */
+            pointer-events: none;
+            transition: background 1s ease;
+        }
+
+        /* У світлій темі робимо його майже непомітним */
+        [data-theme="light"] .battery-container::before {
+            opacity: 0.1;
+        }
+
         /* --- Додай це в кінці блоку CSS --- */
 
         /* Клас для "піднятого" курсора */
@@ -2074,6 +2099,24 @@
             setTimeout(() => active.classList.remove("pulse"), 1200);
         }
 
+    function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                // easeOutQuart ефект
+                const ease = 1 - Math.pow(1 - progress, 4);
+
+                // 🔥 ТИ ПРОПУСТИВ ОСЬ ЦЕЙ РЯДОК:
+                obj.innerHTML = formatUsersNumber(Math.floor(ease * (end - start) + start));
+
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+    }
+
     function animateBattery() {
         const wrapper = document.querySelector('.battery-wrapper');
         if (wrapper) wrapper.classList.toggle('battery-enlarged');
@@ -2259,7 +2302,14 @@
     function updateTopUsers(val) {
         const el = document.getElementById('topUsers');
         if (!el) return;
-        el.innerText = formatUsersNumber(val);
+
+        // Очищаємо пробіли для математики
+        const num = parseInt(String(val).replace(/\s+/g, ""), 10);
+        if (!isNaN(num)) {
+            animateValue(el, Math.floor(num * 0.8), num, 1200); // Набігає з 80% до 100%
+        } else {
+            el.innerText = formatUsersNumber(val);
+        }
     }
 
     function addLabel(container, hour, label) {
@@ -3246,6 +3296,9 @@ function render(dayIdx) {
 
     function setBat(pct, isOn, customText = null) {
         pct = Math.min(Math.max(pct, 0), 1);
+
+        // 🔥 ДОДАЄМО КОЛІР ЕМБІЄНТ-СВІТІННЯ ТУТ:
+        document.body.style.setProperty('--ambient-color', isOn ? '#30d158' : '#ff453a');
 
         const f = document.getElementById('batteryFill');
         const label = document.getElementById('batteryLabel');
