@@ -21,6 +21,18 @@
             --text-card-detail: rgba(255, 255, 255, 0.7); /* Світлий для темної теми */
         }
 
+        @keyframes segmentBreathe {
+            0%   { opacity: 0.85; box-shadow: 0 0 10px rgba(255,255,255,0.2) !important; }
+            50%  { opacity: 1;    box-shadow: 0 0 18px rgba(255,255,255,0.6) !important; }
+            100% { opacity: 0.85; box-shadow: 0 0 10px rgba(255,255,255,0.2) !important; }
+        }
+
+        .segment.active-segment {
+            height: 16px;
+            z-index: 5;
+            animation: segmentBreathe 3.5s ease-in-out infinite; /* Додали анімацію */
+        }
+
         [data-theme="light"] {
             --bg-color: #f2f2f7;
             --card-bg: #ffffff;
@@ -46,20 +58,20 @@
 
         /* 3. Міні-таймер пігулка (щоб була помітна на білому) */
         [data-theme="light"] .mini-timer {
-            background: rgba(0, 0, 0, 0.1); 
+            background: rgba(0, 0, 0, 0.1);
             border: 1px solid rgba(0, 0, 0, 0.3);
             color: var(--text-main); /* Чорний текст */
         }
 
         [data-theme="light"] .day-title {
             /* Робимо 'ГРАФІК НА СЬОГОДНІ' чорним */
-            color: var(--text-main) !important; 
+            color: var(--text-main) !important;
             opacity: 1 !important; /* Повна непрозорість */
         }
 
         [data-theme="light"] .date-text {
             /* Робимо 'СЕРЕДА 26.11' чорним */
-            color: var(--text-main) !important; 
+            color: var(--text-main) !important;
             /* Фон для пігулки вже має бути сірим/темним, що дає контраст */
         }
 
@@ -276,7 +288,7 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 4px; 
+            height: 4px;
             background: rgba(255, 255, 255, 0.1); /* Трішки світліший фон треку */
             display: none;
             z-index: 5;
@@ -327,27 +339,46 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            
+
             background: rgba(255, 255, 255, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 6px;
-            
+
             padding: 2px 6px 3px 6px; /* Трохи компактніше */
-            
+
             /* 🔥 БУЛО margin-right: 10px; СТАЛО 0 (бо gap у батька вирішує) */
-            margin-right: 0 !important; 
-            
+            margin-right: 0 !important;
+
             font-size: 12px; /* Трохи менший шрифт, щоб влізло */
             font-weight: 700;
             color: #ffffff;
             letter-spacing: 0.3px;
-            
-            border-right: none !important; 
-            
+
+            border-right: none !important;
+
             /* Щоб бейдж не сплющувався, якщо місця мало */
-            flex-shrink: 0; 
+            flex-shrink: 0;
 
             animation: pulseBadge 2s infinite ease-in-out;
+        }
+
+        /* --- БЕЙДЖ "ЗАВТРА" --- */
+        .tomorrow-badge {
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.85);
+            padding: 2px 5px;
+            border-radius: 4px;
+            margin-left: 6px;
+            vertical-align: middle;
+            letter-spacing: 0.5px;
+        }
+
+        [data-theme="light"] .tomorrow-badge {
+            background: rgba(0, 0, 0, 0.08);
+            color: rgba(0, 0, 0, 0.6);
         }
 
         /* Анімація дихання */
@@ -356,13 +387,13 @@
             50% { background: rgba(255, 255, 255, 0.25); }
             100% { background: rgba(255, 255, 255, 0.15); }
         }
-        
+
         /* Прибираємо риску для світлої теми, робимо просто відступ */
         [data-theme="light"] .time-left-badge {
             border-right: 1px solid rgba(0,0,0,0.1);
             color: #000;
         }
-        
+
         /* Базовий вигляд (завжди темний) */
         .card, .detail-card {
             background: var(--card-bg) !important; /* 🔥 ПРИМУСОВО ТЕМНИЙ ФОН */
@@ -372,7 +403,7 @@
         }
 
         /* 🟢 АКТИВНА ЗЕЛЕНА КАРТКА (Рамка + Світіння) */
-        .card.active-now.c-on, 
+        .card.active-now.c-on,
         .detail-card.on {
             background: var(--card-bg) !important; /* Фон залишається темним! */
             border-color: #30d158;                 /* Зелена рамка */
@@ -380,7 +411,7 @@
         }
 
         /* 🔴 АКТИВНА ЧЕРВОНА КАРТКА (Рамка + Світіння) */
-        .card.active-now.c-off, 
+        .card.active-now.c-off,
         .detail-card.off {
             background: var(--card-bg) !important; /* Фон залишається темним! */
             border-color: #ff453a;                 /* Червона рамка */
@@ -389,8 +420,8 @@
 
         /* Прибираємо стару смужку збоку для активних карток, бо тепер у нас є рамка */
         .card.active-now::before { display: none; }
-        
-        
+
+
 
 /* --- СТИЛІ ДЛЯ DONATE POPUP --- */
         .donate-hero {
@@ -514,7 +545,7 @@
             /* Робимо його ще яскравішим */
             box-shadow: 0 0 12px rgba(255, 255, 255, 1);
             /* Трохи вищим, щоб він "обіймав" збільшену картку */
-            height: 36px; 
+            height: 36px;
             transition: transform 0.3s ease, height 0.3s ease, box-shadow 0.3s ease;
         }
 
@@ -570,13 +601,13 @@
         .battery-fill::after {
             content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
             /* 🔥 Зменшили прозорість з 0.4 до 0.25 */
-            background-image: linear-gradient(45deg, 
-                rgba(0,0,0,0.25) 25%, 
-                transparent 25%, 
-                transparent 50%, 
-                rgba(0,0,0,0.25) 50%, 
-                rgba(0,0,0,0.25) 75%, 
-                transparent 75%, 
+            background-image: linear-gradient(45deg,
+                rgba(0,0,0,0.25) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(0,0,0,0.25) 50%,
+                rgba(0,0,0,0.25) 75%,
+                transparent 75%,
                 transparent);
             background-size: 20px 20px;
             z-index: 2; /* Над фоном */
@@ -591,8 +622,8 @@
             left: 0;
             right: 0;
             height: 50%; /* Верхня половина */
-            background: linear-gradient(to bottom, 
-                rgba(255,255,255,0.15) 0%, 
+            background: linear-gradient(to bottom,
+                rgba(255,255,255,0.15) 0%,
                 rgba(255,255,255,0) 100%);
             border-radius: 8px 8px 0 0;
             pointer-events: none;
@@ -685,24 +716,24 @@
             /* Відступи і центрування */
             margin-top: 8px;
             margin-left: 0;
-            
+
             /* Шрифт (технічний) */
             font-family: "Menlo", "Consolas", "Roboto Mono", monospace;
             font-size: 10px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            
+
             /* Базовий колір (якщо JS не спрацює) */
             color: var(--text-muted);
-            
+
             /* Плавність зміни кольору */
             transition: color 0.4s ease, text-shadow 0.4s ease;
         }
 
         /* 🟢 Коли світло Є: Неоновий зелений */
         .battery-status.status-on {
-            color: #4cd964; 
+            color: #4cd964;
             text-shadow: 0 0 12px rgba(76, 217, 100, 0.6);
         }
 
@@ -717,14 +748,14 @@
             display: flex !important;
             align-items: center;
             justify-content: space-between;
-            
+
             width: 100%;
             /* 🔥 БУЛО 50px -> СТАЛО 42px (звузили) */
-            height: 42px;               
-            
+            height: 42px;
+
             /* Трохи зменшив відступ знизу (було 12px -> стало 8px) */
-            margin: 4px 0 8px 0 !important; 
-            padding: 0 6px 0 16px;      
+            margin: 4px 0 8px 0 !important;
+            padding: 0 6px 0 16px;
 
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -740,10 +771,10 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.6px;
-            
+
             /* 🔥 !important змусить його стати білим */
-            color: rgba(255, 255, 255, 0.9) !important; 
-            
+            color: rgba(255, 255, 255, 0.9) !important;
+
             margin: 0;
             line-height: 1;
             opacity: 1 !important; /* Прибираємо будь-яку прозорість */
@@ -756,26 +787,26 @@
             align-items: center;
             justify-content: center;
 
-            height: 30px;                 
+            height: 30px;
             padding: 0 12px;
-            
+
             background: rgba(255, 255, 255, 0.12);
             border-radius: 8px;
-            
+
             font-size: 13px;
-            
+
             /* 🔥 БУЛО 800 -> СТАЛО 900 (Black) */
-            font-weight: 700 !important; 
-            
-            color: #ffffff !important;   
-            
-            /* 🔥 ХАК: додаємо мікро-тінь того ж кольору, 
+            font-weight: 700 !important;
+
+            color: #ffffff !important;
+
+            /* 🔥 ХАК: додаємо мікро-тінь того ж кольору,
             це робить літери візуально ще товстішими і чіткішими */
             text-shadow: 0 0 1px rgba(255,255,255,0.5) !important;
-            
+
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            
+
             margin: 0;
             padding-bottom: 1px;
         }
@@ -806,7 +837,7 @@
 
         .timeline-track {
             position: relative; width: 100%; height: 19px;
-            display: flex; align-items: center; 
+            display: flex; align-items: center;
             gap: 0; /* 🔥 БУЛО 4px. СТАВИМО 0, щоб не ламати математику */
             background: transparent; padding: 0; box-shadow: none; overflow: visible;
         }
@@ -837,17 +868,17 @@
 
         .segment {
             position: relative;
-            height: 10px; 
-            border-radius: 4px; 
+            height: 10px;
+            border-radius: 4px;
             flex-grow: 1;
             flex-basis: 0;
             transition: all 0.3s ease;
-            opacity: 0.5; 
-            box-shadow: none !important; 
+            opacity: 0.5;
+            box-shadow: none !important;
             cursor: pointer;
 
             /* 🔥 ДОДАЄМО ЦЕ: Емулюємо відступ через прозору рамку */
-            border-right: 4px solid var(--bg-color); 
+            border-right: 4px solid var(--bg-color);
             background-clip: padding-box; /* Щоб колір не затікав під рамку */
             box-sizing: border-box; /* Щоб рамка враховувалась у ширину */
         }
@@ -885,19 +916,19 @@
         .cursor-line {
             position: absolute;
             top: 50%;
-            transform: translate(-50%, -50%); 
-            height: 32px; 
-            width: 2px;   
-            
-            background: linear-gradient(to bottom, 
-                rgba(255,255,255,0) 0%, 
-                rgba(255,255,255,1) 30%, 
-                rgba(255,255,255,1) 70%, 
+            transform: translate(-50%, -50%);
+            height: 32px;
+            width: 2px;
+
+            background: linear-gradient(to bottom,
+                rgba(255,255,255,0) 0%,
+                rgba(255,255,255,1) 30%,
+                rgba(255,255,255,1) 70%,
                 rgba(255,255,255,0) 100%
             );
-            
+
             box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
-            z-index: 9999; 
+            z-index: 9999;
             pointer-events: none;
 
             /* 🔥 ДОДАЙ ЦЕЙ РЯДОК СЮДИ: */
@@ -927,17 +958,17 @@
         .t-tick {
             display: block;
             position: absolute;
-            
-            /* 🔥 Піднімаємо вгору (мінусовий відступ), 
+
+            /* 🔥 Піднімаємо вгору (мінусовий відступ),
                щоб риска починалася прямо від кольорової смужки */
-            top: -6px; 
-            
+            top: -6px;
+
             width: 1px;   /* Тонка лінія */
             height: 7px;  /* Довжина рисочки */
-            
+
             /* Робимо трохи яскравішим, щоб було видно */
-            background: rgba(255, 255, 255, 0.35); 
-            
+            background: rgba(255, 255, 255, 0.35);
+
             transform: translateX(-50%);
             z-index: 1;
         }
@@ -960,7 +991,7 @@
             display: flex; flex-direction: column; position: relative; overflow: hidden;
             border: 2px solid transparent; transition: all 0.3s ease;
             box-shadow: 0 4px 12px var(--shadow-color);
-            transform: translateZ(0); 
+            transform: translateZ(0);
             will-change: transform, box-shadow;
         }
         .card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
@@ -988,7 +1019,7 @@
             align-items: center;            /* Рівняємо по вертикалі */
             justify-content: flex-end;      /* Притискаємо до правого краю */
             gap: 8px;                       /* Відступ між бейджем і часом */
-            
+
             font-size: 14px;
             font-weight: 500;
             color: var(--text-muted);
@@ -1003,25 +1034,25 @@
             align-items: center;
             justify-content: center;
             gap: 3px;
-            
+
             margin-left: 6px;
-            
+
             /* 🔥 Фіксована висота та мінімальний padding для компактності */
             height: 18px; /* Замість padding, що плаває */
             padding: 0 5px; /* Лише бокові відступи */
 
-            background: rgba(255, 255, 255, 0.2); 
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 4px;
-            
+
             /* Розмір тексту і вирівнювання */
-            font-size: 10px; 
+            font-size: 10px;
             line-height: 1;
             font-weight: 700;
             color: #fff;
-            
+
             /* 💥 ОПТИЧНА КОРЕКЦІЯ: Зміщуємо весь вміст на 0.5px вниз, щоб компенсувати емодзі */
-            transform: translateY(0.5px); 
-            
+            transform: translateY(0.5px);
+
             animation: pulseBadge 2s infinite ease-in-out;
         }
 
@@ -1044,7 +1075,7 @@
             /* Робимо весь рядок гнучким, щоб він сам вирівнював свій вміст (текст + пігулку) */
             display: inline-flex;
             align-items: center;
-            
+
             /* Зберігаємо оригінальні стилі */
             font-size: 10px;
             font-weight: 800;
@@ -1061,7 +1092,7 @@
             opacity: 0;
             overflow: hidden;
             transition: all 0.25s ease;
-            will-change: max-height, opacity; 
+            will-change: max-height, opacity;
             transform: translateZ(0);
         }
 
@@ -1300,20 +1331,20 @@
 
         .segment {
             position: relative;
-            height: 10px; 
-            border-radius: 4px; 
+            height: 10px;
+            border-radius: 4px;
             flex-grow: 1;
             flex-basis: 0;
             transition: all 0.3s ease;
-            opacity: 0.5; 
-            box-shadow: none !important; 
+            opacity: 0.5;
+            box-shadow: none !important;
             cursor: pointer;
 
             /* 🔥 БУЛО 4px. ЗМІНЮЄМО НА 1px */
             /* Це прибере візуальну "дірку", але залишить роздільник */
-            border-right: 1px solid var(--bg-color); 
-            
-            background-clip: padding-box; 
+            border-right: 1px solid var(--bg-color);
+
+            background-clip: padding-box;
             box-sizing: border-box;
         }
 
@@ -1337,27 +1368,27 @@
             position: absolute;
             /* Центруємо по вертикалі відносно timeline-box */
             top: 50%;
-            transform: translate(-50%, -50%); 
-            
-            height: 32px; 
-            width: 2px;   
-            
+            transform: translate(-50%, -50%);
+
+            height: 32px;
+            width: 2px;
+
             /* Градієнт... */
-            background: linear-gradient(to bottom, 
-                rgba(255,255,255,0) 0%, 
-                rgba(255,255,255,1) 30%, 
-                rgba(255,255,255,1) 70%, 
+            background: linear-gradient(to bottom,
+                rgba(255,255,255,0) 0%,
+                rgba(255,255,255,1) 30%,
+                rgba(255,255,255,1) 70%,
                 rgba(255,255,255,0) 100%
             );
-            
+
             box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
 
             /* 🔥 НАЙВИЩИЙ Z-INDEX, щоб бути над усім */
-            z-index: 9999; 
-            
+            z-index: 9999;
+
             pointer-events: none;
             /* Прибираємо плавність, щоб курсор не "відставав" при ресайзі */
-            /* transition: left 1s linear; */ 
+            /* transition: left 1s linear; */
         }
 
         /* Переконайся, що батьківський контейнер має position: relative */
@@ -1365,18 +1396,18 @@
             position: relative;
             padding: 0 10px;
         }
-        
+
         /* Текст часу */
         .t-label {
             position: absolute;
-            
+
             /* 🔥 Трохи опустив текст (було 4px), щоб дати місце довгій рисці */
-            top: 8px; 
-            
+            top: 8px;
+
             font-size: 10px;
             font-weight: 600;
             color: rgba(255,255,255,0.5);
-            
+
             transform: translateX(-50%);
             white-space: nowrap;
             letter-spacing: 0.3px;
@@ -1385,16 +1416,16 @@
         .t-tick {
             display: block;
             position: absolute;
-            
+
             /* Початок від низу кольорової смужки */
-            top: -6px; 
-            
+            top: -6px;
+
             width: 1px;
             height: 12px; /* 🔥 БУЛО 7px. Зробив значно довшими */
-            
+
             /* Трохи прозорі, щоб не різали очі */
-            background: rgba(255, 255, 255, 0.2); 
-            
+            background: rgba(255, 255, 255, 0.2);
+
             transform: translateX(-50%);
             z-index: 1;
         }
@@ -1425,16 +1456,16 @@
             height: 20px;
             z-index: 2;
             opacity: 0.9;
-            
+
             /* Центрування */
             display: flex;
             align-items: center;
             justify-content: center;
-            
+
             /* Тінь для об'єму */
             filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
         }
-        
+
         /* Робимо SVG білими */
         .segment-icon svg {
             width: 100%;
@@ -2294,10 +2325,10 @@
 
         const now = new Date();
         const nowH = now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
-        
+
         // Рахуємо відсоток
         const pct = (nowH / 24) * 100;
-        
+
         // Рухаємо
         cursorEl.style.left = `${pct}%`;
     }
@@ -2715,7 +2746,7 @@ function render(dayIdx) {
                 let firstPart = tParts[0];
                 let pType = firstPart.includes('off') ? 'off' : 'on';
                 let pDur = parseFloat(firstPart.replace('on', '').replace('off', ''));
-                if (pType === 'on') tomorrowFirstOff = pDur; 
+                if (pType === 'on') tomorrowFirstOff = pDur;
             }
         }
 
@@ -2749,16 +2780,16 @@ function render(dayIdx) {
         addLabel(lBox, 0, "00:00", "start");
 
         const parts = scheduleStr.split(',');
-        
+
         /* --- ГОЛОВНИЙ ЦИКЛ --- */
         parts.forEach((part, index) => {
             let type = part.includes('off') ? 'off' : 'on';
             let dur = parseFloat(part.replace('on', '').replace('off', ''));
             if (isNaN(dur) || dur <= 0) return;
-            
+
             let segStart = curH;
             let endH = curH + dur;
-            let mathEndH = endH; 
+            let mathEndH = endH;
             let displayEndH = endH;
             let fullDuration = dur;
             let connectsToTomorrow = false;
@@ -2771,7 +2802,7 @@ function render(dayIdx) {
                     connectsToTomorrow = true;
                     mathEndH = 24 + tomorrowFirstOff;
                     fullDuration += tomorrowFirstOff;
-                    displayEndH = mathEndH; 
+                    displayEndH = mathEndH;
                 }
             }
 
@@ -2780,17 +2811,17 @@ function render(dayIdx) {
             if (index === 0) {
                 if (type === 'on' && yesterdayExtraOn > 0) {
                     realStartH = 24 - yesterdayExtraOn;
-                    fullDuration += yesterdayExtraOn; 
+                    fullDuration += yesterdayExtraOn;
                 }
                 if (type === 'off' && yesterdayExtraOff > 0) {
                     // 🔥 ВИПРАВЛЕННЯ ТУТ:
                     // Раніше було: realStartH = 24 - (yesterdayExtraOff > dur ? dur : yesterdayExtraOff);
                     // Це помилково віднімало 5 годин від 24 (24-5=19:00).
-                    
+
                     // Правильно: відняти різницю між загальною тривалістю і тим, що випало на сьогодні.
                     // Якщо вчора (22-05) це 7 годин, а сьогодні (00-05) це 5 годин, то вчора лишилось 2 години.
                     // 24 - 2 = 22:00.
-                    
+
                     if (yesterdayExtraOff > dur) {
                         const partYesterday = yesterdayExtraOff - dur;
                         realStartH = 24 - partYesterday;
@@ -2799,7 +2830,7 @@ function render(dayIdx) {
                         realStartH = 24 - yesterdayExtraOff;
                     }
 
-                    if (type === 'off') fullDuration = yesterdayExtraOff; 
+                    if (type === 'off') fullDuration = yesterdayExtraOff;
                 }
             }
 
@@ -2809,10 +2840,10 @@ function render(dayIdx) {
             let seg = document.createElement('div');
             seg.className = `segment ${type}`;
             if (isActiveNow) seg.classList.add('active-segment');
-            seg.style.flexGrow = dur; 
+            seg.style.flexGrow = dur;
             seg.style.flexBasis = '0';
             track.appendChild(seg);
-            
+
             if (endH < 23.9 && (endH - lastEndH) > 2.0 && (24 - endH) > 1.5) {
                 addLabel(lBox, endH, formatHM(endH), "mid"); lastEndH = endH;
             }
@@ -2821,7 +2852,7 @@ function render(dayIdx) {
 
 
             // --- 🔥 ГОТУЄМО ВМІСТ КАРТКИ ---
-            
+
             let headerTimerHtml = "";
             if (isActiveNow) {
                 const remaining = mathEndH - curFloat;
@@ -2831,7 +2862,7 @@ function render(dayIdx) {
 
             // 2. Детальний текст (Body)
             let detailsHtml = "";
-            
+
             let timeRangeMessage = "";
             if (type === 'on') {
                 if (index === 0 && yesterdayExtraOn > 0) {
@@ -2843,10 +2874,10 @@ function render(dayIdx) {
                 timeRangeMessage = `Світло буде вимкнене о <b>${formatHM(realStartH)}</b> і повернеться о <b>${formatHM(displayEndH)}</b>.`;
             }
             detailsHtml += `<p>${timeRangeMessage}</p>`;
-            
+
             const durTxt = fmtDur(fullDuration);
-            let totalDurationMsg = type === 'on' 
-                ? `Загальна тривалість: <b>${durTxt}</b>.` 
+            let totalDurationMsg = type === 'on'
+                ? `Загальна тривалість: <b>${durTxt}</b>.`
                 : `Тривалість відключення: <b>${durTxt}</b>.`;
 
             if (!(index === 0 && yesterdayExtraOn > 0 && type === 'on')) {
@@ -2864,19 +2895,26 @@ function render(dayIdx) {
                     detailsHtml += `<p>Наступне вимкнення очікується о <b>${formatHM(displayEndH)}</b>.</p>`;
                 }
             } else {
-                 detailsHtml += `<p>Планове відключення.</p>`; 
+                 detailsHtml += `<p>Планове відключення.</p>`;
             }
-            
+
 
             detailsHtml += `<p class="detail-note" style="margin-top:8px; opacity:0.5"><i>* Можлива невелика похибка у часі.</i></p>`;
+
 
 
             // --- СТВОРЕННЯ КАРТКИ ВРУЧНУ ---
             let card = document.createElement('div');
             card.className = `card c-${type}`;
-            
+
             let statusLabel = type === 'on' ? 'СВІТЛО Є' : 'ВІДКЛЮЧЕННЯ';
-            
+
+            // Додаємо плашку "завтра", якщо час виходить за 24:00
+            let endStrHtml = formatHM(displayEndH);
+            if (displayEndH >= 24) {
+                endStrHtml += `<span class="tomorrow-badge">завтра</span>`;
+            }
+
             card.innerHTML = `
                 <div class="card-header">
                     <div class="card-info">
@@ -2885,13 +2923,13 @@ function render(dayIdx) {
                             <div class="status-label">
                                 ${statusLabel}${headerTimerHtml}
                             </div>
-                            <div class="c-time">${formatHM(realStartH)} - ${formatHM(displayEndH)}</div>
+                            <div class="c-time">${formatHM(realStartH)} - ${endStrHtml}</div>
                         </div>
                     </div>
-                    
+
                     <div class="c-dur">${fmtDur(fullDuration)}</div>
                 </div>
-                
+
                 <div class="card-details">${detailsHtml}</div>
                 <div class="card-progress-track">
                     <div class="card-progress-fill" style="width: 0%"></div>
@@ -2901,6 +2939,7 @@ function render(dayIdx) {
             // Логіка розкриття
             card.addEventListener("click", (ev) => {
                 ev.stopPropagation();
+                try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
                 if (activeListCard === card) {
                     card.classList.remove("expanded");
                     activeListCard = null;
@@ -2915,18 +2954,18 @@ function render(dayIdx) {
             // --- 🔥 АКТИВНИЙ СТАН: ФІКС ПРОГРЕС-БАРУ ---
             if (isActiveNow) {
                 card.classList.add('active-now');
-                
+
                 // 🔥 NEW LOGIC: Use full duration and calculate elapsed time since true start
-                const totalLen = fullDuration; 
-                const remaining = mathEndH - curFloat; 
-                const passed = totalLen - remaining; 
+                const totalLen = fullDuration;
+                const remaining = mathEndH - curFloat;
+                const passed = totalLen - remaining;
 
                 let percent = (passed / totalLen) * 100;
                 percent = Math.max(0, Math.min(100, percent));
 
                 const bar = card.querySelector('.card-progress-fill');
                 if (bar) bar.style.width = `${percent}%`;
-                
+
                 // Батарейка
                 if (!foundState) {
                     foundState = true;
@@ -2958,6 +2997,16 @@ function render(dayIdx) {
 
         totBox.innerHTML = `Всього без світла: <b>${fmtDur(totOff)}</b>`;
 
+        if (totOff === 0) {
+            totBox.innerHTML = `<span style="color: #30d158; font-weight: 700;">🎉 Сьогодні без відключень!</span>`;
+            totBox.style.borderColor = "rgba(48, 209, 88, 0.4)";
+            totBox.style.background = "rgba(48, 209, 88, 0.1)";
+        } else {
+            totBox.innerHTML = `Всього без світла: <b>${fmtDur(totOff)}</b>`;
+            totBox.style.borderColor = "rgba(128,128,128,0.1)";
+            totBox.style.background = "var(--glass-bg)";
+        }
+
         const shareWrap = document.getElementById("shareWrapper");
         shareWrap.classList.remove("hidden");
         if (!shareWrap.classList.contains("fade-in")) setTimeout(() => shareWrap.classList.add("fade-in"), 150);
@@ -2978,7 +3027,7 @@ function render(dayIdx) {
         // --- ЛОГІКА ЗАКРИТТЯ (Якщо клікнули на вже активний) ---
         if (activeSegmentElement === segEl) {
             segEl.classList.remove('segment-selected');
-            
+
             // 🔥 ОПУСКАЄМО КУРСОР НАЗАД
             if (cursorEl) cursorEl.classList.remove('cursor-elevated');
 
@@ -3012,7 +3061,7 @@ function render(dayIdx) {
         }
 
         // --- ЛОГІКА ВІДКРИТТЯ (Новий сегмент) ---
-        
+
         // Знімаємо виділення з попереднього
         if (activeSegmentElement) {
             activeSegmentElement.classList.remove('segment-selected');
@@ -3025,7 +3074,7 @@ function render(dayIdx) {
         // 🔥 ЛОГІКА ДЛЯ КУРСОРА:
         // Спочатку скидаємо (на випадок переходу з іншого сегмента)
         if (cursorEl) cursorEl.classList.remove('cursor-elevated');
-        
+
         // Якщо курсор фізично знаходиться в часі цього сегмента — піднімаємо його
         if (isCursorOnThisSegment && cursorEl) {
             cursorEl.classList.add('cursor-elevated');
@@ -3058,16 +3107,23 @@ function render(dayIdx) {
         const box = document.getElementById('detailCardContainer');
         if (!box) return;
         const startStr = formatHM(startH);
-        const endStr = formatHM(endH);
+
+        // Формуємо час кінця з бейджем
+        let endStrHtml = formatHM(endH);
+        if (endH >= 24) {
+             endStrHtml += `<span class="tomorrow-badge">завтра</span>`;
+        }
+
+        const endStr = formatHM(endH); // Залишаємо для текстового опису нижче
         const durStr = fmtDur(durH);
         let titleStatus, icon, headerClass, bodyHtml;
-        
+
         // Перевірка, чи інтервал почався вчора (наприклад 23:00 - 01:00)
-        const isOvernight = startH > endH; 
+        const isOvernight = startH > endH;
 
         if (type === 'on') {
             titleStatus = 'СВІТЛО Є'; icon = '💡'; headerClass = 'detail-status-on';
-            
+
             // 🔥 ВИПРАВЛЕННЯ: Перевіряємо, чи кінець виходить за межі 24 годин
             let nextOffText = `Наступне вимкнення очікується о <b>${endStr}</b>.`;
             if (endH >= 24) {
@@ -3082,7 +3138,7 @@ function render(dayIdx) {
 
         } else {
             titleStatus = 'ВІДКЛЮЧЕННЯ'; icon = '🔌'; headerClass = 'detail-status-off';
-            
+
             if (isOvernight) {
                 bodyHtml = `<p>Вимкнення триває з вчора <b>(${startStr})</b> і завершиться о <b>${endStr}</b>.</p><p>Планове відключення.</p>`;
             } else {
@@ -3094,7 +3150,7 @@ function render(dayIdx) {
                 }
             }
         }
-        
+
         box.classList.remove('hidden');
         box.innerHTML = `
             <div class="detail-card ${type === 'on' ? 'on' : 'off'}">
@@ -3103,7 +3159,7 @@ function render(dayIdx) {
                         <div class="detail-icon">${icon}</div>
                         <div class="detail-main">
                             <div class="detail-status ${headerClass}">${titleStatus}</div>
-                            <div class="detail-time">${startStr} - ${endStr}</div>
+                            <div class="detail-time">${startStr} - ${endStrHtml}</div>
                         </div>
                     </div>
                     <div class="detail-duration">${durStr}</div>
@@ -3126,16 +3182,16 @@ function render(dayIdx) {
             if (nextOffInfo) nextStr = nextOffInfo;
 
             // 🔥 ВИПРАВЛЕННЯ: Якщо є спец. текст (про вчора), беремо його. Якщо ні — стандартний.
-            let mainMessage = customMainText 
-                ? customMainText 
+            let mainMessage = customMainText
+                ? customMainText
                 : `Світло буде з <b>${formatHM(s)}</b> до <b>${formatHM(e)}</b>.`;
 
             detailsHtml = `${mainMessage}<br>${nextStr}<br><br><i>* Включення/вимкнення може бути з невеликою похибкою.</i>`;
-        
+
         } else {
             let mainStr = `Світло буде вимкнене о <b>${formatHM(s)}</b> і повернеться о <b>${formatHM(e)}</b>.`;
             if (customMainText) mainStr = customMainText;
-            
+
             detailsHtml = `${mainStr}<br>Планове відключення.<br><br><i>* Включення/вимкнення може відбуватися з невеликою похибкою у часі.</i>`;
         }
 
@@ -3151,12 +3207,12 @@ function render(dayIdx) {
                 <div class="c-dur">${fmtDur(d)}</div>
             </div>
             <div class="card-details">${detailsHtml}</div>
-            
+
             <div class="card-progress-track">
                 <div class="card-progress-fill" style="width: 0%"></div>
             </div>
         `;
-            
+
         c.addEventListener("click", (ev) => {
             ev.stopPropagation();
             if (activeListCard === c) {
@@ -3194,7 +3250,7 @@ function render(dayIdx) {
         const f = document.getElementById('batteryFill');
         const label = document.getElementById('batteryLabel');
         const tip = document.querySelector('.battery-tip');
-        
+
         // 🔥 ПРАВИЛЬНА ПЕРЕВІРКА ТЕМИ (через атрибут, а не клас)
         const currentTheme = document.documentElement.getAttribute('data-theme');
         const isLightMode = (currentTheme === 'light');
@@ -3204,7 +3260,7 @@ function render(dayIdx) {
 
         if (isOn) {
             visualPct = pct;
-            hue = visualPct * 120; 
+            hue = visualPct * 120;
             f.classList.add('discharging');
         } else {
             visualPct = 1 - pct;
@@ -3214,7 +3270,7 @@ function render(dayIdx) {
 
         // Колір самої батарейки (завжди яскравий)
         const batColor = `hsl(${hue}, 90%, 50%)`;
-        
+
         f.style.width = Math.max(visualPct * 100, 0) + "%";
         f.style.background = batColor;
         f.style.boxShadow = `0 0 12px ${batColor}`;
@@ -3230,8 +3286,8 @@ function render(dayIdx) {
         if (isLightMode) {
             // ⚪️ ДЛЯ СВІТЛОЇ ТЕМИ:
             // Робимо темний, насичений колір (lightness 35%), щоб читалось на білому
-            textColor = `hsl(${hue}, 90%, 35%)`; 
-            textShadow = `none`; 
+            textColor = `hsl(${hue}, 90%, 35%)`;
+            textShadow = `none`;
         } else {
             // ⚫️ ДЛЯ ТЕМНОЇ ТЕМИ:
             // Яскравий неон
