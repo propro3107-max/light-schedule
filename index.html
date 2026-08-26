@@ -2189,16 +2189,19 @@
             }
         }
 
-    function buildQueueChips() {
-        const scrollBox = document.getElementById('queuesScrollBox');
-        if (!scrollBox) return;
-        scrollBox.innerHTML = '';
+        function buildQueueChips() {
+            const scrollBox = document.getElementById('queuesScrollBox');
+            if (!scrollBox) return;
 
-        // Отримуємо всі унікальні черги з даних і сортуємо їх
-        const queues = [...new Set(allData.map(i => i.group_id))].sort((a, b) => {
-            // Сортування за пріоритетом (1.1, 1.2, 2.1 тощо)
-            return parseFloat(a) - parseFloat(b);
-        });
+            // Блокуємо передачу свайпів на загальну сторінку, щоб день не перемикався випадково
+            scrollBox.addEventListener('touchstart', (e) => e.stopPropagation());
+            scrollBox.addEventListener('touchmove', (e) => e.stopPropagation());
+
+            scrollBox.innerHTML = '';
+
+            const queues = [...new Set(allData.map(i => i.group_id))].sort((a, b) => {
+                return parseFloat(a) - parseFloat(b);
+            });
 
         queues.forEach(q => {
             if (!q) return;
