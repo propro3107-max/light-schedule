@@ -33,6 +33,50 @@
             animation: segmentBreathe 3.5s ease-in-out infinite; /* Додали анімацію */
         }
 
+/* --- ГОРИЗОНТАЛЬНИЙ СКРОЛ ЧЕРГ (ОНОВЛЕНИЙ ДЛЯ ТЕЛЕФОНІВ) --- */
+        .queues-scroll-container {
+            width: 100%;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* Плавний інерційний скрол на iOS/Android */
+            padding: 4px 12px 10px 12px;
+            margin-top: -4px;
+            margin-bottom: 4px;
+            scroll-behavior: smooth; /* Плавний перехід при програмному скролі */
+            scrollbar-width: none; /* Прибираємо скролбар для Firefox */
+            -ms-overflow-style: none; /* Для IE */
+        }
+        .queues-scroll-container::-webkit-scrollbar {
+            display: none; /* Прибираємо скролбар для Chrome/Safari */
+        }
+
+        .queue-chip {
+            flex-shrink: 0;
+            background: var(--glass-bg);
+            border: 1px solid rgba(128, 128, 128, 0.15);
+            padding: 6px 14px;
+            border-radius: 14px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .queue-chip:active {
+            transform: scale(0.92);
+        }
+
+        /* Вибрана черга */
+        .queue-chip.active {
+            background: var(--accent-green);
+            color: white;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 12px rgba(46, 204, 113, 0.4);
+            font-weight: 700;
+        }
+
         [data-theme="light"] {
             --bg-color: #f2f2f7;
             --card-bg: #ffffff;
@@ -1714,6 +1758,78 @@
         .sk-timeline { height: 60px; width: 100%; }
         .sk-card { height: 80px; width: 100%; }
 
+        /* --- СТРІЛОЧКИ ТА ПІДКАЗКА СВАЙПУ --- */
+        .date-nav-wrap {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            gap: 4px;
+            margin: 4px 0 8px 0;
+        }
+
+        .date-nav-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 28px;
+            font-weight: 300;
+            padding: 0 8px;
+            cursor: pointer;
+            transition: color 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 42px;
+        }
+
+        .date-nav-btn:active { transform: scale(0.8); color: white; }
+        .date-nav-btn.disabled { opacity: 0.1; pointer-events: none; }
+        [data-theme="light"] .date-nav-btn { color: rgba(0, 0, 0, 0.4); }
+
+        /* Анімація-підказка "Свайп" */
+        .swipe-hint-overlay {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .swipe-hint-overlay.show {
+            visibility: visible;
+            animation: hintAppear 0.4s forwards, hintFadeOut 0.5s forwards 3.5s; /* зникне через 3.5 сек */
+        }
+
+        @keyframes hintAppear { from { opacity: 0; transform: translate(-50%, -40%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+        @keyframes hintFadeOut { to { opacity: 0; visibility: hidden; } }
+
+        .swipe-icon {
+            font-size: 32px;
+            animation: swipeGesture 1.5s ease-in-out infinite;
+        }
+
+        @keyframes swipeGesture {
+            0% { transform: translateX(25px) rotate(5deg); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateX(-25px) rotate(-5deg); opacity: 0; }
+        }
+
            /* --- MOBILE FIXES (ОЧИЩЕНО) --- */
         @media (max-width: 360px) {
             .c-dur {
@@ -1818,6 +1934,8 @@
 
         <!-- Батарейка (стаціонарна) -->
         <div id="batterySection" class="battery-container">
+            <!-- Горизонтальний швидкий вибір черг -->
+        <div class="queues-scroll-container" id="queuesScrollBox"></div>
 
             <div class="battery-wrapper" onclick="animateBattery()">
 
@@ -1845,9 +1963,22 @@
 
                     <!-- Дата (стаціонарна) -->
 
-            <div class="date-box">
-                <span id="dayTitle" class="day-title">Графік на сьогодні</span>
-                <span id="dateDisplay" class="date-text">---</span>
+<!-- Дата зі стрілочками навігації -->
+            <div class="date-nav-wrap">
+                <button class="date-nav-btn disabled" id="prevDayBtn" onclick="switchTab(1)">‹</button>
+
+                <div class="date-box" style="margin: 0 !important; flex: 1; cursor: pointer;" onclick="toggleDayModal()">
+                    <span id="dayTitle" class="day-title">Графік на сьогодні</span>
+                    <span id="dateDisplay" class="date-text">--- ▾</span>
+                </div>
+
+                <button class="date-nav-btn" id="nextDayBtn" onclick="switchTab(2)">›</button>
+            </div>
+
+            <!-- Анімована підказка свайпу (з'явиться 1 раз) -->
+            <div id="swipeHint" class="swipe-hint-overlay">
+                <div class="swipe-icon">👆</div>
+                <div style="font-size:14px; font-weight:700;">Свайпайте для зміни дня</div>
             </div>
 
             <div id="emergencyBanner" class="emergency-banner hidden" onclick="showEmergency()">
@@ -1894,9 +2025,20 @@
 
     </div> <!-- /app-content -->
 
+<!-- Модальне вікно вибору черги (воно у тебе вже є) -->
     <div class="modal-overlay" id="modal" onclick="toggleModal()">
         <div class="queue-list" id="queueList" onclick="event.stopPropagation()"></div>
     </div>
+
+    <!-- 👇 ВСТАВЛЯЙ ОЦЕЙ БЛОК ТУТ 👇 -->
+    <div class="modal-overlay" id="dayModal" onclick="toggleDayModal()">
+        <div class="queue-list" id="dayList" onclick="event.stopPropagation()">
+            <div style="text-align:center;margin-bottom:15px;color:var(--text-muted);font-size:12px">ОБЕРІТЬ ДЕНЬ</div>
+            <div class="q-item" id="dayItem1" onclick="selectDayModal(1)">📅 Сьогодні</div>
+            <div class="q-item" id="dayItem2" onclick="selectDayModal(2)">➡️ Завтра</div>
+        </div>
+    </div>
+    <!-- 👆 КІНЕЦЬ ВСТАВКИ 👆 -->
 
     <div class="tab-bar">
         <div class="tab-item active" id="tab1" onclick="switchTab(1)">Сьогодні</div>
@@ -2015,15 +2157,87 @@
     // автооновлення даних
     setInterval(() => init(true), 120000);
 
-    async function getCSV(retries = 5) {
-        const url = `${CSV_PROXY_URL}?t=${Date.now()}`;
+    async function getScheduleData(retries = 5) {
+        // УВАГА: Якщо вкладка в твоїй таблиці знизу називається не "Аркуш1", а "Sheet1", обов'язково зміни це в посиланні!
+        const url = `https://opensheet.elk.sh/1LZWXZ6w5R4Lq5afipAa1YHjLyO8lVizPvRCPdOvdmbc/Аркуш1`;
         try {
             const r = await fetch(url, { cache: "no-cache" });
             if (!r.ok) throw new Error("Bad status " + r.status);
-            return await r.text();
+            return await r.json(); // OpenSheet одразу віддає готовий JSON!
         } catch (e) {
-            if (retries > 0) return getCSV(retries - 1);
+            if (retries > 0) return getScheduleData(retries - 1);
             throw e;
+        }
+    }
+
+    function toggleDayModal() {
+            const modal = document.getElementById('dayModal');
+            if (!modal) return;
+            modal.classList.toggle('show');
+
+            // Підсвічуємо поточний активний день у модалці
+            document.getElementById('dayItem1').classList.toggle('active', currentTab === 1);
+            document.getElementById('dayItem2').classList.toggle('active', currentTab === 2);
+
+            try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+        }
+
+        function selectDayModal(dayIdx) {
+            toggleDayModal();
+            if (currentTab !== dayIdx) {
+                switchTab(dayIdx);
+            }
+        }
+
+    function buildQueueChips() {
+        const scrollBox = document.getElementById('queuesScrollBox');
+        if (!scrollBox) return;
+        scrollBox.innerHTML = '';
+
+        // Отримуємо всі унікальні черги з даних і сортуємо їх
+        const queues = [...new Set(allData.map(i => i.group_id))].sort((a, b) => {
+            // Сортування за пріоритетом (1.1, 1.2, 2.1 тощо)
+            return parseFloat(a) - parseFloat(b);
+        });
+
+        queues.forEach(q => {
+            if (!q) return;
+            const chip = document.createElement('div');
+            chip.className = `queue-chip ${q === currentQueue ? 'active' : ''}`;
+            chip.innerText = `${q}`;
+
+            // Клік по чіпсу перемикає чергу без модалки!
+            chip.onclick = () => {
+                currentQueue = q;
+                localStorage.setItem('savedQueue', q);
+                try { tg.HapticFeedback.selectionChanged(); } catch (e) {}
+
+                // Оновлюємо і чіпси, і заголовок, і графік
+                buildQueueChips();
+                buildMenu();
+                render(currentTab);
+                updateNativeShareLink();
+
+                // 🎯 Плавне центрування натиснутого чіпса на екрані
+                const box = document.getElementById('queuesScrollBox');
+                if (box) {
+                    box.scrollTo({
+                        left: chip.offsetLeft - box.clientWidth / 2 + chip.clientWidth / 2,
+                        behavior: 'smooth'
+                    });
+                }
+            };
+
+            scrollBox.appendChild(chip);
+        });
+
+        // Автоскрол стрічки до активної чіпси, щоб вона була на екрані при завантаженні
+        const activeChip = scrollBox.querySelector('.queue-chip.active');
+        if (activeChip) {
+            scrollBox.scrollTo({
+                left: activeChip.offsetLeft - scrollBox.clientWidth / 2 + activeChip.clientWidth / 2,
+                behavior: 'smooth'
+            });
         }
     }
 
@@ -2141,8 +2355,7 @@
                 document.getElementById('app-content').classList.add('hidden');
             }
 
-            const csvText = await getCSV();
-            allData = parseCSV(csvText);
+            allData = await getScheduleData();
 
             const primary = normalizeHeaders(allData[0]);
             if (primary.emergency === "on") {
@@ -2217,24 +2430,35 @@
         }
     }
 
-    function setupApp(isSilent) {
-        const p = new URLSearchParams(window.location.search);
-        let q = p.get('q');
-        if (q) {
+        function setupApp(isSilent) {
+            const p = new URLSearchParams(window.location.search);
+            let q = p.get('q');
+            if (q) {
+                currentQueue = q;
+                localStorage.setItem("savedQueue", q);
+            } else {
+                const saved = localStorage.getItem("savedQueue");
+                if (saved) currentQueue = saved;
+            }
+            if (!isSilent) {
+                buildMenu();
+                buildQueueChips(); // 👈 Додали сюди для генерації чіпсів при запуску
+                const appContent = document.getElementById('app-content');
+                if (appContent) appContent.classList.remove('hidden');
+            }
+            render(currentTab);
+            updateNativeShareLink();
+        }
+
+        function selectQueue(q) {
             currentQueue = q;
-            localStorage.setItem("savedQueue", q);
-        } else {
-            const saved = localStorage.getItem("savedQueue");
-            if (saved) currentQueue = saved;
-        }
-        if (!isSilent) {
+            localStorage.setItem('savedQueue', q);
+            try { tg.HapticFeedback.selectionChanged(); } catch (e) { }
+            toggleModal();
             buildMenu();
-            const appContent = document.getElementById('app-content');
-            if (appContent) appContent.classList.remove('hidden');
+            buildQueueChips(); // 👈 Додали сюди, щоб активна чіпса підсвічувалась і при виборі через меню
+            render(currentTab);
         }
-        render(currentTab);
-        updateNativeShareLink();
-    }
 
     function showOfflineBadge() {
         if (!document.getElementById('offBadge')) {
@@ -2706,6 +2930,11 @@
             currentTab = idx;
             document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
             document.getElementById("tab" + idx).classList.add("active");
+            // Оновлюємо стрілочки навігації
+            const prevBtn = document.getElementById('prevDayBtn');
+            const nextBtn = document.getElementById('nextDayBtn');
+            if (prevBtn) prevBtn.classList.toggle('disabled', idx === 1);
+            if (nextBtn) nextBtn.classList.toggle('disabled', idx === 2);
             body.style.transition = "none";
             body.style.transform = `translateX(${40 * direction}px)`;
             body.style.opacity = "0";
@@ -3498,6 +3727,14 @@ function checkDonatePopup() {
 
             // 👇 ЦЕЙ РЯДОК ОБОВ'ЯЗКОВО МАЄ БУТИ ТУТ:
             checkDonatePopup();
+            // Показуємо підказку свайпу тільки 1 раз для нових користувачів
+            if (!localStorage.getItem('swipe_hint_shown')) {
+                setTimeout(() => {
+                    const hint = document.getElementById('swipeHint');
+                    if (hint) hint.classList.add('show');
+                    localStorage.setItem('swipe_hint_shown', '1');
+                }, 1500); // з'явиться через 1.5 сек після завантаження
+            }
 
         }, 300);
     </script>
