@@ -33,22 +33,22 @@
             animation: segmentBreathe 3.5s ease-in-out infinite; /* Додали анімацію */
         }
 
-/* --- ГОРИЗОНТАЛЬНИЙ СКРОЛ ЧЕРГ (ОНОВЛЕНИЙ ДЛЯ ТЕЛЕФОНІВ) --- */
+/* --- ГОРИЗОНТАЛЬНИЙ СКРОЛ ЧЕРГ (ВИПРАВЛЕНИЙ ВІДСТУП) --- */
         .queues-scroll-container {
             width: 100%;
             display: flex;
             gap: 8px;
             overflow-x: auto;
-            -webkit-overflow-scrolling: touch; /* Плавний інерційний скрол на iOS/Android */
-            padding: 4px 12px 10px 12px;
-            margin-top: -4px;
-            margin-bottom: 4px;
-            scroll-behavior: smooth; /* Плавний перехід при програмному скролі */
-            scrollbar-width: none; /* Прибираємо скролбар для Firefox */
-            -ms-overflow-style: none; /* Для IE */
+            -webkit-overflow-scrolling: touch;
+            padding: 8px 12px 12px 12px; /* Додали трохи повітря з усіх боків */
+            margin-top: 4px;             /* Відсунули від верхньої кнопки */
+            margin-bottom: 8px;          /* Відсунули від батарейки */
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
         .queues-scroll-container::-webkit-scrollbar {
-            display: none; /* Прибираємо скролбар для Chrome/Safari */
+            display: none;
         }
 
         .queue-chip {
@@ -1921,6 +1921,10 @@
         </div>
     </div>
 
+    <!-- ✅ Чіпси стоять одразу під хедером -->
+    <div class="queues-scroll-container" id="queuesScrollBox"></div>
+
+    <!-- ✅ Скелетон завантаження -->
     <div id="skeletonLoader" class="skeleton-wrapper">
         <div class="sk-battery skeleton"></div>
         <div class="sk-date skeleton"></div>
@@ -1930,25 +1934,20 @@
         <div class="sk-card skeleton"></div>
     </div>
 
+    <!-- ✅ Основний контейнер -->
     <div id="app-content" class="hidden">
 
-        <!-- Батарейка (стаціонарна) -->
+        <!-- ✅ Батарейка повернулася на місце -->
         <div id="batterySection" class="battery-container">
-            <!-- Горизонтальний швидкий вибір черг -->
-        <div class="queues-scroll-container" id="queuesScrollBox"></div>
-
             <div class="battery-wrapper" onclick="animateBattery()">
-
-                <div class="battery-shell"> <div id="batteryFill" class="battery-fill"></div>
+                <div class="battery-shell">
+                    <div id="batteryFill" class="battery-fill"></div>
                     <div class="battery-text" id="batteryTimer">--:--</div>
                 </div>
-
                 <div class="battery-tip"></div>
             </div>
-
             <div class="battery-status" id="batteryLabel">статус</div>
         </div>
-
 
         <!-- 🔥 Увесь контент дня, який "слайдиться" між Сьогодні/Завтра -->
         <div id="dayBody" class="day-body">
